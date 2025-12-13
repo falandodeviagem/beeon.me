@@ -4,6 +4,8 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Label } from "@/components/ui/label";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { trpc } from "@/lib/trpc";
@@ -16,9 +18,16 @@ export default function Search() {
   const { isAuthenticated } = useAuth();
   const [searchQuery, setSearchQuery] = useState("");
   const [activeTab, setActiveTab] = useState<"communities" | "users">("communities");
+  const [isPaidFilter, setIsPaidFilter] = useState<boolean | null>(null);
+  const [orderBy, setOrderBy] = useState<"relevance" | "recent">("relevance");
 
   const { data: communities, isLoading: communitiesLoading } = trpc.search.communities.useQuery(
-    { query: searchQuery, limit: 20 },
+    { 
+      query: searchQuery, 
+      limit: 20,
+      isPaid: isPaidFilter,
+      orderBy: orderBy,
+    },
     { enabled: searchQuery.length >= 2 }
   );
 
@@ -87,6 +96,50 @@ export default function Search() {
 
             {/* Communities Tab */}
             <TabsContent value="communities" className="space-y-4 mt-6">
+              {/* Filters */}
+              <Card>
+                <CardContent className="pt-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label>Tipo de Comunidade</Label>
+                      <Select 
+                        value={isPaidFilter === null ? "all" : isPaidFilter ? "paid" : "free"}
+                        onValueChange={(value) => {
+                          if (value === "all") setIsPaidFilter(null);
+                          else if (value === "paid") setIsPaidFilter(true);
+                          else setIsPaidFilter(false);
+                        }}
+                      >
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="all">Todas</SelectItem>
+                          <SelectItem value="free">Gratuitas</SelectItem>
+                          <SelectItem value="paid">Pagas</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label>Ordenar por</Label>
+                      <Select 
+                        value={orderBy}
+                        onValueChange={(value) => setOrderBy(value as "relevance" | "recent")}
+                      >
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="relevance">Mais Relevantes</SelectItem>
+                          <SelectItem value="recent">Mais Recentes</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
               {communitiesLoading ? (
                 <div className="space-y-4">
                   {[1, 2, 3].map((i) => (
@@ -97,8 +150,7 @@ export default function Search() {
                 <div className="space-y-4">
                   {communities.map((community) => (
                     <Link key={community.id} href={`/community/${community.id}`}>
-                      <a>
-                        <Card className="hover:shadow-lg transition-shadow cursor-pointer">
+                      <Card className="hover:shadow-lg transition-shadow cursor-pointer">
                           <CardContent className="pt-6">
                             <div className="flex items-start gap-4">
                               <div className="w-16 h-16 rounded-xl bg-gradient-to-br from-primary to-secondary flex items-center justify-center flex-shrink-0">
@@ -140,7 +192,6 @@ export default function Search() {
                             </div>
                           </CardContent>
                         </Card>
-                      </a>
                     </Link>
                   ))}
                 </div>
@@ -169,8 +220,7 @@ export default function Search() {
                 <div className="space-y-4">
                   {users.map((user) => (
                     <Link key={user.id} href={`/profile?userId=${user.id}`}>
-                      <a>
-                        <Card className="hover:shadow-lg transition-shadow cursor-pointer">
+                      <Card className="hover:shadow-lg transition-shadow cursor-pointer">
                           <CardContent className="pt-6">
                             <div className="flex items-center gap-4">
                               <Avatar className="w-16 h-16">
@@ -198,7 +248,6 @@ export default function Search() {
                             </div>
                           </CardContent>
                         </Card>
-                      </a>
                     </Link>
                   ))}
                 </div>

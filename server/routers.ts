@@ -427,9 +427,18 @@ export const appRouter = router({
 
   search: router({
     communities: publicProcedure
-      .input(z.object({ query: z.string().min(1), limit: z.number().default(20) }))
+      .input(z.object({ 
+        query: z.string().min(1), 
+        limit: z.number().default(20),
+        isPaid: z.boolean().nullable().optional(),
+        orderBy: z.enum(['relevance', 'recent']).default('relevance'),
+      }))
       .query(async ({ input }) => {
-        return await db.searchCommunities(input.query, input.limit);
+        return await db.searchCommunities(input.query, {
+          limit: input.limit,
+          isPaid: input.isPaid ?? null,
+          orderBy: input.orderBy,
+        });
       }),
 
     users: publicProcedure

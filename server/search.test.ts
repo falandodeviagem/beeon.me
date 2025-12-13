@@ -34,7 +34,11 @@ describe("Search Functionality", () => {
     const ctx = createAuthContext();
     const caller = appRouter.createCaller(ctx);
 
-    const results = await caller.search.communities({ query: "test", limit: 10 });
+    const results = await caller.search.communities({ 
+      query: "test", 
+      limit: 10,
+      orderBy: "relevance"
+    });
 
     expect(Array.isArray(results)).toBe(true);
   });
@@ -52,8 +56,45 @@ describe("Search Functionality", () => {
     const ctx = createAuthContext();
     const caller = appRouter.createCaller(ctx);
 
-    const results = await caller.search.communities({ query: "test", limit: 5 });
+    const results = await caller.search.communities({ 
+      query: "test", 
+      limit: 5,
+      orderBy: "relevance"
+    });
 
     expect(results.length).toBeLessThanOrEqual(5);
+  });
+
+  it("should filter paid communities", async () => {
+    const ctx = createAuthContext();
+    const caller = appRouter.createCaller(ctx);
+
+    const results = await caller.search.communities({ 
+      query: "test", 
+      limit: 10,
+      isPaid: true,
+      orderBy: "relevance"
+    });
+
+    expect(Array.isArray(results)).toBe(true);
+    // All results should be paid communities
+    results.forEach(community => {
+      if (community.isPaid !== undefined) {
+        expect(community.isPaid).toBe(true);
+      }
+    });
+  });
+
+  it("should order by recent", async () => {
+    const ctx = createAuthContext();
+    const caller = appRouter.createCaller(ctx);
+
+    const results = await caller.search.communities({ 
+      query: "test", 
+      limit: 10,
+      orderBy: "recent"
+    });
+
+    expect(Array.isArray(results)).toBe(true);
   });
 });

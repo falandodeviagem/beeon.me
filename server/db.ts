@@ -653,13 +653,33 @@ export async function getUserActions(userId: number, limit: number = 50) {
 
 // SEARCH OPERATIONS
 
-export async function searchCommunities(query: string, limit: number = 20) {
+export async function searchCommunities(
+  query: string, 
+  options: { 
+    limit?: number; 
+    isPaid?: boolean | null; 
+    orderBy?: 'relevance' | 'recent';
+  } = {}
+) {
   const db = await getDb();
   if (!db) return [];
 
+  const { limit = 20, isPaid = null, orderBy = 'relevance' } = options;
   const searchTerm = `%${query}%`;
   
-  return await db.select({
+  const conditions = [
+    or(
+      like(communities.name, searchTerm),
+      like(communities.description, searchTerm)
+    )
+  ];
+
+  // Add isPaid filter if specified
+  if (isPaid !== null) {
+    conditions.push(eq(communities.isPaid, isPaid));
+  }
+
+  const baseQuery = db.select({
     id: communities.id,
     name: communities.name,
     description: communities.description,
@@ -671,14 +691,15 @@ export async function searchCommunities(query: string, limit: number = 20) {
     createdAt: communities.createdAt,
   })
     .from(communities)
-    .where(
-      or(
-        like(communities.name, searchTerm),
-        like(communities.description, searchTerm)
-      )
-    )
-    .orderBy(desc(communities.memberCount))
+    .where(and(...conditions))
     .limit(limit);
+
+  // Apply ordering
+  if (orderBy === 'recent') {
+    return await baseQuery.orderBy(desc(communities.createdAt));
+  } else {
+    return await baseQuery.orderBy(desc(communities.memberCount));
+  }
 }
 
 export async function searchUsers(query: string, limit: number = 20) {

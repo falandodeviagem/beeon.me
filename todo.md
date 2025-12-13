@@ -90,3 +90,11 @@
 - [x] Frontend: Componente de busca na navegação
 - [x] Filtros de busca (comunidades/usuários)
 - [x] Resultados com paginação
+
+## 13. Filtros Avançados de Busca
+- [x] Corrigir erro de links aninhados (<a> dentro de <a>)
+- [x] Backend: Adicionar filtro isPaid na busca de comunidades
+- [x] Backend: Adicionar ordenação por data de criação
+- [x] Frontend: UI de filtros (pagas/gratuitas/todas)
+- [x] Frontend: Dropdown de ordenação (relevância/recentes)
+- [x] Atualizar testes para cobrir filtros

@@ -5,14 +5,26 @@ import { Route, Switch } from "wouter";
 import ErrorBoundary from "./components/ErrorBoundary";
 import { ThemeProvider } from "./contexts/ThemeContext";
 import Home from "./pages/Home";
+import Login from "./pages/Login";
+import Profile from "./pages/Profile";
+import Communities from "./pages/Communities";
+import CommunityDetail from "./pages/CommunityDetail";
+import Leaderboard from "./pages/Leaderboard";
+import Invites from "./pages/Invites";
+import Moderation from "./pages/Moderation";
 
 function Router() {
-  // make sure to consider if you need authentication for certain routes
   return (
     <Switch>
-      <Route path={"/"} component={Home} />
-      <Route path={"/404"} component={NotFound} />
-      {/* Final fallback route */}
+      <Route path="/" component={Home} />
+      <Route path="/login" component={Login} />
+      <Route path="/profile" component={Profile} />
+      <Route path="/communities" component={Communities} />
+      <Route path="/community/:id" component={CommunityDetail} />
+      <Route path="/leaderboard" component={Leaderboard} />
+      <Route path="/invites" component={Invites} />
+      <Route path="/moderation" component={Moderation} />
+      <Route path="/404" component={NotFound} />
       <Route component={NotFound} />
     </Switch>
   );
@@ -26,10 +38,7 @@ function Router() {
 function App() {
   return (
     <ErrorBoundary>
-      <ThemeProvider
-        defaultTheme="light"
-        // switchable
-      >
+      <ThemeProvider defaultTheme="light">
         <TooltipProvider>
           <Toaster />
           <Router />

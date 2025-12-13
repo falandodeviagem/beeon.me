@@ -347,10 +347,27 @@ export async function getFeedPosts(communityIds: number[], limit: number = 50) {
 
   if (communityIds.length === 0) return [];
 
-  return await db.select().from(posts)
+  const result = await db.select({
+    id: posts.id,
+    content: posts.content,
+    imageUrl: posts.imageUrl,
+    createdAt: posts.createdAt,
+    authorId: posts.authorId,
+    communityId: posts.communityId,
+    likeCount: posts.likeCount,
+    commentCount: posts.commentCount,
+    authorName: users.name,
+    authorAvatar: users.avatarUrl,
+    communityName: communities.name,
+  })
+    .from(posts)
+    .innerJoin(users, eq(posts.authorId, users.id))
+    .innerJoin(communities, eq(posts.communityId, communities.id))
     .where(inArray(posts.communityId, communityIds))
     .orderBy(desc(posts.createdAt))
     .limit(limit);
+
+  return result;
 }
 
 export async function updatePost(id: number, data: { content?: string; imageUrl?: string }) {

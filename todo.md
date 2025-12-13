@@ -98,3 +98,12 @@
 - [x] Frontend: UI de filtros (pagas/gratuitas/todas)
 - [x] Frontend: Dropdown de ordenação (relevância/recentes)
 - [x] Atualizar testes para cobrir filtros
+
+## 14. Feed de Atividades Recentes
+- [x] Backend: Melhorar query getFeedPosts com informações completas
+- [x] Backend: Incluir dados de autor e comunidade nos posts
+- [x] Frontend: Componente PostCard para exibir posts
+- [x] Frontend: Integrar feed na página Home
+- [x] Frontend: Botões de like e comentar
+- [x] Frontend: Estados de loading e vazio
+- [x] Testes para feed de atividades

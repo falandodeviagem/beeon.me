@@ -1,13 +1,15 @@
 import { useAuth } from "@/_core/hooks/useAuth";
 import MainLayout from "@/components/MainLayout";
+import PostCard from "@/components/PostCard";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { trpc } from "@/lib/trpc";
-import { Heart, MessageCircle, Users, Trophy, UserPlus, ArrowRight, Sparkles } from "lucide-react";
+import { Users, Trophy, UserPlus, ArrowRight, Sparkles } from "lucide-react";
 import { Link } from "wouter";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useState } from "react";
 
 export default function Home() {
   const { user, isAuthenticated } = useAuth();
@@ -22,12 +24,41 @@ export default function Home() {
   });
 
   const utils = trpc.useUtils();
+  const [likedPosts, setLikedPosts] = useState<Set<number>>(new Set());
 
   const likeMutation = trpc.post.like.useMutation({
+    onMutate: async ({ postId }) => {
+      // Optimistic update
+      setLikedPosts(prev => {
+        const newSet = new Set(prev);
+        if (newSet.has(postId)) {
+          newSet.delete(postId);
+        } else {
+          newSet.add(postId);
+        }
+        return newSet;
+      });
+    },
     onSuccess: () => {
       utils.feed.get.invalidate();
     },
+    onError: (_, { postId }) => {
+      // Rollback on error
+      setLikedPosts(prev => {
+        const newSet = new Set(prev);
+        if (newSet.has(postId)) {
+          newSet.delete(postId);
+        } else {
+          newSet.add(postId);
+        }
+        return newSet;
+      });
+    },
   });
+
+  const handleLike = (postId: number) => {
+    likeMutation.mutate({ postId });
+  };
 
   if (!isAuthenticated) {
     return (
@@ -156,39 +187,12 @@ export default function Home() {
             ) : feedPosts && feedPosts.length > 0 ? (
               <div className="space-y-4">
                 {feedPosts.map((post) => (
-                  <Card key={post.id}>
-                    <CardContent className="pt-6 space-y-4">
-                      <div className="flex items-start gap-3">
-                        <Avatar>
-                          <AvatarFallback>U</AvatarFallback>
-                        </Avatar>
-                        <div className="flex-1">
-                          <p className="font-semibold">Usuário #{post.authorId}</p>
-                          <p className="text-sm text-muted-foreground">
-                            {new Date(post.createdAt).toLocaleDateString("pt-BR")}
-                          </p>
-                        </div>
-                      </div>
-
-                      <p className="text-foreground whitespace-pre-wrap">{post.content}</p>
-
-                      <div className="flex items-center gap-4 pt-2">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="gap-2"
-                          onClick={() => likeMutation.mutate({ postId: post.id })}
-                        >
-                          <Heart className="w-4 h-4" />
-                          {post.likeCount}
-                        </Button>
-                        <Button variant="ghost" size="sm" className="gap-2">
-                          <MessageCircle className="w-4 h-4" />
-                          {post.commentCount}
-                        </Button>
-                      </div>
-                    </CardContent>
-                  </Card>
+                  <PostCard
+                    key={post.id}
+                    post={post}
+                    onLike={handleLike}
+                    isLiked={likedPosts.has(post.id)}
+                  />
                 ))}
               </div>
             ) : (

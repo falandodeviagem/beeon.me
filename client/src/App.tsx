@@ -12,6 +12,7 @@ import CommunityDetail from "./pages/CommunityDetail";
 import Leaderboard from "./pages/Leaderboard";
 import Invites from "./pages/Invites";
 import Moderation from "./pages/Moderation";
+import Search from "./pages/Search";
 
 function Router() {
   return (
@@ -23,6 +24,7 @@ function Router() {
       <Route path="/community/:id" component={CommunityDetail} />
       <Route path="/leaderboard" component={Leaderboard} />
       <Route path="/invites" component={Invites} />
+      <Route path="/search" component={Search} />
       <Route path="/moderation" component={Moderation} />
       <Route path="/404" component={NotFound} />
       <Route component={NotFound} />

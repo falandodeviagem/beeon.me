@@ -82,3 +82,11 @@
 - [x] Testes vitest para procedures críticas
 - [x] Validação de schemas
 - [x] Tratamento de erros
+
+## 12. Sistema de Busca
+- [x] Backend: Procedure de busca de comunidades
+- [x] Backend: Procedure de busca de usuários
+- [x] Frontend: Página de busca com resultados
+- [x] Frontend: Componente de busca na navegação
+- [x] Filtros de busca (comunidades/usuários)
+- [x] Resultados com paginação

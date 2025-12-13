@@ -425,6 +425,20 @@ export const appRouter = router({
       }),
   }),
 
+  search: router({
+    communities: publicProcedure
+      .input(z.object({ query: z.string().min(1), limit: z.number().default(20) }))
+      .query(async ({ input }) => {
+        return await db.searchCommunities(input.query, input.limit);
+      }),
+
+    users: publicProcedure
+      .input(z.object({ query: z.string().min(1), limit: z.number().default(20) }))
+      .query(async ({ input }) => {
+        return await db.searchUsers(input.query, input.limit);
+      }),
+  }),
+
   moderation: router({
     report: protectedProcedure
       .input(z.object({

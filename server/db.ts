@@ -1,4 +1,4 @@
-import { eq, and, desc, sql, inArray, isNull } from "drizzle-orm";
+import { eq, and, desc, sql, inArray, isNull, like, or } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
 import { 
   InsertUser, users, 
@@ -648,5 +648,60 @@ export async function getUserActions(userId: number, limit: number = 50) {
   return await db.select().from(gamificationActions)
     .where(eq(gamificationActions.userId, userId))
     .orderBy(desc(gamificationActions.createdAt))
+    .limit(limit);
+}
+
+// SEARCH OPERATIONS
+
+export async function searchCommunities(query: string, limit: number = 20) {
+  const db = await getDb();
+  if (!db) return [];
+
+  const searchTerm = `%${query}%`;
+  
+  return await db.select({
+    id: communities.id,
+    name: communities.name,
+    description: communities.description,
+    imageUrl: communities.imageUrl,
+    isPaid: communities.isPaid,
+    price: communities.price,
+    memberCount: communities.memberCount,
+    ownerId: communities.ownerId,
+    createdAt: communities.createdAt,
+  })
+    .from(communities)
+    .where(
+      or(
+        like(communities.name, searchTerm),
+        like(communities.description, searchTerm)
+      )
+    )
+    .orderBy(desc(communities.memberCount))
+    .limit(limit);
+}
+
+export async function searchUsers(query: string, limit: number = 20) {
+  const db = await getDb();
+  if (!db) return [];
+
+  const searchTerm = `%${query}%`;
+  
+  return await db.select({
+    id: users.id,
+    name: users.name,
+    bio: users.bio,
+    avatarUrl: users.avatarUrl,
+    points: users.points,
+    level: users.level,
+  })
+    .from(users)
+    .where(
+      or(
+        like(users.name, searchTerm),
+        like(users.bio, searchTerm)
+      )
+    )
+    .orderBy(desc(users.points))
     .limit(limit);
 }

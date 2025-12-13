@@ -9,7 +9,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Home, Users, Trophy, UserPlus, Shield, LogOut, User } from "lucide-react";
+import { Home, Users, Trophy, UserPlus, Shield, LogOut, User, Search } from "lucide-react";
 import { Link, useLocation } from "wouter";
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
@@ -36,6 +36,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
   const navItems = [
     { href: "/", label: "Início", icon: Home },
     { href: "/communities", label: "Comunidades", icon: Users },
+    { href: "/search", label: "Buscar", icon: Search },
     { href: "/leaderboard", label: "Ranking", icon: Trophy },
     { href: "/invites", label: "Convites", icon: UserPlus },
   ];

@@ -121,10 +121,22 @@ export default function CommunityDetail() {
     );
   }
 
+  const createCheckoutMutation = trpc.community.createCheckout.useMutation({
+    onSuccess: (data) => {
+      window.location.href = data.checkoutUrl;
+    },
+    onError: (error) => {
+      toast.error(error.message || "Erro ao criar checkout");
+    },
+  });
+
   const handleJoin = () => {
     if (community.isPaid) {
-      toast.info("Redirecionando para checkout...");
-      // TODO: Implement Stripe checkout
+      createCheckoutMutation.mutate({
+        communityId,
+        successUrl: `${window.location.origin}/community/${communityId}?success=true`,
+        cancelUrl: `${window.location.origin}/community/${communityId}`,
+      });
     } else {
       joinMutation.mutate({ communityId });
     }

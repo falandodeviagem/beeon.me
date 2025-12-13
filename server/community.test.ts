@@ -41,8 +41,8 @@ describe("Community Operations", () => {
       price: 0,
     });
 
-    expect(result.success).toBe(true);
-    expect(result.communityId).toBeGreaterThan(0);
+    expect(result.id).toBeDefined();
+    expect(result.id).toBeGreaterThan(0);
   });
 
   it("should create a paid community with price", async () => {
@@ -56,8 +56,8 @@ describe("Community Operations", () => {
       price: 1000, // R$ 10.00 in cents
     });
 
-    expect(result.success).toBe(true);
-    expect(result.communityId).toBeGreaterThan(0);
+    expect(result.id).toBeDefined();
+    expect(result.id).toBeGreaterThan(0);
   });
 
   it("should list communities", async () => {

@@ -6,6 +6,7 @@ import { z } from "zod";
 import { TRPCError } from "@trpc/server";
 import { nanoid } from "nanoid";
 import * as db from "./db";
+import { createCommunityCheckoutSession, hasActiveSubscription } from "./stripe";
 
 // Admin-only procedure
 const adminProcedure = protectedProcedure.use(({ ctx, next }) => {
@@ -188,7 +189,7 @@ export const appRouter = router({
         if (isMember) throw new TRPCError({ code: 'BAD_REQUEST', message: 'Already a member' });
 
         if (community.isPaid) {
-          throw new TRPCError({ code: 'BAD_REQUEST', message: 'Use Stripe checkout for paid communities' });
+          throw new TRPCError({ code: 'BAD_REQUEST', message: 'Use createCheckout for paid communities' });
         }
 
         await db.addCommunityMember({
@@ -197,6 +198,39 @@ export const appRouter = router({
         });
 
         return { success: true };
+      }),
+
+    createCheckout: protectedProcedure
+      .input(z.object({ 
+        communityId: z.number(),
+        successUrl: z.string(),
+        cancelUrl: z.string(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const community = await db.getCommunityById(input.communityId);
+        if (!community) throw new TRPCError({ code: 'NOT_FOUND' });
+        if (!community.isPaid) throw new TRPCError({ code: 'BAD_REQUEST', message: 'Community is not paid' });
+
+        const isMember = await db.isCommunityMember(input.communityId, ctx.user.id);
+        if (isMember) throw new TRPCError({ code: 'BAD_REQUEST', message: 'Already a member' });
+
+        const session = await createCommunityCheckoutSession({
+          communityId: input.communityId,
+          communityName: community.name,
+          price: community.price,
+          userId: ctx.user.id,
+          successUrl: input.successUrl,
+          cancelUrl: input.cancelUrl,
+        });
+
+        return { checkoutUrl: session.url };
+      }),
+
+    checkSubscription: protectedProcedure
+      .input(z.object({ communityId: z.number() }))
+      .query(async ({ ctx, input }) => {
+        const hasSubscription = await hasActiveSubscription(ctx.user.id, input.communityId);
+        return { hasSubscription };
       }),
 
     leave: protectedProcedure

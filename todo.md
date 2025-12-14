@@ -330,3 +330,13 @@
 - [x] Carregar 12 comunidades quando expandido (6 inicialmente)
 - [x] Adicionar animação suave na transição
 - [x] Ícone ChevronDown/ChevronUp no botão
+
+## 40. Melhorias UX em Comunidades Recomendadas
+- [x] Instalar framer-motion
+- [x] Adicionar animação fade-in sequencial nos cards
+- [x] Calcular se comunidade é "nova" (criada há menos de 7 dias)
+- [x] Calcular se comunidade está "em alta" (crescimento >20% última semana)
+- [x] Adicionar badges "Novo" e "Em Alta" nos cards
+- [x] Implementar botão "Entrar Rápido" em cada card
+- [x] Adicionar toast de feedback ao entrar em comunidade
+- [x] Atualizar lista após join bem-sucedido

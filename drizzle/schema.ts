@@ -28,6 +28,9 @@ export const users = mysqlTable("users", {
   bannedUntil: timestamp("bannedUntil"),
   banReason: text("banReason"),
   
+  // Onboarding
+  hasCompletedOnboarding: boolean("hasCompletedOnboarding").default(false).notNull(),
+  
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
   lastSignedIn: timestamp("lastSignedIn").defaultNow().notNull(),

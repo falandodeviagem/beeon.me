@@ -16,6 +16,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { useAuth } from "@/_core/hooks/useAuth";
+import HashtagText from "@/components/HashtagText";
 
 interface PostCardProps {
   post: {
@@ -126,7 +127,7 @@ export default function PostCard({ post }: PostCardProps) {
       </CardHeader>
 
       <CardContent className="pb-3">
-        <p className="whitespace-pre-wrap text-foreground">{post.content}</p>
+        <HashtagText text={post.content} className="whitespace-pre-wrap text-foreground block" />
         {post.imageUrl && (
           <img
             src={post.imageUrl}

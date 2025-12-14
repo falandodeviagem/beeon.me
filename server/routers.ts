@@ -50,6 +50,12 @@ export const appRouter = router({
         return { success: true };
       }),
 
+    completeOnboarding: protectedProcedure
+      .mutation(async ({ ctx }) => {
+        await db.updateUserProfile(ctx.user.id, { hasCompletedOnboarding: true } as any);
+        return { success: true };
+      }),
+
     generateInviteCode: protectedProcedure
       .mutation(async ({ ctx }) => {
         const inviteCode = nanoid(10);
@@ -292,6 +298,9 @@ export const appRouter = router({
           ...input,
           authorId: ctx.user.id,
         });
+
+        // Extract and link hashtags automatically
+        await db.linkHashtagsToPost(postId, input.content);
 
         await db.recordGamificationAction({
           userId: ctx.user.id,

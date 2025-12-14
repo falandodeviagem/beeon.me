@@ -1,5 +1,7 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
+import { trpc } from "@/lib/trpc";
+import { toast } from "sonner";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useLocation } from "wouter";
@@ -255,6 +257,13 @@ const steps = [
 export default function Onboarding() {
   const [currentStep, setCurrentStep] = useState(0);
   const [, setLocation] = useLocation();
+  
+  const completeOnboardingMutation = trpc.user.completeOnboarding.useMutation({
+    onSuccess: () => {
+      toast.success("Bem-vindo ao BeeOn.me! 🐝");
+      setLocation("/");
+    },
+  });
 
   const step = steps[currentStep];
   const Icon = step!.icon;
@@ -263,8 +272,8 @@ export default function Onboarding() {
 
   const handleNext = () => {
     if (isLastStep) {
-      // Redirecionar para home ao finalizar
-      setLocation("/");
+      // Marcar onboarding como completo e redirecionar
+      completeOnboardingMutation.mutate();
     } else {
       setCurrentStep(currentStep + 1);
     }
@@ -277,7 +286,8 @@ export default function Onboarding() {
   };
 
   const handleSkip = () => {
-    setLocation("/");
+    // Marcar onboarding como completo mesmo ao pular
+    completeOnboardingMutation.mutate();
   };
 
   return (

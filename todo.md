@@ -262,3 +262,23 @@
 - [x] Frontend: Botão "Começar" ao final
 - [x] Rota /onboarding criada
 - [x] Tutorial interativo completo
+
+## 31. Integração Automática de Hashtags
+- [x] Modificar procedure createPost para chamar linkHashtagsToPost
+- [x] Extrair hashtags automaticamente do conteúdo
+- [x] Salvar relações post_hashtags no banco
+- [x] Testar criação de posts com hashtags
+
+## 32. Renderização de Hashtags Clicáveis
+- [x] Criar componente HashtagText
+- [x] Detectar #hashtags no texto com regex
+- [x] Transformar em links clicáveis para /hashtag/:tag
+- [x] Integrar no PostCard
+- [x] Manter formatação do texto original
+
+## 33. Redirecionamento Automático para Onboarding
+- [x] Detectar novos usuários (sem atividade)
+- [x] Adicionar lógica de redirecionamento no Home
+- [x] Verificar se usuário já completou onboarding
+- [x] Redirecionar apenas na primeira visita
+- [x] Adicionar flag hasCompletedOnboarding no schema

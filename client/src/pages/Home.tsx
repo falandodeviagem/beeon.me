@@ -11,9 +11,18 @@ import { Users, Trophy, UserPlus, ArrowRight, Sparkles } from "lucide-react";
 import { Link } from "wouter";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useState, useRef, useEffect } from "react";
+import { useLocation } from "wouter";
 
 export default function Home() {
   const { user, isAuthenticated } = useAuth();
+  const [, setLocation] = useLocation();
+
+  // Redirect new users to onboarding
+  useEffect(() => {
+    if (isAuthenticated && user && !user.hasCompletedOnboarding) {
+      setLocation("/onboarding");
+    }
+  }, [isAuthenticated, user, setLocation]);
 
   const {
     data: feedData,

@@ -107,6 +107,10 @@ export const posts = mysqlTable("posts", {
   commentCount: int("commentCount").default(0).notNull(),
   shareCount: int("shareCount").default(0).notNull(),
   
+  // Edit tracking
+  isEdited: boolean("isEdited").default(false).notNull(),
+  editedAt: timestamp("editedAt"),
+  
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
 }, (table) => ({

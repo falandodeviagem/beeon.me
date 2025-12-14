@@ -9,11 +9,12 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Home, Users, Trophy, UserPlus, Shield, LogOut, User, Search, Mail } from "lucide-react";
+import { Home, Users, Trophy, UserPlus, Shield, LogOut, User, Search, Mail, Sun, Moon } from "lucide-react";
 import NotificationPanel from "@/components/NotificationPanel";
 import { Link, useLocation } from "wouter";
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
+import { useTheme } from "@/contexts/ThemeContext";
 
 interface MainLayoutProps {
   children: React.ReactNode;
@@ -23,6 +24,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
   const { user, isAuthenticated } = useAuth();
   const [location] = useLocation();
   const logoutMutation = trpc.auth.logout.useMutation();
+  const { theme, toggleTheme } = useTheme();
 
   const handleLogout = async () => {
     try {
@@ -90,6 +92,16 @@ export default function MainLayout({ children }: MainLayoutProps) {
 
           {/* User menu */}
           <div className="flex items-center gap-2">
+            {/* Theme toggle */}
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={toggleTheme}
+              className="w-9 h-9"
+              title={theme === 'dark' ? 'Mudar para tema claro' : 'Mudar para tema escuro'}
+            >
+              {theme === 'dark' ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+            </Button>
             {isAuthenticated && user ? (
               <>
                 <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-full bg-secondary/20">

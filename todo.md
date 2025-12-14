@@ -208,3 +208,30 @@
 - [x] Frontend: Feedback visual ao copiar
 - [x] Frontend: Mostrar contador de shares
 - [x] Incremento automático ao compartilhar
+
+## 25. Script de Seed com Dados de Exemplo
+- [x] Criar script seed.mjs com dados de exemplo
+- [x] Adicionar 5-10 usuários fictícios
+- [x] Adicionar 3-5 comunidades (públicas e pagas)
+- [x] Adicionar 10-20 posts com conteúdo variado
+- [x] Adicionar comentários nos posts
+- [x] Adicionar reações diversas
+- [x] Adicionar relacionamentos (follows, membros)
+- [x] Documentar como executar o seed
+
+## 26. Modo Escuro
+- [x] Adicionar variáveis CSS para tema escuro
+- [x] Criar toggle de tema no MainLayout
+- [x] Persistir preferência em localStorage
+- [x] Adaptar paleta laranja/amarelo para modo escuro
+- [x] Garantir contraste adequado em ambos os temas
+- [x] Ícone de sol/lua no toggle
+
+## 27. Edição de Posts
+- [x] Backend: Adicionar campos isEdited/editedAt ao schema
+- [x] Backend: Procedure para editar post
+- [x] Backend: Verificar se usuário é autor
+- [x] Frontend: Botão de editar no PostCard (apenas autor)
+- [x] Frontend: Modal de edição
+- [x] Frontend: Textarea com conteúdo atual
+- [x] Histórico visível para moderadores (futuro)

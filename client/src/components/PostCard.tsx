@@ -2,7 +2,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { MessageCircle, Users, Share2, Check } from "lucide-react";
+import { MessageCircle, Users, Share2, Check, Edit2 } from "lucide-react";
 import ReactionPicker from "@/components/ReactionPicker";
 import ReactionCounts from "@/components/ReactionCounts";
 import { trpc } from "@/lib/trpc";
@@ -13,6 +13,8 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { useAuth } from "@/_core/hooks/useAuth";
 
 interface PostCardProps {
   post: {
@@ -34,7 +36,10 @@ interface PostCardProps {
 }
 
 export default function PostCard({ post }: PostCardProps) {
+  const { user } = useAuth();
   const [showShareDialog, setShowShareDialog] = useState(false);
+  const [showEditDialog, setShowEditDialog] = useState(false);
+  const [editContent, setEditContent] = useState(post.content);
   const [copied, setCopied] = useState(false);
   const { data: currentReaction } = trpc.post.getUserReaction.useQuery({ postId: post.id });
   const shareMutation = trpc.post.share.useMutation({
@@ -42,6 +47,27 @@ export default function PostCard({ post }: PostCardProps) {
       toast.success("Post compartilhado!");
     },
   });
+  
+  const editMutation = trpc.post.edit.useMutation({
+    onSuccess: () => {
+      toast.success("Post editado com sucesso!");
+      setShowEditDialog(false);
+      window.location.reload(); // Refresh to show edited content
+    },
+    onError: (error) => {
+      toast.error(error.message || "Erro ao editar post");
+    },
+  });
+  
+  const handleEdit = () => {
+    if (editContent.trim() === post.content) {
+      setShowEditDialog(false);
+      return;
+    }
+    editMutation.mutate({ postId: post.id, content: editContent });
+  };
+  
+  const isAuthor = user?.id === post.authorId;
   const timeAgo = formatDistanceToNow(new Date(post.createdAt), {
     addSuffix: true,
     locale: ptBR,
@@ -119,6 +145,17 @@ export default function PostCard({ post }: PostCardProps) {
               <Share2 className="w-4 h-4" />
               {(post.shareCount || 0) > 0 && <span>{post.shareCount}</span>}
             </Button>
+            
+            {isAuthor && (
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                className="gap-2"
+                onClick={() => setShowEditDialog(true)}
+              >
+                <Edit2 className="w-4 h-4" />
+              </Button>
+            )}
           </div>
         </div>
       </CardFooter>
@@ -150,6 +187,34 @@ export default function PostCard({ post }: PostCardProps) {
                 className="gap-2"
               >
                 {copied ? <Check className="w-4 h-4" /> : "Copiar"}
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+      
+      <Dialog open={showEditDialog} onOpenChange={setShowEditDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Editar Post</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <Textarea
+              value={editContent}
+              onChange={(e) => setEditContent(e.target.value)}
+              placeholder="O que você está pensando?"
+              className="min-h-32"
+              maxLength={5000}
+            />
+            <div className="flex justify-end gap-2">
+              <Button variant="outline" onClick={() => setShowEditDialog(false)}>
+                Cancelar
+              </Button>
+              <Button 
+                onClick={handleEdit}
+                disabled={editMutation.isPending || !editContent.trim()}
+              >
+                {editMutation.isPending ? "Salvando..." : "Salvar"}
               </Button>
             </div>
           </div>

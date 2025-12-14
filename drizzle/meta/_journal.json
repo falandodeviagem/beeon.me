@@ -50,6 +50,13 @@
       "when": 1765745075414,
       "tag": "0006_absurd_gideon",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "5",
+      "when": 1765746036671,
+      "tag": "0007_amazing_the_hand",
+      "breakpoints": true
     }
   ]
 }

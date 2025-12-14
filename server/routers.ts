@@ -419,6 +419,15 @@ export const appRouter = router({
         return { success: true };
       }),
 
+    edit: protectedProcedure
+      .input(z.object({ 
+        postId: z.number(), 
+        content: z.string().min(1).max(5000) 
+      }))
+      .mutation(async ({ ctx, input }) => {
+        return await db.editPost(input.postId, ctx.user.id, input.content);
+      }),
+
     getUserReaction: protectedProcedure
       .input(z.object({ postId: z.number() }))
       .query(async ({ ctx, input }) => {

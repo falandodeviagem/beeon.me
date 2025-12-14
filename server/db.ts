@@ -1262,3 +1262,28 @@ export async function sharePost(postId: number) {
     .set({ shareCount: sql`${posts.shareCount} + 1` })
     .where(eq(posts.id, postId));
 }
+
+
+// ============================================
+// POST EDITING
+// ============================================
+
+export async function editPost(postId: number, authorId: number, content: string) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  // Verify author
+  const [post] = await db.select().from(posts).where(eq(posts.id, postId)).limit(1);
+  if (!post) throw new Error("Post not found");
+  if (post.authorId !== authorId) throw new Error("Not authorized to edit this post");
+
+  await db.update(posts)
+    .set({ 
+      content, 
+      isEdited: true, 
+      editedAt: new Date() 
+    })
+    .where(eq(posts.id, postId));
+
+  return { success: true };
+}

@@ -1,4 +1,4 @@
-import { eq, and, desc, sql, inArray, isNull, like, or, lt } from "drizzle-orm";
+import { eq, and, desc, sql, inArray, isNull, like, or, lt, gte } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
 import { 
   InsertUser, users, 
@@ -16,7 +16,9 @@ import {
   postReactions, InsertPostReaction,
   userFollows, InsertUserFollow,
   conversations, InsertConversation,
-  messages, InsertMessage
+  messages, InsertMessage,
+  hashtags, InsertHashtag,
+  postHashtags, InsertPostHashtag
 } from "../drizzle/schema";
 import { ENV } from './_core/env';
 
@@ -1286,4 +1288,125 @@ export async function editPost(postId: number, authorId: number, content: string
     .where(eq(posts.id, postId));
 
   return { success: true };
+}
+
+
+// ============================================
+// HASHTAG HELPERS
+// ============================================
+
+/**
+ * Extract hashtags from text using regex
+ */
+export function extractHashtags(text: string): string[] {
+  const hashtagRegex = /#(\w+)/g;
+  const matches = text.match(hashtagRegex);
+  if (!matches) return [];
+  
+  // Remove # and convert to lowercase, remove duplicates
+  return Array.from(new Set(matches.map(tag => tag.slice(1).toLowerCase())));
+}
+
+/**
+ * Get or create hashtags and link them to a post
+ */
+export async function linkHashtagsToPost(postId: number, content: string) {
+  const db = await getDb();
+  if (!db) return;
+
+  const tags = extractHashtags(content);
+  if (tags.length === 0) return;
+
+  for (const tag of tags) {
+    // Get or create hashtag
+    const existing = await db.select().from(hashtags).where(eq(hashtags.tag, tag)).limit(1);
+    
+    let hashtagId: number;
+    if (existing.length > 0) {
+      hashtagId = existing[0]!.id;
+      // Increment use count
+      await db.update(hashtags)
+        .set({ useCount: existing[0]!.useCount + 1 })
+        .where(eq(hashtags.id, hashtagId));
+    } else {
+      // Create new hashtag
+      const result = await db.insert(hashtags).values({ tag, useCount: 1 });
+      hashtagId = Number(result[0].insertId);
+    }
+
+    // Link hashtag to post (ignore if already exists)
+    try {
+      await db.insert(postHashtags).values({ postId, hashtagId });
+    } catch (error) {
+      // Ignore duplicate key errors
+    }
+  }
+}
+
+/**
+ * Get posts by hashtag
+ */
+export async function getPostsByHashtag(tag: string, limit: number = 20) {
+  const db = await getDb();
+  if (!db) return [];
+
+  const normalizedTag = tag.toLowerCase();
+  
+  const result = await db
+    .select({
+      id: posts.id,
+      content: posts.content,
+      imageUrl: posts.imageUrl,
+      createdAt: posts.createdAt,
+      authorId: posts.authorId,
+      authorName: users.name,
+      authorAvatar: users.avatarUrl,
+      communityId: posts.communityId,
+      communityName: communities.name,
+      likeCount: posts.likeCount,
+      commentCount: posts.commentCount,
+      shareCount: posts.shareCount,
+      isEdited: posts.isEdited,
+      editedAt: posts.editedAt,
+    })
+    .from(postHashtags)
+    .innerJoin(hashtags, eq(postHashtags.hashtagId, hashtags.id))
+    .innerJoin(posts, eq(postHashtags.postId, posts.id))
+    .innerJoin(users, eq(posts.authorId, users.id))
+    .innerJoin(communities, eq(posts.communityId, communities.id))
+    .where(eq(hashtags.tag, normalizedTag))
+    .orderBy(desc(posts.createdAt))
+    .limit(limit);
+
+  return result;
+}
+
+/**
+ * Get trending hashtags (most used in last 7 days)
+ */
+export async function getTrendingHashtags(limit: number = 10) {
+  const db = await getDb();
+  if (!db) return [];
+
+  const sevenDaysAgo = new Date();
+  sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+
+  const result = await db
+    .select({
+      id: hashtags.id,
+      tag: hashtags.tag,
+      useCount: hashtags.useCount,
+      postCount: sql<number>`COUNT(DISTINCT ${postHashtags.postId})`.as('postCount'),
+    })
+    .from(hashtags)
+    .leftJoin(postHashtags, eq(hashtags.id, postHashtags.hashtagId))
+    .leftJoin(posts, and(
+      eq(postHashtags.postId, posts.id),
+      gte(posts.createdAt, sevenDaysAgo)
+    ))
+    .groupBy(hashtags.id, hashtags.tag, hashtags.useCount)
+    .orderBy(desc(sql`postCount`))
+    .limit(limit);
+
+  return result;
 }

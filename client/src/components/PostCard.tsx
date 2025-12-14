@@ -12,6 +12,7 @@ import { ptBR } from "date-fns/locale";
 import { useState } from "react";
 import { toast } from "sonner";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { useAuth } from "@/_core/hooks/useAuth";
@@ -30,6 +31,8 @@ interface PostCardProps {
     likeCount: number;
     commentCount: number;
     shareCount?: number;
+    isEdited?: boolean;
+    editedAt?: Date | null;
   };
   onLike?: (postId: number) => void;
   isLiked?: boolean;
@@ -101,6 +104,21 @@ export default function PostCard({ post }: PostCardProps) {
                 </Link>
                 <span>•</span>
                 <span>{timeAgo}</span>
+                {post.isEdited && post.editedAt && (
+                  <>
+                    <span>•</span>
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <span className="text-xs italic cursor-help">(editado)</span>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>Editado {formatDistanceToNow(new Date(post.editedAt), { addSuffix: true, locale: ptBR })}</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                  </>
+                )}
               </div>
             </div>
           </div>

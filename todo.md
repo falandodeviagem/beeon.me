@@ -235,3 +235,30 @@
 - [x] Frontend: Modal de edição
 - [x] Frontend: Textarea com conteúdo atual
 - [x] Histórico visível para moderadores (futuro)
+
+## 28. Indicador Visual de Posts Editados
+- [x] Frontend: Badge "(editado)" no PostCard
+- [x] Frontend: Tooltip mostrando data da última edição
+- [x] Frontend: Posicionar ao lado do timestamp
+- [x] Usar formatDistanceToNow para data de edição
+
+## 29. Sistema de Hashtags
+- [x] Backend: Tabela de hashtags no schema
+- [x] Backend: Tabela de post_hashtags (relação)
+- [x] Backend: Função para extrair hashtags do texto
+- [x] Backend: Procedure para buscar posts por hashtag
+- [x] Backend: Query de trending hashtags
+- [x] Frontend: Detectar e linkar hashtags nos posts
+- [x] Frontend: Página de exploração /hashtag/:tag
+- [x] Frontend: Trending hashtags na sidebar
+- [x] Regex para detectar #palavra
+
+## 30. Página de Onboarding
+- [x] Frontend: Criar página /onboarding
+- [x] Frontend: Tutorial passo a passo (6 steps)
+- [x] Frontend: Explicar comunidades
+- [x] Frontend: Explicar gamificação (pontos, badges, níveis)
+- [x] Frontend: Explicar sistema de convites
+- [x] Frontend: Botão "Começar" ao final
+- [x] Rota /onboarding criada
+- [x] Tutorial interativo completo

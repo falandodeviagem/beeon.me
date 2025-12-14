@@ -774,6 +774,23 @@ export const appRouter = router({
         return await db.getUnreadMessageCount(ctx.user.id);
       }),
   }),
+
+  hashtags: router({
+    byTag: publicProcedure
+      .input(z.object({ 
+        tag: z.string(),
+        limit: z.number().default(20) 
+      }))
+      .query(async ({ input }) => {
+        return await db.getPostsByHashtag(input.tag, input.limit);
+      }),
+
+    trending: publicProcedure
+      .input(z.object({ limit: z.number().default(10) }))
+      .query(async ({ input }) => {
+        return await db.getTrendingHashtags(input.limit);
+      }),
+  }),
 });
 
 export type AppRouter = typeof appRouter;

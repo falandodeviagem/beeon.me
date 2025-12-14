@@ -2,12 +2,13 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { trpc } from "@/lib/trpc";
-import { Flame, TrendingUp, Users } from "lucide-react";
+import { Flame, TrendingUp, Users, Hash } from "lucide-react";
 import { Link } from "wouter";
 
 export default function TrendingTopics() {
   const { data: trendingCommunities = [] } = trpc.trending.communities.useQuery({ limit: 5 });
   const { data: trendingPosts = [] } = trpc.trending.posts.useQuery({ limit: 3 });
+  const { data: trendingHashtags = [] } = trpc.hashtags.trending.useQuery({ limit: 10 });
 
   return (
     <div className="space-y-4">
@@ -60,6 +61,37 @@ export default function TrendingTopics() {
                   </Link>
                   {index < trendingCommunities.length - 1 && <Separator className="mt-3" />}
                 </div>
+              ))}
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Trending Hashtags */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 text-lg">
+            <Hash className="w-5 h-5 text-amber-500" />
+            Hashtags em Alta
+          </CardTitle>
+          <CardDescription>Últimos 7 dias</CardDescription>
+        </CardHeader>
+        <CardContent>
+          {trendingHashtags.length === 0 ? (
+            <p className="text-sm text-muted-foreground text-center py-4">
+              Nenhuma hashtag ainda
+            </p>
+          ) : (
+            <div className="flex flex-wrap gap-2">
+              {trendingHashtags.map((hashtag) => (
+                <Link key={hashtag.id} href={`/hashtag/${hashtag.tag}`}>
+                  <Badge 
+                    variant="secondary" 
+                    className="cursor-pointer hover:bg-primary hover:text-primary-foreground transition-colors"
+                  >
+                    #{hashtag.tag} ({hashtag.postCount})
+                  </Badge>
+                </Link>
               ))}
             </div>
           )}

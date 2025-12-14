@@ -365,3 +365,37 @@ export const messages = mysqlTable("messages", {
 
 export type Message = typeof messages.$inferSelect;
 export type InsertMessage = typeof messages.$inferInsert;
+
+/**
+ * Hashtags - unique hashtags used in posts
+ */
+export const hashtags = mysqlTable("hashtags", {
+  id: int("id").autoincrement().primaryKey(),
+  tag: varchar("tag", { length: 100 }).notNull().unique(),
+  useCount: int("useCount").default(0).notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+}, (table) => ({
+  tagIdx: index("tag_idx").on(table.tag),
+  useCountIdx: index("use_count_idx").on(table.useCount),
+}));
+
+export type Hashtag = typeof hashtags.$inferSelect;
+export type InsertHashtag = typeof hashtags.$inferInsert;
+
+/**
+ * Post Hashtags - relationship between posts and hashtags
+ */
+export const postHashtags = mysqlTable("post_hashtags", {
+  id: int("id").autoincrement().primaryKey(),
+  postId: int("postId").notNull(),
+  hashtagId: int("hashtagId").notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+}, (table) => ({
+  postHashtagIdx: unique("post_hashtag_idx").on(table.postId, table.hashtagId),
+  postIdx: index("post_idx").on(table.postId),
+  hashtagIdx: index("hashtag_idx").on(table.hashtagId),
+}));
+
+export type PostHashtag = typeof postHashtags.$inferSelect;
+export type InsertPostHashtag = typeof postHashtags.$inferInsert;

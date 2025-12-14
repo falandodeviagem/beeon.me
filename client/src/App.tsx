@@ -17,11 +17,14 @@ import Leaderboard from "./pages/Leaderboard";
 import Invites from "./pages/Invites";
 import Moderation from "./pages/Moderation";
 import Search from "./pages/Search";
+import HashtagPage from "./pages/HashtagPage";
+import Onboarding from "./pages/Onboarding";
 
 function Router() {
   return (
     <Switch>
       <Route path="/" component={Home} />
+      <Route path="/onboarding" component={Onboarding} />
       <Route path="/login" component={Login} />
       <Route path="/profile" component={Profile} />
       <Route path="/communities" component={Communities} />
@@ -29,6 +32,7 @@ function Router() {
       <Route path="/leaderboard" component={Leaderboard} />
       <Route path="/invites" component={Invites} />
       <Route path="/search" component={Search} />
+      <Route path="/hashtag/:tag" component={HashtagPage} />
       <Route path="/user/:userId" component={UserProfile} />
       <Route path="/user/:userId/followers" component={Followers} />
       <Route path="/user/:userId/following" component={Following} />

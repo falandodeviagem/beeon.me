@@ -1,4 +1,4 @@
-import { eq, and, desc, sql, inArray, isNull, like, or, lt, gte } from "drizzle-orm";
+import { eq, and, desc, sql, inArray, notInArray, isNull, like, or, lt, gte } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
 import { 
   InsertUser, users, 
@@ -1494,4 +1494,121 @@ export async function getPromotedCommunityIds(communityId: number) {
     .where(eq(communityPromotions.communityId, communityId));
 
   return result.map(r => r.promotedCommunityId);
+}
+
+/**
+ * Get recommended communities for a user based on their interactions
+ */
+export async function getRecommendedCommunities(userId: number, limit: number = 6) {
+  const db = await getDb();
+  if (!db) return [];
+
+  // Get communities user is already a member of
+  const userCommunityIds = (await db
+    .select({ communityId: communityMembers.communityId })
+    .from(communityMembers)
+    .where(eq(communityMembers.userId, userId)))
+    .map(r => r.communityId);
+
+  // Get categories from user's communities
+  const userCategories = userCommunityIds.length > 0
+    ? (await db
+        .select({ category: communities.category })
+        .from(communities)
+        .where(inArray(communities.id, userCommunityIds)))
+        .map(r => r.category)
+    : [];
+
+  // Get communities from posts user liked
+  const likedPostCommunities = (await db
+    .select({ communityId: posts.communityId })
+    .from(postLikes)
+    .innerJoin(posts, eq(postLikes.postId, posts.id))
+    .where(eq(postLikes.userId, userId))
+    .limit(50))
+    .map(r => r.communityId);
+
+  // Get communities from posts user commented on
+  const commentedPostCommunities = (await db
+    .select({ communityId: posts.communityId })
+    .from(comments)
+    .innerJoin(posts, eq(comments.postId, posts.id))
+    .where(eq(comments.authorId, userId))
+    .limit(50))
+    .map(r => r.communityId);
+
+  // Get communities from users that current user follows
+  const followedUsersCommunities = (await db
+    .select({ communityId: communityMembers.communityId })
+    .from(userFollows)
+    .innerJoin(communityMembers, eq(userFollows.followingId, communityMembers.userId))
+    .where(eq(userFollows.followerId, userId))
+    .limit(100))
+    .map(r => r.communityId);
+
+  // Combine all community IDs and calculate scores
+  const communityScores = new Map<number, number>();
+
+  // Score based on liked posts (weight: 2)
+  likedPostCommunities.forEach(id => {
+    if (!userCommunityIds.includes(id)) {
+      communityScores.set(id, (communityScores.get(id) || 0) + 2);
+    }
+  });
+
+  // Score based on commented posts (weight: 3)
+  commentedPostCommunities.forEach(id => {
+    if (!userCommunityIds.includes(id)) {
+      communityScores.set(id, (communityScores.get(id) || 0) + 3);
+    }
+  });
+
+  // Score based on followed users (weight: 1)
+  followedUsersCommunities.forEach(id => {
+    if (!userCommunityIds.includes(id)) {
+      communityScores.set(id, (communityScores.get(id) || 0) + 1);
+    }
+  });
+
+  // Get top scored communities
+  const topCommunityIds = Array.from(communityScores.entries())
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, limit * 2) // Get more to filter by category
+    .map(([id]) => id);
+
+  if (topCommunityIds.length === 0) {
+    // Fallback: return popular communities if no interactions yet
+    return await db
+      .select()
+      .from(communities)
+      .where(notInArray(communities.id, userCommunityIds.length > 0 ? userCommunityIds : [0]))
+      .orderBy(desc(communities.memberCount))
+      .limit(limit);
+  }
+
+  // Get full community data
+  const recommendedCommunities = await db
+    .select()
+    .from(communities)
+    .where(inArray(communities.id, topCommunityIds));
+
+  // Boost communities with matching categories
+  const scoredCommunities = recommendedCommunities.map(community => {
+    let score = communityScores.get(community.id) || 0;
+    
+    // Boost if category matches user's communities
+    if (userCategories.includes(community.category)) {
+      score += 5;
+    }
+    
+    // Boost by member count (popularity)
+    score += Math.log10(community.memberCount + 1) * 0.5;
+    
+    return { ...community, score };
+  });
+
+  // Sort by final score and return top N
+  return scoredCommunities
+    .sort((a, b) => b.score - a.score)
+    .slice(0, limit);
 }

@@ -2,6 +2,7 @@ import { useAuth } from "@/_core/hooks/useAuth";
 import MainLayout from "@/components/MainLayout";
 import PostCard from "@/components/PostCard";
 import TrendingTopics from "@/components/TrendingTopics";
+import { RecommendedCommunities } from "@/components/RecommendedCommunities";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -338,6 +339,8 @@ export default function Home() {
               </CardContent>
             </Card>
 
+            <RecommendedCommunities />
+            
             <TrendingTopics />
           </div>
         </div>

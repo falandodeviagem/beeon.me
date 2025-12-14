@@ -125,6 +125,15 @@ export const appRouter = router({
         return await db.getUserCommunities(ctx.user.id);
       }),
 
+    getRecommended: protectedProcedure
+      .input(z.object({
+        limit: z.number().min(1).max(20).default(6),
+      }).optional())
+      .query(async ({ ctx, input }) => {
+        const limit = input?.limit || 6;
+        return await db.getRecommendedCommunities(ctx.user.id, limit);
+      }),
+
     create: protectedProcedure
       .input(z.object({
         name: z.string().min(1).max(255),

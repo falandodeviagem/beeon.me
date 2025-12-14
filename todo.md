@@ -311,3 +311,15 @@
 - [x] Adicionar ordenação (mais membros, recentes, alfabética)
 - [x] Implementar busca por nome e descrição
 - [x] Adicionar contadores de resultados
+
+## 38. Sistema de Recomendações de Comunidades
+- [x] Criar helper para calcular score de recomendação
+- [x] Analisar categorias das comunidades que usuário participa
+- [x] Analisar posts que usuário curtiu/comentou
+- [x] Analisar comunidades dos usuários seguidos
+- [x] Criar procedure tRPC getRecommendedCommunities
+- [x] Implementar widget RecommendedCommunities na home
+- [x] Adicionar sistema de scoring com pesos
+- [x] Filtrar comunidades já participadas
+- [x] Limitar a top 6 recomendações
+- [x] Criar testes vitest

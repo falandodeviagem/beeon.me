@@ -132,6 +132,18 @@ export const appRouter = router({
         imageUrl: z.string().optional(),
         isPaid: z.boolean().default(false),
         price: z.number().default(0),
+        category: z.enum([
+          "tecnologia",
+          "esportes",
+          "arte",
+          "musica",
+          "educacao",
+          "negocios",
+          "saude",
+          "entretenimento",
+          "jogos",
+          "outros"
+        ]).default("outros"),
       }))
       .mutation(async ({ ctx, input }) => {
         const communityId = await db.createCommunity({

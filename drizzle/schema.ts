@@ -50,6 +50,20 @@ export const communities = mysqlTable("communities", {
   description: text("description"),
   imageUrl: text("imageUrl"),
   
+  // Category
+  category: mysqlEnum("category", [
+    "tecnologia",
+    "esportes",
+    "arte",
+    "musica",
+    "educacao",
+    "negocios",
+    "saude",
+    "entretenimento",
+    "jogos",
+    "outros"
+  ]).default("outros").notNull(),
+  
   // Community type
   isPaid: boolean("isPaid").default(false).notNull(),
   price: int("price").default(0).notNull(), // Price in cents

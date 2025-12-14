@@ -53,8 +53,8 @@ export default function ImageUpload({ onImagesChange, maxImages = 5 }: ImageUplo
       const file = validFiles[i]!;
       
       try {
-        // Convert to base64
-        const base64 = await fileToBase64(file);
+        // Compress and convert to base64
+        const base64 = await compressImage(file);
         const base64Data = base64.split(',')[1]; // Remove data:image/...;base64, prefix
 
         // Upload to S3
@@ -81,6 +81,50 @@ export default function ImageUpload({ onImagesChange, maxImages = 5 }: ImageUplo
     if (uploadedUrls.length > 0) {
       toast.success(`${uploadedUrls.length} imagem(ns) enviada(s)`);
     }
+  };
+
+  const compressImage = (file: File): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      
+      reader.onload = (e) => {
+        const img = new Image();
+        img.src = e.target?.result as string;
+        
+        img.onload = () => {
+          const canvas = document.createElement('canvas');
+          let width = img.width;
+          let height = img.height;
+          
+          // Resize if image is too large (max 1920px)
+          const maxSize = 1920;
+          if (width > maxSize || height > maxSize) {
+            if (width > height) {
+              height = (height / width) * maxSize;
+              width = maxSize;
+            } else {
+              width = (width / height) * maxSize;
+              height = maxSize;
+            }
+          }
+          
+          canvas.width = width;
+          canvas.height = height;
+          
+          const ctx = canvas.getContext('2d');
+          ctx?.drawImage(img, 0, 0, width, height);
+          
+          // Compress to JPEG with 0.8 quality
+          const compressedBase64 = canvas.toDataURL('image/jpeg', 0.8);
+          resolve(compressedBase64);
+        };
+        
+        img.onerror = () => reject(new Error('Failed to load image'));
+      };
+      
+      reader.onerror = error => reject(error);
+    });
   };
 
   const fileToBase64 = (file: File): Promise<string> => {

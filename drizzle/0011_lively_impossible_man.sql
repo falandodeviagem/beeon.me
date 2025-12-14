@@ -1,0 +1,1 @@
+ALTER TABLE `communities` ADD `category` enum('tecnologia','esportes','arte','musica','educacao','negocios','saude','entretenimento','jogos','outros') DEFAULT 'outros' NOT NULL;

@@ -296,3 +296,18 @@
 - [x] Identificar links aninhados na página Onboarding
 - [x] Remover aninhamento de elementos <a>
 - [x] Testar página sem erros de console
+
+## 36. Melhorias no Upload de Imagens
+- [x] Adicionar preview de imagens antes do upload
+- [x] Implementar drag & drop para upload
+- [x] Adicionar compressão automática client-side
+- [x] Melhorar feedback visual durante upload
+- [x] Adicionar botão para remover imagens do preview
+
+## 37. Filtros Avançados de Comunidades
+- [x] Adicionar campo category ao schema de communities
+- [x] Criar enum de categorias (tecnologia, esportes, arte, etc)
+- [x] Implementar filtros por categoria na UI
+- [x] Adicionar ordenação (mais membros, recentes, alfabética)
+- [x] Implementar busca por nome e descrição
+- [x] Adicionar contadores de resultados

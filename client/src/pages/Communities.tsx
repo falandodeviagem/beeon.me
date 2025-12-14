@@ -11,7 +11,8 @@ import { Switch } from "@/components/ui/switch";
 import { trpc } from "@/lib/trpc";
 import { useState } from "react";
 import { toast } from "sonner";
-import { Plus, Users, Lock, DollarSign, ArrowRight } from "lucide-react";
+import { Plus, Users, Lock, DollarSign, ArrowRight, Search, Filter, SlidersHorizontal } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Link } from "wouter";
 import { Skeleton } from "@/components/ui/skeleton";
 
@@ -22,8 +23,47 @@ export default function Communities() {
   const [description, setDescription] = useState("");
   const [isPaid, setIsPaid] = useState(false);
   const [price, setPrice] = useState("");
+  const [category, setCategory] = useState<"tecnologia" | "esportes" | "arte" | "musica" | "educacao" | "negocios" | "saude" | "entretenimento" | "jogos" | "outros">("outros");
+  
+  // Filters
+  const [searchQuery, setSearchQuery] = useState("");
+  const [filterCategory, setFilterCategory] = useState<string>("all");
+  const [sortBy, setSortBy] = useState<string>("members");
 
-  const { data: communities, isLoading } = trpc.community.list.useQuery();
+  const { data: allCommunities, isLoading } = trpc.community.list.useQuery();
+  
+  // Apply filters and sorting
+  const communities = allCommunities
+    ? allCommunities
+        .filter(c => {
+          // Search filter
+          if (searchQuery) {
+            const query = searchQuery.toLowerCase();
+            const matchesName = c.name.toLowerCase().includes(query);
+            const matchesDesc = c.description?.toLowerCase().includes(query);
+            if (!matchesName && !matchesDesc) return false;
+          }
+          
+          // Category filter
+          if (filterCategory !== "all" && c.category !== filterCategory) {
+            return false;
+          }
+          
+          return true;
+        })
+        .sort((a, b) => {
+          switch (sortBy) {
+            case "members":
+              return b.memberCount - a.memberCount;
+            case "recent":
+              return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+            case "name":
+              return a.name.localeCompare(b.name);
+            default:
+              return 0;
+          }
+        })
+    : [];
   const utils = trpc.useUtils();
 
   const createMutation = trpc.community.create.useMutation({
@@ -57,6 +97,7 @@ export default function Communities() {
       description: description || undefined,
       isPaid,
       price: isPaid ? Math.round(parseFloat(price || "0") * 100) : 0,
+      category,
     });
   };
 
@@ -137,6 +178,27 @@ export default function Communities() {
                     />
                   </div>
                 )}
+                
+                <div>
+                  <Label htmlFor="category">Categoria</Label>
+                  <Select value={category} onValueChange={(value) => setCategory(value as typeof category)}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="tecnologia">Tecnologia</SelectItem>
+                      <SelectItem value="esportes">Esportes</SelectItem>
+                      <SelectItem value="arte">Arte</SelectItem>
+                      <SelectItem value="musica">Música</SelectItem>
+                      <SelectItem value="educacao">Educação</SelectItem>
+                      <SelectItem value="negocios">Negócios</SelectItem>
+                      <SelectItem value="saude">Saúde</SelectItem>
+                      <SelectItem value="entretenimento">Entretenimento</SelectItem>
+                      <SelectItem value="jogos">Jogos</SelectItem>
+                      <SelectItem value="outros">Outros</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
 
                 <Button
                   onClick={handleCreate}
@@ -149,6 +211,63 @@ export default function Communities() {
             </DialogContent>
           </Dialog>
         </div>
+        
+        {/* Filters */}
+        <Card>
+          <CardContent className="pt-6">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              {/* Search */}
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input
+                  placeholder="Buscar comunidades..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="pl-9"
+                />
+              </div>
+              
+              {/* Category Filter */}
+              <Select value={filterCategory} onValueChange={setFilterCategory}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Categoria" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Todas as categorias</SelectItem>
+                  <SelectItem value="tecnologia">Tecnologia</SelectItem>
+                  <SelectItem value="esportes">Esportes</SelectItem>
+                  <SelectItem value="arte">Arte</SelectItem>
+                  <SelectItem value="musica">Música</SelectItem>
+                  <SelectItem value="educacao">Educação</SelectItem>
+                  <SelectItem value="negocios">Negócios</SelectItem>
+                  <SelectItem value="saude">Saúde</SelectItem>
+                  <SelectItem value="entretenimento">Entretenimento</SelectItem>
+                  <SelectItem value="jogos">Jogos</SelectItem>
+                  <SelectItem value="outros">Outros</SelectItem>
+                </SelectContent>
+              </Select>
+              
+              {/* Sort */}
+              <Select value={sortBy} onValueChange={setSortBy}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Ordenar por" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="members">Mais membros</SelectItem>
+                  <SelectItem value="recent">Mais recentes</SelectItem>
+                  <SelectItem value="name">Nome (A-Z)</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            
+            {/* Results count */}
+            {!isLoading && (
+              <p className="text-sm text-muted-foreground mt-4">
+                {communities.length} {communities.length === 1 ? 'comunidade encontrada' : 'comunidades encontradas'}
+              </p>
+            )}
+          </CardContent>
+        </Card>
 
         {/* Communities Grid */}
         {isLoading ? (
@@ -166,16 +285,23 @@ export default function Communities() {
                     <CardHeader>
                       <div className="flex items-start justify-between gap-2">
                         <CardTitle className="line-clamp-1">{community.name}</CardTitle>
-                        {community.isPaid ? (
-                          <Badge variant="secondary" className="gap-1 flex-shrink-0">
-                            <Lock className="w-3 h-3" />
-                            Paga
-                          </Badge>
-                        ) : (
-                          <Badge variant="outline" className="flex-shrink-0">Pública</Badge>
-                        )}
+                        <div className="flex gap-1 flex-shrink-0">
+                          {community.isPaid ? (
+                            <Badge variant="secondary" className="gap-1">
+                              <Lock className="w-3 h-3" />
+                              Paga
+                            </Badge>
+                          ) : (
+                            <Badge variant="outline">Pública</Badge>
+                          )}
+                        </div>
                       </div>
-                      <CardDescription className="line-clamp-2">
+                      <div className="flex items-center gap-2 mt-2">
+                        <Badge variant="outline" className="text-xs">
+                          {community.category.charAt(0).toUpperCase() + community.category.slice(1)}
+                        </Badge>
+                      </div>
+                      <CardDescription className="line-clamp-2 mt-2">
                         {community.description || "Sem descrição"}
                       </CardDescription>
                     </CardHeader>

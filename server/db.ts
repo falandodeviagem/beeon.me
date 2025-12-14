@@ -18,7 +18,8 @@ import {
   conversations, InsertConversation,
   messages, InsertMessage,
   hashtags, InsertHashtag,
-  postHashtags, InsertPostHashtag
+  postHashtags, InsertPostHashtag,
+  communityPromotions, InsertCommunityPromotion
 } from "../drizzle/schema";
 import { ENV } from './_core/env';
 
@@ -1409,4 +1410,88 @@ export async function getTrendingHashtags(limit: number = 10) {
     .limit(limit);
 
   return result;
+}
+
+/**
+ * Community Promotions - manage promoted communities widget
+ */
+
+export async function addCommunityPromotion(communityId: number, promotedCommunityId: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  // Check if already promoting
+  const existing = await db
+    .select()
+    .from(communityPromotions)
+    .where(and(
+      eq(communityPromotions.communityId, communityId),
+      eq(communityPromotions.promotedCommunityId, promotedCommunityId)
+    ))
+    .limit(1);
+
+  if (existing.length > 0) {
+    throw new Error("Community is already being promoted");
+  }
+
+  // Check limit of 6
+  const count = await db
+    .select({ count: sql<number>`COUNT(*)` })
+    .from(communityPromotions)
+    .where(eq(communityPromotions.communityId, communityId));
+
+  if (count[0]?.count >= 6) {
+    throw new Error("Maximum of 6 promoted communities reached");
+  }
+
+  await db.insert(communityPromotions).values({
+    communityId,
+    promotedCommunityId,
+  });
+}
+
+export async function removeCommunityPromotion(communityId: number, promotedCommunityId: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  await db
+    .delete(communityPromotions)
+    .where(and(
+      eq(communityPromotions.communityId, communityId),
+      eq(communityPromotions.promotedCommunityId, promotedCommunityId)
+    ));
+}
+
+export async function getPromotedCommunities(communityId: number) {
+  const db = await getDb();
+  if (!db) return [];
+
+  const result = await db
+    .select({
+      id: communities.id,
+      name: communities.name,
+      description: communities.description,
+      imageUrl: communities.imageUrl,
+      isPaid: communities.isPaid,
+      price: communities.price,
+      memberCount: communities.memberCount,
+    })
+    .from(communityPromotions)
+    .innerJoin(communities, eq(communityPromotions.promotedCommunityId, communities.id))
+    .where(eq(communityPromotions.communityId, communityId))
+    .limit(6);
+
+  return result;
+}
+
+export async function getPromotedCommunityIds(communityId: number) {
+  const db = await getDb();
+  if (!db) return [];
+
+  const result = await db
+    .select({ promotedCommunityId: communityPromotions.promotedCommunityId })
+    .from(communityPromotions)
+    .where(eq(communityPromotions.communityId, communityId));
+
+  return result.map(r => r.promotedCommunityId);
 }

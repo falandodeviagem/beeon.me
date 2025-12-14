@@ -252,6 +252,58 @@ export const appRouter = router({
       .query(async ({ ctx, input }) => {
         return await db.isCommunityMember(input.communityId, ctx.user.id);
       }),
+
+    // Community Promotions
+    getPromotedCommunities: publicProcedure
+      .input(z.object({ communityId: z.number() }))
+      .query(async ({ input }) => {
+        return await db.getPromotedCommunities(input.communityId);
+      }),
+
+    getPromotedIds: protectedProcedure
+      .input(z.object({ communityId: z.number() }))
+      .query(async ({ input }) => {
+        return await db.getPromotedCommunityIds(input.communityId);
+      }),
+
+    addPromotion: protectedProcedure
+      .input(z.object({ 
+        communityId: z.number(),
+        promotedCommunityId: z.number(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        // Check if user is community owner
+        const community = await db.getCommunityById(input.communityId);
+        if (!community) throw new TRPCError({ code: 'NOT_FOUND' });
+        if (community.ownerId !== ctx.user.id && ctx.user.role !== 'admin') {
+          throw new TRPCError({ code: 'FORBIDDEN', message: 'Only community owner can manage promotions' });
+        }
+
+        // Prevent self-promotion
+        if (input.communityId === input.promotedCommunityId) {
+          throw new TRPCError({ code: 'BAD_REQUEST', message: 'Cannot promote own community' });
+        }
+
+        await db.addCommunityPromotion(input.communityId, input.promotedCommunityId);
+        return { success: true };
+      }),
+
+    removePromotion: protectedProcedure
+      .input(z.object({ 
+        communityId: z.number(),
+        promotedCommunityId: z.number(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        // Check if user is community owner
+        const community = await db.getCommunityById(input.communityId);
+        if (!community) throw new TRPCError({ code: 'NOT_FOUND' });
+        if (community.ownerId !== ctx.user.id && ctx.user.role !== 'admin') {
+          throw new TRPCError({ code: 'FORBIDDEN', message: 'Only community owner can manage promotions' });
+        }
+
+        await db.removeCommunityPromotion(input.communityId, input.promotedCommunityId);
+        return { success: true };
+      }),
   }),
 
   post: router({

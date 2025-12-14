@@ -13,6 +13,17 @@ import { Users, Lock, Heart, MessageCircle, Send, MoreVertical, Flag, Image as I
 import ImageUpload from "@/components/ImageUpload";
 import { useRoute } from "wouter";
 import { Skeleton } from "@/components/ui/skeleton";
+import { PromotedCommunitiesWidget } from "@/components/PromotedCommunitiesWidget";
+import { ManagePromotions } from "@/components/ManagePromotions";
+import { Settings } from "lucide-react";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -181,9 +192,14 @@ export default function CommunityDetail() {
     });
   };
 
+  const isOwner = user?.id === community.ownerId;
+
   return (
     <MainLayout>
-      <div className="container max-w-4xl py-8 space-y-6">
+      <div className="container max-w-7xl py-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* Main Content */}
+          <div className="lg:col-span-2 space-y-6">
         {/* Community Header */}
         <Card>
           <CardHeader>
@@ -209,7 +225,27 @@ export default function CommunityDetail() {
                 </div>
               </div>
 
-              <div>
+              <div className="flex gap-2">
+                {isOwner && (
+                  <Dialog>
+                    <DialogTrigger asChild>
+                      <Button variant="outline" size="sm">
+                        <Settings className="w-4 h-4 mr-2" />
+                        Gerenciar Promoções
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+                      <DialogHeader>
+                        <DialogTitle>Gerenciar Comunidades Promovidas</DialogTitle>
+                        <DialogDescription>
+                          Selecione até 6 comunidades para exibir como recomendações
+                        </DialogDescription>
+                      </DialogHeader>
+                      <ManagePromotions communityId={communityId} />
+                    </DialogContent>
+                  </Dialog>
+                )}
+                
                 {isMember ? (
                   <Button variant="outline" onClick={() => leaveMutation.mutate({ communityId })}>
                     Sair da Comunidade
@@ -344,6 +380,13 @@ export default function CommunityDetail() {
               </CardContent>
             </Card>
           )}
+        </div>
+          </div>
+
+          {/* Sidebar */}
+          <div className="lg:col-span-1 space-y-6">
+            <PromotedCommunitiesWidget communityId={communityId} />
+          </div>
         </div>
       </div>
     </MainLayout>

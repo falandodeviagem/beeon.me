@@ -282,3 +282,12 @@
 - [x] Verificar se usuário já completou onboarding
 - [x] Redirecionar apenas na primeira visita
 - [x] Adicionar flag hasCompletedOnboarding no schema
+
+## 34. Widget de Propaganda de Comunidades
+- [x] Criar tabela community_promotions no schema
+- [x] Adicionar helpers no db.ts (add, remove, list)
+- [x] Criar procedures tRPC para admin gerenciar promoções
+- [x] Interface de seleção de comunidades para admin
+- [x] Widget na sidebar da comunidade exibindo 6 comunidades
+- [x] Validação de limite (máx 6 comunidades)
+- [x] Testes vitest

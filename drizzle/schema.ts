@@ -402,3 +402,19 @@ export const postHashtags = mysqlTable("post_hashtags", {
 
 export type PostHashtag = typeof postHashtags.$inferSelect;
 export type InsertPostHashtag = typeof postHashtags.$inferInsert;
+
+/**
+ * Community Promotions - communities promoted in other communities (max 6)
+ */
+export const communityPromotions = mysqlTable("community_promotions", {
+  id: int("id").autoincrement().primaryKey(),
+  communityId: int("communityId").notNull(), // Community where promotion appears
+  promotedCommunityId: int("promotedCommunityId").notNull(), // Community being promoted
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+}, (table) => ({
+  communityPromotedIdx: unique("community_promoted_idx").on(table.communityId, table.promotedCommunityId),
+  communityIdx: index("community_idx").on(table.communityId),
+}));
+
+export type CommunityPromotion = typeof communityPromotions.$inferSelect;
+export type InsertCommunityPromotion = typeof communityPromotions.$inferInsert;

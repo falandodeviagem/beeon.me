@@ -34,7 +34,9 @@ describe("Feed Functionality", () => {
 
     const result = await caller.feed.get({ limit: 10 });
 
-    expect(Array.isArray(result)).toBe(true);
+    expect(result).toHaveProperty("posts");
+    expect(result).toHaveProperty("nextCursor");
+    expect(Array.isArray(result.posts)).toBe(true);
   });
 
   it("should return posts with author and community info", async () => {
@@ -43,8 +45,8 @@ describe("Feed Functionality", () => {
 
     const result = await caller.feed.get({ limit: 10 });
 
-    if (result.length > 0) {
-      const post = result[0];
+    if (result.posts.length > 0) {
+      const post = result.posts[0];
       expect(post).toHaveProperty("id");
       expect(post).toHaveProperty("content");
       expect(post).toHaveProperty("authorName");
@@ -60,6 +62,18 @@ describe("Feed Functionality", () => {
 
     const result = await caller.feed.get({ limit: 5 });
 
-    expect(result.length).toBeLessThanOrEqual(5);
+    expect(result.posts.length).toBeLessThanOrEqual(5);
+  });
+
+  it("should support cursor-based pagination", async () => {
+    const ctx = createAuthContext();
+    const caller = appRouter.createCaller(ctx);
+
+    const firstPage = await caller.feed.get({ limit: 5 });
+    
+    if (firstPage.nextCursor) {
+      const secondPage = await caller.feed.get({ limit: 5, cursor: firstPage.nextCursor });
+      expect(Array.isArray(secondPage.posts)).toBe(true);
+    }
   });
 });

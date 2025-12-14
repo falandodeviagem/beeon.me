@@ -9,15 +9,44 @@ import { trpc } from "@/lib/trpc";
 import { Users, Trophy, UserPlus, ArrowRight, Sparkles } from "lucide-react";
 import { Link } from "wouter";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 
 export default function Home() {
   const { user, isAuthenticated } = useAuth();
 
-  const { data: feedPosts, isLoading: feedLoading } = trpc.feed.get.useQuery(
-    { limit: 20 },
-    { enabled: isAuthenticated }
+  const {
+    data: feedData,
+    isLoading: feedLoading,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+  } = trpc.feed.get.useInfiniteQuery(
+    { limit: 10 },
+    {
+      enabled: isAuthenticated,
+      getNextPageParam: (lastPage) => lastPage.nextCursor,
+    }
   );
+
+  const feedPosts = feedData?.pages.flatMap((page) => page.posts) ?? [];
+  const loadMoreRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!loadMoreRef.current || !hasNextPage || isFetchingNextPage) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0]?.isIntersecting) {
+          fetchNextPage();
+        }
+      },
+      { threshold: 0.1 }
+    );
+
+    observer.observe(loadMoreRef.current);
+
+    return () => observer.disconnect();
+  }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
 
   const { data: communities } = trpc.community.list.useQuery(undefined, {
     enabled: isAuthenticated,
@@ -194,6 +223,24 @@ export default function Home() {
                     isLiked={likedPosts.has(post.id)}
                   />
                 ))}
+                
+                {/* Infinite scroll trigger */}
+                {hasNextPage && (
+                  <div ref={loadMoreRef} className="py-8 text-center">
+                    {isFetchingNextPage ? (
+                      <div className="flex items-center justify-center gap-2 text-muted-foreground">
+                        <div className="w-5 h-5 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+                        <span>Carregando mais posts...</span>
+                      </div>
+                    ) : null}
+                  </div>
+                )}
+
+                {!hasNextPage && feedPosts.length > 0 && (
+                  <div className="py-8 text-center text-muted-foreground">
+                    <p>Você chegou ao fim! 🎉</p>
+                  </div>
+                )}
               </div>
             ) : (
               <Card>

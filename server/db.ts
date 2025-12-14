@@ -1,4 +1,4 @@
-import { eq, and, desc, sql, inArray, isNull, like, or } from "drizzle-orm";
+import { eq, and, desc, sql, inArray, isNull, like, or, lt } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
 import { 
   InsertUser, users, 
@@ -341,11 +341,17 @@ export async function getCommunityPosts(communityId: number, limit: number = 50)
     .limit(limit);
 }
 
-export async function getFeedPosts(communityIds: number[], limit: number = 50) {
+export async function getFeedPosts(communityIds: number[], limit: number = 50, cursor?: number) {
   const db = await getDb();
   if (!db) return [];
 
   if (communityIds.length === 0) return [];
+
+  const conditions = [inArray(posts.communityId, communityIds)];
+  
+  if (cursor) {
+    conditions.push(lt(posts.id, cursor));
+  }
 
   const result = await db.select({
     id: posts.id,
@@ -363,8 +369,8 @@ export async function getFeedPosts(communityIds: number[], limit: number = 50) {
     .from(posts)
     .innerJoin(users, eq(posts.authorId, users.id))
     .innerJoin(communities, eq(posts.communityId, communities.id))
-    .where(inArray(posts.communityId, communityIds))
-    .orderBy(desc(posts.createdAt))
+    .where(and(...conditions))
+    .orderBy(desc(posts.id))
     .limit(limit);
 
   return result;

@@ -417,11 +417,25 @@ export const appRouter = router({
 
   feed: router({
     get: protectedProcedure
-      .input(z.object({ limit: z.number().default(50) }))
+      .input(z.object({ 
+        limit: z.number().default(10),
+        cursor: z.number().optional(),
+      }))
       .query(async ({ ctx, input }) => {
         const communities = await db.getUserCommunities(ctx.user.id);
         const communityIds = communities.map(c => c.id);
-        return await db.getFeedPosts(communityIds, input.limit);
+        const posts = await db.getFeedPosts(communityIds, input.limit + 1, input.cursor);
+        
+        let nextCursor: number | undefined = undefined;
+        if (posts.length > input.limit) {
+          const nextItem = posts.pop();
+          nextCursor = nextItem!.id;
+        }
+
+        return {
+          posts,
+          nextCursor,
+        };
       }),
   }),
 

@@ -107,3 +107,12 @@
 - [x] Frontend: Botões de like e comentar
 - [x] Frontend: Estados de loading e vazio
 - [x] Testes para feed de atividades
+
+## 15. Scroll Infinito no Feed
+- [x] Backend: Adicionar suporte a cursor-based pagination
+- [x] Backend: Retornar nextCursor para próxima página
+- [x] Frontend: Migrar de useQuery para useInfiniteQuery
+- [x] Frontend: Implementar Intersection Observer
+- [x] Frontend: Loading spinner ao carregar mais posts
+- [x] Frontend: Mensagem de fim quando não houver mais posts
+- [x] Testes para paginação infinita

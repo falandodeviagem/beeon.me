@@ -291,3 +291,8 @@
 - [x] Widget na sidebar da comunidade exibindo 6 comunidades
 - [x] Validação de limite (máx 6 comunidades)
 - [x] Testes vitest
+
+## 35. Correção de Bug - Links Aninhados
+- [x] Identificar links aninhados na página Onboarding
+- [x] Remover aninhamento de elementos <a>
+- [x] Testar página sem erros de console

@@ -259,3 +259,50 @@ export const gamificationActions = mysqlTable("gamification_actions", {
 
 export type GamificationAction = typeof gamificationActions.$inferSelect;
 export type InsertGamificationAction = typeof gamificationActions.$inferInsert;
+
+/**
+ * Notifications - user notifications for various events
+ */
+export const notifications = mysqlTable("notifications", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull(),
+  
+  // Notification content
+  type: mysqlEnum("type", ["like", "comment", "badge", "follow", "mention", "system"]).notNull(),
+  title: varchar("title", { length: 255 }).notNull(),
+  message: text("message").notNull(),
+  
+  // Related entities
+  relatedId: int("relatedId"), // ID of post, comment, user, etc.
+  relatedType: varchar("relatedType", { length: 50 }), // "post", "comment", "user", etc.
+  
+  // Status
+  isRead: boolean("isRead").default(false).notNull(),
+  
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+}, (table) => ({
+  userIdx: index("user_idx").on(table.userId),
+  isReadIdx: index("is_read_idx").on(table.isRead),
+  createdAtIdx: index("created_at_idx").on(table.createdAt),
+}));
+
+export type Notification = typeof notifications.$inferSelect;
+export type InsertNotification = typeof notifications.$inferInsert;
+
+/**
+ * Post Reactions - diverse reactions beyond simple likes
+ */
+export const postReactions = mysqlTable("post_reactions", {
+  id: int("id").autoincrement().primaryKey(),
+  postId: int("postId").notNull(),
+  userId: int("userId").notNull(),
+  reactionType: mysqlEnum("reactionType", ["love", "like", "laugh", "wow", "sad", "angry"]).notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+}, (table) => ({
+  postUserIdx: unique("post_user_idx").on(table.postId, table.userId),
+  postIdx: index("post_idx").on(table.postId),
+  userIdx: index("user_idx").on(table.userId),
+}));
+
+export type PostReaction = typeof postReactions.$inferSelect;
+export type InsertPostReaction = typeof postReactions.$inferInsert;

@@ -2,7 +2,10 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Heart, MessageCircle, Users } from "lucide-react";
+import { MessageCircle, Users } from "lucide-react";
+import ReactionPicker from "@/components/ReactionPicker";
+import ReactionCounts from "@/components/ReactionCounts";
+import { trpc } from "@/lib/trpc";
 import { Link } from "wouter";
 import { formatDistanceToNow } from "date-fns";
 import { ptBR } from "date-fns/locale";
@@ -25,7 +28,8 @@ interface PostCardProps {
   isLiked?: boolean;
 }
 
-export default function PostCard({ post, onLike, isLiked = false }: PostCardProps) {
+export default function PostCard({ post }: PostCardProps) {
+  const { data: currentReaction } = trpc.post.getUserReaction.useQuery({ postId: post.id });
   const timeAgo = formatDistanceToNow(new Date(post.createdAt), {
     addSuffix: true,
     locale: ptBR,
@@ -75,18 +79,13 @@ export default function PostCard({ post, onLike, isLiked = false }: PostCardProp
           />
         )}
       </CardContent>
-
-      <CardFooter className="pt-0 pb-4">
-        <div className="flex items-center gap-4 w-full">
-          <Button
-            variant={isLiked ? "default" : "ghost"}
-            size="sm"
-            className="gap-2"
-            onClick={() => onLike?.(post.id)}
-          >
-            <Heart className={`w-4 h-4 ${isLiked ? "fill-current" : ""}`} />
-            {post.likeCount > 0 && <span>{post.likeCount}</span>}
-          </Button>
+      
+      <CardFooter className="pt-3 pb-4">
+        <div className="flex items-center justify-between w-full">
+          <div className="flex items-center gap-2">
+            <ReactionPicker postId={post.id} currentReaction={currentReaction} />
+            <ReactionCounts postId={post.id} />
+          </div>
 
           <Link href={`/community/${post.communityId}?postId=${post.id}`}>
             <Button variant="ghost" size="sm" className="gap-2">

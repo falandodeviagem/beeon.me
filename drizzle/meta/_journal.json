@@ -15,6 +15,20 @@
       "when": 1765630900791,
       "tag": "0001_busy_centennial",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "5",
+      "when": 1765726327348,
+      "tag": "0002_glamorous_bloodaxe",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "5",
+      "when": 1765726474934,
+      "tag": "0003_gifted_sauron",
+      "breakpoints": true
     }
   ]
 }

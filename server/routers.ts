@@ -7,6 +7,7 @@ import { TRPCError } from "@trpc/server";
 import { nanoid } from "nanoid";
 import * as db from "./db";
 import { createCommunityCheckoutSession, hasActiveSubscription } from "./stripe";
+import { storagePut } from "./storage";
 
 // Admin-only procedure
 const adminProcedure = protectedProcedure.use(({ ctx, next }) => {
@@ -248,6 +249,20 @@ export const appRouter = router({
   }),
 
   post: router({
+    uploadImage: protectedProcedure
+      .input(z.object({
+        file: z.string(), // base64 encoded
+        filename: z.string(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const buffer = Buffer.from(input.file, 'base64');
+        const ext = input.filename.split('.').pop() || 'jpg';
+        const key = `posts/${ctx.user.id}/${Date.now()}-${Math.random().toString(36).substring(7)}.${ext}`;
+        
+        const { url } = await storagePut(key, buffer, `image/${ext}`);
+        return { url };
+      }),
+
     list: publicProcedure
       .input(z.object({ communityId: z.number() }))
       .query(async ({ input }) => {
@@ -267,6 +282,7 @@ export const appRouter = router({
         communityId: z.number(),
         content: z.string().min(1),
         imageUrl: z.string().optional(),
+        imageUrls: z.array(z.string()).optional(),
       }))
       .mutation(async ({ ctx, input }) => {
         const isMember = await db.isCommunityMember(input.communityId, ctx.user.id);
@@ -346,6 +362,62 @@ export const appRouter = router({
       .input(z.object({ postId: z.number() }))
       .query(async ({ ctx, input }) => {
         return await db.hasUserLikedPost(input.postId, ctx.user.id);
+      }),
+
+    // Reactions
+    react: protectedProcedure
+      .input(z.object({
+        postId: z.number(),
+        reactionType: z.enum(["love", "like", "laugh", "wow", "sad", "angry"]),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const currentReaction = await db.getUserReaction(input.postId, ctx.user.id);
+        
+        if (currentReaction?.reactionType === input.reactionType) {
+          // Remove reaction if clicking the same one
+          await db.removePostReaction(input.postId, ctx.user.id);
+          return { removed: true };
+        } else {
+          // Add or change reaction
+          await db.addPostReaction(input.postId, ctx.user.id, input.reactionType);
+          
+          // Award points to post author
+          const post = await db.getPostById(input.postId);
+          if (post && post.authorId !== ctx.user.id) {
+            await db.recordGamificationAction({
+              userId: post.authorId,
+              actionType: 'receive_reaction',
+              points: 2,
+              relatedId: input.postId,
+            });
+            
+            // Create notification
+            await db.createNotification({
+              userId: post.authorId,
+              type: 'like',
+              title: 'Nova reação!',
+              message: `${ctx.user.name || 'Alguém'} reagiu ao seu post`,
+              relatedId: input.postId,
+              relatedType: 'post',
+            });
+          }
+          
+          return { added: true, reactionType: input.reactionType };
+        }
+      }),
+
+    getReactions: publicProcedure
+      .input(z.object({ postId: z.number() }))
+      .query(async ({ input }) => {
+        const counts = await db.getPostReactionCounts(input.postId);
+        return counts;
+      }),
+
+    getUserReaction: protectedProcedure
+      .input(z.object({ postId: z.number() }))
+      .query(async ({ ctx, input }) => {
+        const reaction = await db.getUserReaction(input.postId, ctx.user.id);
+        return reaction?.reactionType || null;
       }),
   }),
 
@@ -512,6 +584,32 @@ export const appRouter = router({
       .input(z.object({ userId: z.number() }))
       .mutation(async ({ input }) => {
         await db.unbanUser(input.userId);
+        return { success: true };
+      }),
+  }),
+
+  notification: router({
+    list: protectedProcedure
+      .input(z.object({ limit: z.number().default(20) }))
+      .query(async ({ ctx, input }) => {
+        return await db.getUserNotifications(ctx.user.id, input.limit);
+      }),
+
+    unreadCount: protectedProcedure
+      .query(async ({ ctx }) => {
+        return await db.getUnreadNotificationCount(ctx.user.id);
+      }),
+
+    markAsRead: protectedProcedure
+      .input(z.object({ id: z.number() }))
+      .mutation(async ({ input }) => {
+        await db.markNotificationAsRead(input.id);
+        return { success: true };
+      }),
+
+    markAllAsRead: protectedProcedure
+      .mutation(async ({ ctx }) => {
+        await db.markAllNotificationsAsRead(ctx.user.id);
         return { success: true };
       }),
   }),

@@ -11,7 +11,9 @@ import {
   badges, InsertBadge,
   userBadges, InsertUserBadge,
   reports, InsertReport,
-  gamificationActions, InsertGamificationAction
+  gamificationActions, InsertGamificationAction,
+  notifications, InsertNotification,
+  postReactions, InsertPostReaction
 } from "../drizzle/schema";
 import { ENV } from './_core/env';
 
@@ -748,4 +750,140 @@ export async function searchUsers(query: string, limit: number = 20) {
     )
     .orderBy(desc(users.points))
     .limit(limit);
+}
+
+// ============================================
+// NOTIFICATIONS
+// ============================================
+
+export async function createNotification(notification: InsertNotification) {
+  const db = await getDb();
+  if (!db) return 0;
+
+  const result = await db.insert(notifications).values(notification);
+  return Number((result as any).insertId || 0);
+}
+
+export async function getUserNotifications(userId: number, limit: number = 20) {
+  const db = await getDb();
+  if (!db) return [];
+
+  return await db.select()
+    .from(notifications)
+    .where(eq(notifications.userId, userId))
+    .orderBy(desc(notifications.createdAt))
+    .limit(limit);
+}
+
+export async function getUnreadNotificationCount(userId: number) {
+  const db = await getDb();
+  if (!db) return 0;
+
+  const result = await db.select({ count: sql<number>`count(*)` })
+    .from(notifications)
+    .where(and(
+      eq(notifications.userId, userId),
+      eq(notifications.isRead, false)
+    ));
+
+  return result[0]?.count || 0;
+}
+
+export async function markNotificationAsRead(notificationId: number) {
+  const db = await getDb();
+  if (!db) return;
+
+  await db.update(notifications)
+    .set({ isRead: true })
+    .where(eq(notifications.id, notificationId));
+}
+
+export async function markAllNotificationsAsRead(userId: number) {
+  const db = await getDb();
+  if (!db) return;
+
+  await db.update(notifications)
+    .set({ isRead: true })
+    .where(and(
+      eq(notifications.userId, userId),
+      eq(notifications.isRead, false)
+    ));
+}
+
+// ============================================
+// POST REACTIONS
+// ============================================
+
+export async function addPostReaction(postId: number, userId: number, reactionType: string) {
+  const db = await getDb();
+  if (!db) return;
+
+  // Remove existing reaction if any
+  await db.delete(postReactions)
+    .where(and(
+      eq(postReactions.postId, postId),
+      eq(postReactions.userId, userId)
+    ));
+
+  // Add new reaction
+  await db.insert(postReactions).values({
+    postId,
+    userId,
+    reactionType: reactionType as any,
+  });
+}
+
+export async function removePostReaction(postId: number, userId: number) {
+  const db = await getDb();
+  if (!db) return;
+
+  await db.delete(postReactions)
+    .where(and(
+      eq(postReactions.postId, postId),
+      eq(postReactions.userId, userId)
+    ));
+}
+
+export async function getPostReactions(postId: number) {
+  const db = await getDb();
+  if (!db) return [];
+
+  return await db.select()
+    .from(postReactions)
+    .where(eq(postReactions.postId, postId));
+}
+
+export async function getPostReactionCounts(postId: number) {
+  const db = await getDb();
+  if (!db) return {};
+
+  const reactions = await db.select({
+    reactionType: postReactions.reactionType,
+    count: sql<number>`count(*)`,
+  })
+    .from(postReactions)
+    .where(eq(postReactions.postId, postId))
+    .groupBy(postReactions.reactionType);
+
+  const counts: Record<string, number> = {};
+  reactions.forEach(r => {
+    counts[r.reactionType] = r.count;
+  });
+
+  return counts;
+}
+
+export async function getUserReaction(postId: number, userId: number) {
+  const db = await getDb();
+  if (!db) return null;
+
+  const result = await db.select()
+    .from(postReactions)
+    .where(and(
+      eq(postReactions.postId, postId),
+      eq(postReactions.userId, userId)
+    ))
+    .limit(1);
+
+  return result[0] || null;
 }

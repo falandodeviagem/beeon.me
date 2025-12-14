@@ -116,3 +116,32 @@
 - [x] Frontend: Loading spinner ao carregar mais posts
 - [x] Frontend: Mensagem de fim quando não houver mais posts
 - [x] Testes para paginação infinita
+
+## 16. Upload de Imagens em Posts
+- [x] Backend: Procedure de upload para S3
+- [x] Backend: Suporte a múltiplas imagens por post
+- [x] Frontend: Componente ImageUpload com drag-and-drop
+- [x] Frontend: Preview de imagens antes do upload
+- [x] Frontend: Barra de progresso durante upload
+- [x] Frontend: Limite de 5 imagens por post
+- [x] Integrar upload no formulário de criação de posts
+
+## 17. Sistema de Notificações Push
+- [x] Backend: Tabela de notificações no schema
+- [x] Backend: Helpers para criar notificações
+- [x] Backend: Procedure para listar notificações
+- [x] Backend: Procedure para marcar como lida
+- [x] Frontend: Badge contador na navegação
+- [x] Frontend: Painel dropdown de notificações
+- [x] Frontend: Marcar como lida ao clicar
+- [x] Integrar notificações em ações (like, comentário, badge)
+
+## 18. Reações Diversas nos Posts
+- [x] Backend: Tabela de reações no schema
+- [x] Backend: Enum com 6 tipos de reações
+- [x] Backend: Procedure para adicionar/remover reação
+- [x] Backend: Contadores por tipo de reação
+- [x] Frontend: Seletor de reações com emojis
+- [x] Frontend: Mostrar contadores por tipo
+- [x] Frontend: Lista de quem reagiu
+- [x] Substituir sistema de likes por reações

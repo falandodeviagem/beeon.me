@@ -10,6 +10,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Home, Users, Trophy, UserPlus, Shield, LogOut, User, Search } from "lucide-react";
+import NotificationPanel from "@/components/NotificationPanel";
 import { Link, useLocation } from "wouter";
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
@@ -94,6 +95,9 @@ export default function MainLayout({ children }: MainLayoutProps) {
                   <Trophy className="w-4 h-4 text-primary" />
                   <span className="text-sm font-medium">{user.points || 0} pts</span>
                 </div>
+                
+                <NotificationPanel />
+                
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <Button variant="ghost" className="relative h-10 w-10 rounded-full">

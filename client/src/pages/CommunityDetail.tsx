@@ -9,7 +9,8 @@ import { Separator } from "@/components/ui/separator";
 import { trpc } from "@/lib/trpc";
 import { useState } from "react";
 import { toast } from "sonner";
-import { Users, Lock, Heart, MessageCircle, Send, MoreVertical, Flag } from "lucide-react";
+import { Users, Lock, Heart, MessageCircle, Send, MoreVertical, Flag, Image as ImageIcon } from "lucide-react";
+import ImageUpload from "@/components/ImageUpload";
 import { useRoute } from "wouter";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
@@ -25,6 +26,7 @@ export default function CommunityDetail() {
   const communityId = params?.id ? parseInt(params.id) : 0;
 
   const [postContent, setPostContent] = useState("");
+  const [postImages, setPostImages] = useState<string[]>([]);
   const [commentContent, setCommentContent] = useState<Record<number, string>>({});
 
   const { data: community, isLoading: communityLoading } = trpc.community.getById.useQuery(
@@ -67,6 +69,7 @@ export default function CommunityDetail() {
     onSuccess: () => {
       toast.success("Post criado!");
       setPostContent("");
+      setPostImages([]);
       utils.post.list.invalidate();
     },
     onError: (error) => {
@@ -150,6 +153,7 @@ export default function CommunityDetail() {
     createPostMutation.mutate({
       communityId,
       content: postContent,
+      imageUrls: postImages.length > 0 ? postImages : undefined,
     });
   };
 
@@ -232,6 +236,12 @@ export default function CommunityDetail() {
                 onChange={(e) => setPostContent(e.target.value)}
                 rows={3}
               />
+              
+              <ImageUpload 
+                onImagesChange={setPostImages}
+                maxImages={5}
+              />
+              
               <div className="flex justify-end">
                 <Button
                   onClick={handleCreatePost}

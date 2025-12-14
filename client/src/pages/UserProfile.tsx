@@ -129,16 +129,20 @@ export default function UserProfile() {
                     <Award className="w-4 h-4 text-purple-500" />
                     <span className="font-semibold">Nível {user.level || 1}</span>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <Users className="w-4 h-4 text-blue-500" />
-                    <span className="font-semibold">{followerCount}</span>
-                    <span className="text-muted-foreground">seguidores</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Users className="w-4 h-4 text-green-500" />
-                    <span className="font-semibold">{followingCount}</span>
-                    <span className="text-muted-foreground">seguindo</span>
-                  </div>
+                  <Link href={`/user/${parsedUserId}/followers`}>
+                    <div className="flex items-center gap-2 hover:underline cursor-pointer">
+                      <Users className="w-4 h-4 text-blue-500" />
+                      <span className="font-semibold">{followerCount}</span>
+                      <span className="text-muted-foreground">seguidores</span>
+                    </div>
+                  </Link>
+                  <Link href={`/user/${parsedUserId}/following`}>
+                    <div className="flex items-center gap-2 hover:underline cursor-pointer">
+                      <Users className="w-4 h-4 text-green-500" />
+                      <span className="font-semibold">{followingCount}</span>
+                      <span className="text-muted-foreground">seguindo</span>
+                    </div>
+                  </Link>
                   <div className="flex items-center gap-2">
                     <MessageCircle className="w-4 h-4 text-orange-500" />
                     <span className="font-semibold">{stats?.postCount || 0}</span>

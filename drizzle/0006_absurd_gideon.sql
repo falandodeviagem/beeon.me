@@ -1,0 +1,1 @@
+ALTER TABLE `posts` ADD `shareCount` int DEFAULT 0 NOT NULL;

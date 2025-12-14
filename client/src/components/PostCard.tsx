@@ -2,13 +2,17 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { MessageCircle, Users } from "lucide-react";
+import { MessageCircle, Users, Share2, Check } from "lucide-react";
 import ReactionPicker from "@/components/ReactionPicker";
 import ReactionCounts from "@/components/ReactionCounts";
 import { trpc } from "@/lib/trpc";
 import { Link } from "wouter";
 import { formatDistanceToNow } from "date-fns";
 import { ptBR } from "date-fns/locale";
+import { useState } from "react";
+import { toast } from "sonner";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
 
 interface PostCardProps {
   post: {
@@ -23,13 +27,21 @@ interface PostCardProps {
     communityName: string;
     likeCount: number;
     commentCount: number;
+    shareCount?: number;
   };
   onLike?: (postId: number) => void;
   isLiked?: boolean;
 }
 
 export default function PostCard({ post }: PostCardProps) {
+  const [showShareDialog, setShowShareDialog] = useState(false);
+  const [copied, setCopied] = useState(false);
   const { data: currentReaction } = trpc.post.getUserReaction.useQuery({ postId: post.id });
+  const shareMutation = trpc.post.share.useMutation({
+    onSuccess: () => {
+      toast.success("Post compartilhado!");
+    },
+  });
   const timeAgo = formatDistanceToNow(new Date(post.createdAt), {
     addSuffix: true,
     locale: ptBR,
@@ -87,14 +99,62 @@ export default function PostCard({ post }: PostCardProps) {
             <ReactionCounts postId={post.id} />
           </div>
 
-          <Link href={`/community/${post.communityId}?postId=${post.id}`}>
-            <Button variant="ghost" size="sm" className="gap-2">
-              <MessageCircle className="w-4 h-4" />
-              {post.commentCount > 0 && <span>{post.commentCount}</span>}
+          <div className="flex items-center gap-1">
+            <Link href={`/community/${post.communityId}?postId=${post.id}`}>
+              <Button variant="ghost" size="sm" className="gap-2">
+                <MessageCircle className="w-4 h-4" />
+                {post.commentCount > 0 && <span>{post.commentCount}</span>}
+              </Button>
+            </Link>
+            
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              className="gap-2"
+              onClick={() => {
+                setShowShareDialog(true);
+                shareMutation.mutate({ postId: post.id });
+              }}
+            >
+              <Share2 className="w-4 h-4" />
+              {(post.shareCount || 0) > 0 && <span>{post.shareCount}</span>}
             </Button>
-          </Link>
+          </div>
         </div>
       </CardFooter>
+      
+      <Dialog open={showShareDialog} onOpenChange={setShowShareDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Compartilhar Post</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <p className="text-sm text-muted-foreground">
+              Copie o link abaixo para compartilhar este post:
+            </p>
+            <div className="flex gap-2">
+              <Input
+                readOnly
+                value={`${window.location.origin}/community/${post.communityId}?postId=${post.id}`}
+                onClick={(e) => e.currentTarget.select()}
+              />
+              <Button
+                onClick={() => {
+                  navigator.clipboard.writeText(
+                    `${window.location.origin}/community/${post.communityId}?postId=${post.id}`
+                  );
+                  setCopied(true);
+                  setTimeout(() => setCopied(false), 2000);
+                  toast.success("Link copiado!");
+                }}
+                className="gap-2"
+              >
+                {copied ? <Check className="w-4 h-4" /> : "Copiar"}
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </Card>
   );
 }

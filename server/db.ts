@@ -14,7 +14,9 @@ import {
   gamificationActions, InsertGamificationAction,
   notifications, InsertNotification,
   postReactions, InsertPostReaction,
-  userFollows, InsertUserFollow
+  userFollows, InsertUserFollow,
+  conversations, InsertConversation,
+  messages, InsertMessage
 } from "../drizzle/schema";
 import { ENV } from './_core/env';
 
@@ -937,6 +939,7 @@ export async function getFollowers(userId: number) {
     id: users.id,
     name: users.name,
     avatarUrl: users.avatarUrl,
+    bio: users.bio,
     points: users.points,
     level: users.level,
     followedAt: userFollows.createdAt,
@@ -955,6 +958,7 @@ export async function getFollowing(userId: number) {
     id: users.id,
     name: users.name,
     avatarUrl: users.avatarUrl,
+    bio: users.bio,
     points: users.points,
     level: users.level,
     followedAt: userFollows.createdAt,
@@ -1079,4 +1083,182 @@ export async function getTrendingPosts(limit: number = 5) {
     .where(sql`${posts.createdAt} >= ${oneDayAgo}`)
     .orderBy(desc(sql<number>`(SELECT COUNT(*) FROM post_reactions WHERE postId = ${posts.id} AND createdAt >= ${oneDayAgo})`))
     .limit(limit);
+}
+
+// ============================================
+// MESSAGES
+// ============================================
+
+export async function getOrCreateConversation(user1Id: number, user2Id: number) {
+  const db = await getDb();
+  if (!db) return null;
+
+  // Ensure consistent ordering (smaller ID first)
+  const [smallerId, largerId] = user1Id < user2Id ? [user1Id, user2Id] : [user2Id, user1Id];
+
+  // Try to find existing conversation
+  const existing = await db.select()
+    .from(conversations)
+    .where(and(
+      eq(conversations.user1Id, smallerId),
+      eq(conversations.user2Id, largerId)
+    ))
+    .limit(1);
+
+  if (existing.length > 0) {
+    return existing[0];
+  }
+
+  // Create new conversation
+  const result = await db.insert(conversations).values({
+    user1Id: smallerId,
+    user2Id: largerId,
+  });
+
+  const newConversation = await db.select()
+    .from(conversations)
+    .where(eq(conversations.id, Number(result[0].insertId)))
+    .limit(1);
+
+  return newConversation[0] || null;
+}
+
+export async function getUserConversations(userId: number) {
+  const db = await getDb();
+  if (!db) return [];
+
+  // Get all conversations for the user
+  const convos = await db.select()
+    .from(conversations)
+    .where(or(
+      eq(conversations.user1Id, userId),
+      eq(conversations.user2Id, userId)
+    ))
+    .orderBy(desc(conversations.lastMessageAt));
+
+  // For each conversation, get the other user's info
+  const result = [];
+  for (const convo of convos) {
+    const otherUserId = convo.user1Id === userId ? convo.user2Id : convo.user1Id;
+    const otherUser = await db.select({
+      id: users.id,
+      name: users.name,
+      avatarUrl: users.avatarUrl,
+    })
+      .from(users)
+      .where(eq(users.id, otherUserId))
+      .limit(1);
+
+    const unreadCountResult = await db.select({ count: sql<number>`count(*)` })
+      .from(messages)
+      .where(and(
+        eq(messages.conversationId, convo.id),
+        sql`${messages.senderId} != ${userId}`,
+        eq(messages.isRead, false)
+      ));
+
+    result.push({
+      id: convo.id,
+      user1Id: convo.user1Id,
+      user2Id: convo.user2Id,
+      lastMessageAt: convo.lastMessageAt,
+      otherUserId,
+      otherUserName: otherUser[0]?.name || null,
+      otherUserAvatar: otherUser[0]?.avatarUrl || null,
+      unreadCount: unreadCountResult[0]?.count || 0,
+    });
+  }
+
+  return result;
+}
+
+export async function getConversationMessages(conversationId: number, limit: number = 50) {
+  const db = await getDb();
+  if (!db) return [];
+
+  return await db.select({
+    id: messages.id,
+    conversationId: messages.conversationId,
+    senderId: messages.senderId,
+    content: messages.content,
+    isRead: messages.isRead,
+    createdAt: messages.createdAt,
+    senderName: users.name,
+    senderAvatar: users.avatarUrl,
+  })
+    .from(messages)
+    .innerJoin(users, eq(messages.senderId, users.id))
+    .where(eq(messages.conversationId, conversationId))
+    .orderBy(desc(messages.createdAt))
+    .limit(limit);
+}
+
+export async function sendMessage(conversationId: number, senderId: number, content: string) {
+  const db = await getDb();
+  if (!db) return null;
+
+  const result = await db.insert(messages).values({
+    conversationId,
+    senderId,
+    content,
+  });
+
+  // Update conversation lastMessageAt
+  await db.update(conversations)
+    .set({ lastMessageAt: new Date() })
+    .where(eq(conversations.id, conversationId));
+
+  return Number(result[0].insertId);
+}
+
+export async function markMessagesAsRead(conversationId: number, userId: number) {
+  const db = await getDb();
+  if (!db) return;
+
+  await db.update(messages)
+    .set({ isRead: true })
+    .where(and(
+      eq(messages.conversationId, conversationId),
+      sql`${messages.senderId} != ${userId}`,
+      eq(messages.isRead, false)
+    ));
+}
+
+export async function getUnreadMessageCount(userId: number) {
+  const db = await getDb();
+  if (!db) return 0;
+
+  const userConvos = await db.select({ id: conversations.id })
+    .from(conversations)
+    .where(or(
+      eq(conversations.user1Id, userId),
+      eq(conversations.user2Id, userId)
+    ));
+
+  if (userConvos.length === 0) return 0;
+
+  const convoIds = userConvos.map(c => c.id);
+
+  const result = await db.select({ count: sql<number>`count(*)` })
+    .from(messages)
+    .where(and(
+      inArray(messages.conversationId, convoIds),
+      sql`${messages.senderId} != ${userId}`,
+      eq(messages.isRead, false)
+    ));
+
+  return result[0]?.count || 0;
+}
+
+// ============================================
+// SHARE
+// ============================================
+
+export async function sharePost(postId: number) {
+  const db = await getDb();
+  if (!db) return;
+
+  await db.update(posts)
+    .set({ shareCount: sql`${posts.shareCount} + 1` })
+    .where(eq(posts.id, postId));
 }

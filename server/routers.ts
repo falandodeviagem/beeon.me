@@ -406,11 +406,17 @@ export const appRouter = router({
         }
       }),
 
-    getReactions: publicProcedure
+     getReactions: publicProcedure
       .input(z.object({ postId: z.number() }))
       .query(async ({ input }) => {
-        const counts = await db.getPostReactionCounts(input.postId);
-        return counts;
+        return await db.getPostReactions(input.postId);
+      }),
+
+    share: protectedProcedure
+      .input(z.object({ postId: z.number() }))
+      .mutation(async ({ input }) => {
+        await db.sharePost(input.postId);
+        return { success: true };
       }),
 
     getUserReaction: protectedProcedure
@@ -717,6 +723,46 @@ export const appRouter = router({
       .input(z.object({ limit: z.number().default(5) }))
       .query(async ({ input }) => {
         return await db.getTrendingPosts(input.limit);
+      }),
+  }),
+
+  messages: router({
+    conversations: protectedProcedure
+      .query(async ({ ctx }) => {
+        return await db.getUserConversations(ctx.user.id);
+      }),
+
+    getOrCreate: protectedProcedure
+      .input(z.object({ otherUserId: z.number() }))
+      .mutation(async ({ ctx, input }) => {
+        return await db.getOrCreateConversation(ctx.user.id, input.otherUserId);
+      }),
+
+    list: protectedProcedure
+      .input(z.object({ conversationId: z.number() }))
+      .query(async ({ input }) => {
+        return await db.getConversationMessages(input.conversationId);
+      }),
+
+    send: protectedProcedure
+      .input(z.object({
+        conversationId: z.number(),
+        content: z.string().min(1),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        return await db.sendMessage(input.conversationId, ctx.user.id, input.content);
+      }),
+
+    markAsRead: protectedProcedure
+      .input(z.object({ conversationId: z.number() }))
+      .mutation(async ({ ctx, input }) => {
+        await db.markMessagesAsRead(input.conversationId, ctx.user.id);
+        return { success: true };
+      }),
+
+    unreadCount: protectedProcedure
+      .query(async ({ ctx }) => {
+        return await db.getUnreadMessageCount(ctx.user.id);
       }),
   }),
 });

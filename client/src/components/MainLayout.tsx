@@ -9,7 +9,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Home, Users, Trophy, UserPlus, Shield, LogOut, User, Search } from "lucide-react";
+import { Home, Users, Trophy, UserPlus, Shield, LogOut, User, Search, Mail } from "lucide-react";
 import NotificationPanel from "@/components/NotificationPanel";
 import { Link, useLocation } from "wouter";
 import { trpc } from "@/lib/trpc";
@@ -40,6 +40,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
     { href: "/search", label: "Buscar", icon: Search },
     { href: "/leaderboard", label: "Ranking", icon: Trophy },
     { href: "/invites", label: "Convites", icon: UserPlus },
+    { href: "/messages", label: "Mensagens", icon: Mail },
   ];
 
   if (user?.role === "admin") {

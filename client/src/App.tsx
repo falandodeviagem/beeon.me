@@ -2,6 +2,9 @@ import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import NotFound from "@/pages/NotFound";
 import UserProfile from "@/pages/UserProfile";
+import Followers from "@/pages/Followers";
+import Following from "@/pages/Following";
+import Messages from "@/pages/Messages";
 import { Route, Switch } from "wouter";
 import ErrorBoundary from "./components/ErrorBoundary";
 import { ThemeProvider } from "./contexts/ThemeContext";
@@ -27,6 +30,9 @@ function Router() {
       <Route path="/invites" component={Invites} />
       <Route path="/search" component={Search} />
       <Route path="/user/:userId" component={UserProfile} />
+      <Route path="/user/:userId/followers" component={Followers} />
+      <Route path="/user/:userId/following" component={Following} />
+      <Route path="/messages" component={Messages} />
       <Route path="/moderation" component={Moderation} />
       <Route path="/404" component={NotFound} />
       <Route component={NotFound} />

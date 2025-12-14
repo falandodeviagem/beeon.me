@@ -175,3 +175,36 @@
 - [x] Frontend: Seção de comunidades em alta
 - [x] Frontend: Seção de posts populares
 - [x] Atualização periódica dos trending
+
+## 22. Páginas de Seguidores/Seguindo
+- [x] Backend: Procedure para listar seguidores de um usuário
+- [x] Backend: Procedure para listar usuários que um usuário segue
+- [x] Frontend: Página /user/:userId/followers
+- [x] Frontend: Página /user/:userId/following
+- [x] Frontend: Cards com avatar, nome, bio
+- [x] Frontend: Botões de seguir em cada card
+- [x] Links no perfil público
+
+## 23. Sistema de Mensagens Diretas
+- [x] Backend: Tabela de conversas no schema
+- [x] Backend: Tabela de mensagens no schema
+- [x] Backend: Procedure para criar conversa
+- [x] Backend: Procedure para enviar mensagem
+- [x] Backend: Procedure para listar conversas
+- [x] Backend: Procedure para listar mensagens de uma conversa
+- [x] Frontend: Página de mensagens /messages
+- [x] Frontend: Lista de conversas na sidebar
+- [x] Frontend: Interface de chat com mensagens
+- [x] Frontend: Input de envio de mensagem
+- [x] Frontend: Notificação de novas mensagens
+- [x] Polling para atualização em tempo real
+
+## 24. Compartilhamento de Posts
+- [x] Backend: Campo shareCount no schema
+- [x] Backend: Procedure para compartilhar post
+- [x] Backend: Contador de compartilhamentos
+- [x] Frontend: Botão de compartilhar em PostCard
+- [x] Frontend: Modal com link copiável
+- [x] Frontend: Feedback visual ao copiar
+- [x] Frontend: Mostrar contador de shares
+- [x] Incremento automático ao compartilhar

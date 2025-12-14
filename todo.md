@@ -323,3 +323,10 @@
 - [x] Filtrar comunidades já participadas
 - [x] Limitar a top 6 recomendações
 - [x] Criar testes vitest
+
+## 39. Botão "Ver Mais" em Comunidades Recomendadas
+- [x] Adicionar estado de expansão (expanded) com useState
+- [x] Implementar botão toggle "Ver mais" / "Ver menos"
+- [x] Carregar 12 comunidades quando expandido (6 inicialmente)
+- [x] Adicionar animação suave na transição
+- [x] Ícone ChevronDown/ChevronUp no botão

@@ -1,14 +1,16 @@
 import { trpc } from "@/lib/trpc";
 import { Link } from "wouter";
-import { Users, TrendingUp, Sparkles } from "lucide-react";
+import { Users, TrendingUp, Sparkles, ChevronDown, ChevronUp } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useState } from "react";
 
 export function RecommendedCommunities() {
+  const [expanded, setExpanded] = useState(false);
   const { data: recommendations, isLoading } = trpc.community.getRecommended.useQuery({
-    limit: 6,
+    limit: expanded ? 12 : 6,
   });
 
   if (isLoading) {
@@ -55,7 +57,7 @@ export function RecommendedCommunities() {
       </CardHeader>
       <CardContent>
         <div className="space-y-3">
-          {recommendations.map((community) => (
+          {recommendations.slice(0, expanded ? 12 : 6).map((community) => (
             <Link key={community.id} href={`/community/${community.id}`}>
               <div className="group cursor-pointer rounded-lg border border-border bg-card p-4 transition-all hover:border-primary hover:shadow-md">
                 <div className="flex items-start gap-3">
@@ -105,6 +107,26 @@ export function RecommendedCommunities() {
             </Link>
           ))}
         </div>
+        
+        {recommendations.length > 6 && (
+          <Button
+            variant="ghost"
+            className="w-full mt-4 gap-2"
+            onClick={() => setExpanded(!expanded)}
+          >
+            {expanded ? (
+              <>
+                <ChevronUp className="w-4 h-4" />
+                Ver menos
+              </>
+            ) : (
+              <>
+                <ChevronDown className="w-4 h-4" />
+                Ver mais ({recommendations.length - 6} comunidades)
+              </>
+            )}
+          </Button>
+        )}
       </CardContent>
     </Card>
   );

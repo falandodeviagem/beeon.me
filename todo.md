@@ -145,3 +145,33 @@
 - [x] Frontend: Mostrar contadores por tipo
 - [x] Frontend: Lista de quem reagiu
 - [x] Substituir sistema de likes por reações
+
+## 19. Página de Perfil Público
+- [x] Backend: Query para buscar posts do usuário
+- [x] Backend: Query para buscar badges do usuário
+- [x] Backend: Query para buscar comunidades do usuário
+- [x] Frontend: Página de perfil público completa
+- [x] Frontend: Seção de posts do usuário
+- [x] Frontend: Seção de badges conquistados
+- [x] Frontend: Estatísticas (pontos, nível, posts, comentários)
+- [x] Frontend: Lista de comunidades que participa
+- [x] Rota /user/:userId
+
+## 20. Sistema de Seguir Usuários
+- [x] Backend: Tabela de follows no schema
+- [x] Backend: Helpers de seguir/deixar de seguir
+- [x] Backend: Query de seguidores e seguindo
+- [x] Backend: Feed de posts de usuários seguidos
+- [x] Frontend: Botão seguir/deixar de seguir
+- [x] Frontend: Contador de seguidores/seguindo
+- [x] Frontend: Lista de seguidores
+- [x] Frontend: Lista de seguindo
+- [x] Notificação ao ganhar seguidor
+
+## 21. Trending Topics
+- [x] Backend: Query de comunidades em alta (últimos 7 dias)
+- [x] Backend: Query de posts mais reagidos (últimas 24h)
+- [x] Frontend: Componente TrendingTopics na sidebar
+- [x] Frontend: Seção de comunidades em alta
+- [x] Frontend: Seção de posts populares
+- [x] Atualização periódica dos trending

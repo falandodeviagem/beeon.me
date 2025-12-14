@@ -1,6 +1,7 @@
 import { useAuth } from "@/_core/hooks/useAuth";
 import MainLayout from "@/components/MainLayout";
 import PostCard from "@/components/PostCard";
+import TrendingTopics from "@/components/TrendingTopics";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -328,23 +329,7 @@ export default function Home() {
               </CardContent>
             </Card>
 
-            {communities && communities.length > 0 && (
-              <Card>
-                <CardContent className="pt-6 space-y-3">
-                  <h3 className="font-semibold mb-3">Comunidades em Alta</h3>
-                  {communities.slice(0, 3).map((community) => (
-                    <Link key={community.id} href={`/community/${community.id}`}>
-                      <a className="block p-3 rounded-lg hover:bg-accent/5 transition-colors">
-                        <p className="font-medium line-clamp-1">{community.name}</p>
-                        <p className="text-sm text-muted-foreground">
-                          {community.memberCount} membros
-                        </p>
-                      </a>
-                    </Link>
-                  ))}
-                </CardContent>
-              </Card>
-            )}
+            <TrendingTopics />
           </div>
         </div>
       </div>

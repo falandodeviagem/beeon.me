@@ -13,7 +13,8 @@ import {
   reports, InsertReport,
   gamificationActions, InsertGamificationAction,
   notifications, InsertNotification,
-  postReactions, InsertPostReaction
+  postReactions, InsertPostReaction,
+  userFollows, InsertUserFollow
 } from "../drizzle/schema";
 import { ENV } from './_core/env';
 
@@ -886,4 +887,196 @@ export async function getUserReaction(postId: number, userId: number) {
     .limit(1);
 
   return result[0] || null;
+}
+
+// ============================================
+// USER FOLLOWS
+// ============================================
+
+export async function followUser(followerId: number, followingId: number) {
+  const db = await getDb();
+  if (!db) return;
+
+  await db.insert(userFollows).values({
+    followerId,
+    followingId,
+  });
+}
+
+export async function unfollowUser(followerId: number, followingId: number) {
+  const db = await getDb();
+  if (!db) return;
+
+  await db.delete(userFollows)
+    .where(and(
+      eq(userFollows.followerId, followerId),
+      eq(userFollows.followingId, followingId)
+    ));
+}
+
+export async function isFollowing(followerId: number, followingId: number) {
+  const db = await getDb();
+  if (!db) return false;
+
+  const result = await db.select()
+    .from(userFollows)
+    .where(and(
+      eq(userFollows.followerId, followerId),
+      eq(userFollows.followingId, followingId)
+    ))
+    .limit(1);
+
+  return result.length > 0;
+}
+
+export async function getFollowers(userId: number) {
+  const db = await getDb();
+  if (!db) return [];
+
+  return await db.select({
+    id: users.id,
+    name: users.name,
+    avatarUrl: users.avatarUrl,
+    points: users.points,
+    level: users.level,
+    followedAt: userFollows.createdAt,
+  })
+    .from(userFollows)
+    .innerJoin(users, eq(userFollows.followerId, users.id))
+    .where(eq(userFollows.followingId, userId))
+    .orderBy(desc(userFollows.createdAt));
+}
+
+export async function getFollowing(userId: number) {
+  const db = await getDb();
+  if (!db) return [];
+
+  return await db.select({
+    id: users.id,
+    name: users.name,
+    avatarUrl: users.avatarUrl,
+    points: users.points,
+    level: users.level,
+    followedAt: userFollows.createdAt,
+  })
+    .from(userFollows)
+    .innerJoin(users, eq(userFollows.followingId, users.id))
+    .where(eq(userFollows.followerId, userId))
+    .orderBy(desc(userFollows.createdAt));
+}
+
+export async function getFollowerCount(userId: number) {
+  const db = await getDb();
+  if (!db) return 0;
+
+  const result = await db.select({ count: sql<number>`count(*)` })
+    .from(userFollows)
+    .where(eq(userFollows.followingId, userId));
+
+  return result[0]?.count || 0;
+}
+
+export async function getFollowingCount(userId: number) {
+  const db = await getDb();
+  if (!db) return 0;
+
+  const result = await db.select({ count: sql<number>`count(*)` })
+    .from(userFollows)
+    .where(eq(userFollows.followerId, userId));
+
+  return result[0]?.count || 0;
+}
+
+// ============================================
+// USER PROFILE
+// ============================================
+
+export async function getUserPosts(userId: number, limit: number = 20) {
+  const db = await getDb();
+  if (!db) return [];
+
+  return await db.select({
+    id: posts.id,
+    content: posts.content,
+    imageUrl: posts.imageUrl,
+    createdAt: posts.createdAt,
+    communityId: posts.communityId,
+    communityName: communities.name,
+    likeCount: sql<number>`(SELECT COUNT(*) FROM post_likes WHERE post_id = ${posts.id})`,
+    commentCount: sql<number>`(SELECT COUNT(*) FROM comments WHERE postId = ${posts.id})`,
+  })
+    .from(posts)
+    .innerJoin(communities, eq(posts.communityId, communities.id))
+    .where(eq(posts.authorId, userId))
+    .orderBy(desc(posts.createdAt))
+    .limit(limit);
+}
+
+export async function getUserStats(userId: number) {
+  const db = await getDb();
+  if (!db) return { postCount: 0, commentCount: 0 };
+
+  const postCount = await db.select({ count: sql<number>`count(*)` })
+    .from(posts)
+    .where(eq(posts.authorId, userId));
+
+  const commentCount = await db.select({ count: sql<number>`count(*)` })
+    .from(comments)
+    .where(eq(comments.authorId, userId));
+
+  return {
+    postCount: postCount[0]?.count || 0,
+    commentCount: commentCount[0]?.count || 0,
+  };
+}
+
+// ============================================
+// TRENDING
+// ============================================
+
+export async function getTrendingCommunities(limit: number = 5) {
+  const db = await getDb();
+  if (!db) return [];
+
+  const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+
+  return await db.select({
+    id: communities.id,
+    name: communities.name,
+    description: communities.description,
+    imageUrl: communities.imageUrl,
+    isPaid: communities.isPaid,
+    memberCount: sql<number>`(SELECT COUNT(*) FROM community_members WHERE communityId = ${communities.id})`,
+    recentPostCount: sql<number>`(SELECT COUNT(*) FROM posts WHERE communityId = ${communities.id} AND createdAt >= ${sevenDaysAgo})`,
+  })
+    .from(communities)
+    .orderBy(desc(sql<number>`(SELECT COUNT(*) FROM posts WHERE communityId = ${communities.id} AND createdAt >= ${sevenDaysAgo})`))
+    .limit(limit);
+}
+
+export async function getTrendingPosts(limit: number = 5) {
+  const db = await getDb();
+  if (!db) return [];
+
+  const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
+
+  return await db.select({
+    id: posts.id,
+    content: posts.content,
+    imageUrl: posts.imageUrl,
+    createdAt: posts.createdAt,
+    authorId: posts.authorId,
+    authorName: users.name,
+    authorAvatar: users.avatarUrl,
+    communityId: posts.communityId,
+    communityName: communities.name,
+    reactionCount: sql<number>`(SELECT COUNT(*) FROM post_reactions WHERE postId = ${posts.id} AND createdAt >= ${oneDayAgo})`,
+    commentCount: sql<number>`(SELECT COUNT(*) FROM comments WHERE postId = ${posts.id})`,
+  })
+    .from(posts)
+    .innerJoin(users, eq(posts.authorId, users.id))
+    .innerJoin(communities, eq(posts.communityId, communities.id))
+    .where(sql`${posts.createdAt} >= ${oneDayAgo}`)
+    .orderBy(desc(sql<number>`(SELECT COUNT(*) FROM post_reactions WHERE postId = ${posts.id} AND createdAt >= ${oneDayAgo})`))
+    .limit(limit);
 }

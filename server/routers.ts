@@ -613,6 +613,112 @@ export const appRouter = router({
         return { success: true };
       }),
   }),
+
+  follow: router({
+    follow: protectedProcedure
+      .input(z.object({ userId: z.number() }))
+      .mutation(async ({ ctx, input }) => {
+        if (ctx.user.id === input.userId) {
+          throw new TRPCError({ code: 'BAD_REQUEST', message: 'Cannot follow yourself' });
+        }
+        await db.followUser(ctx.user.id, input.userId);
+        
+        // Create notification
+        await db.createNotification({
+          userId: input.userId,
+          type: 'follow',
+          title: 'Novo seguidor!',
+          message: `${ctx.user.name || 'Alguém'} começou a seguir você`,
+          relatedId: ctx.user.id,
+          relatedType: 'user',
+        });
+        
+        return { success: true };
+      }),
+
+    unfollow: protectedProcedure
+      .input(z.object({ userId: z.number() }))
+      .mutation(async ({ ctx, input }) => {
+        await db.unfollowUser(ctx.user.id, input.userId);
+        return { success: true };
+      }),
+
+    isFollowing: protectedProcedure
+      .input(z.object({ userId: z.number() }))
+      .query(async ({ ctx, input }) => {
+        return await db.isFollowing(ctx.user.id, input.userId);
+      }),
+
+    followers: publicProcedure
+      .input(z.object({ userId: z.number() }))
+      .query(async ({ input }) => {
+        return await db.getFollowers(input.userId);
+      }),
+
+    following: publicProcedure
+      .input(z.object({ userId: z.number() }))
+      .query(async ({ input }) => {
+        return await db.getFollowing(input.userId);
+      }),
+
+    followerCount: publicProcedure
+      .input(z.object({ userId: z.number() }))
+      .query(async ({ input }) => {
+        return await db.getFollowerCount(input.userId);
+      }),
+
+    followingCount: publicProcedure
+      .input(z.object({ userId: z.number() }))
+      .query(async ({ input }) => {
+        return await db.getFollowingCount(input.userId);
+      }),
+  }),
+
+  profile: router({
+    getUser: publicProcedure
+      .input(z.object({ userId: z.number() }))
+      .query(async ({ input }) => {
+        return await db.getUserById(input.userId);
+      }),
+
+    posts: publicProcedure
+      .input(z.object({ userId: z.number(), limit: z.number().default(20) }))
+      .query(async ({ input }) => {
+        return await db.getUserPosts(input.userId, input.limit);
+      }),
+
+    badges: publicProcedure
+      .input(z.object({ userId: z.number() }))
+      .query(async ({ input }) => {
+        return await db.getUserBadges(input.userId);
+      }),
+
+    communities: publicProcedure
+      .input(z.object({ userId: z.number() }))
+      .query(async ({ input }) => {
+        return await db.getUserCommunities(input.userId);
+      }),
+
+    stats: publicProcedure
+      .input(z.object({ userId: z.number() }))
+      .query(async ({ input }) => {
+        return await db.getUserStats(input.userId);
+      }),
+  }),
+
+  trending: router({
+    communities: publicProcedure
+      .input(z.object({ limit: z.number().default(5) }))
+      .query(async ({ input }) => {
+        return await db.getTrendingCommunities(input.limit);
+      }),
+
+    posts: publicProcedure
+      .input(z.object({ limit: z.number().default(5) }))
+      .query(async ({ input }) => {
+        return await db.getTrendingPosts(input.limit);
+      }),
+  }),
 });
 
 export type AppRouter = typeof appRouter;

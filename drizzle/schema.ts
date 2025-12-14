@@ -306,3 +306,20 @@ export const postReactions = mysqlTable("post_reactions", {
 
 export type PostReaction = typeof postReactions.$inferSelect;
 export type InsertPostReaction = typeof postReactions.$inferInsert;
+
+/**
+ * User Follows - system for following other users
+ */
+export const userFollows = mysqlTable("user_follows", {
+  id: int("id").autoincrement().primaryKey(),
+  followerId: int("followerId").notNull(), // User who follows
+  followingId: int("followingId").notNull(), // User being followed
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+}, (table) => ({
+  followerFollowingIdx: unique("follower_following_idx").on(table.followerId, table.followingId),
+  followerIdx: index("follower_idx").on(table.followerId),
+  followingIdx: index("following_idx").on(table.followingId),
+}));
+
+export type UserFollow = typeof userFollows.$inferSelect;
+export type InsertUserFollow = typeof userFollows.$inferInsert;

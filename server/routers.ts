@@ -621,6 +621,34 @@ export const appRouter = router({
           authorId: ctx.user.id,
         }, ctx.user.id);
 
+        // Extract and save mentions from comment
+        const mentionRegex = /@(\w+)/g;
+        const matches = input.content.matchAll(mentionRegex);
+        const usernames = Array.from(matches, m => m[1]);
+        
+        if (usernames.length > 0) {
+          for (const username of usernames) {
+            const mentionedUser = await db.getUserByName(username);
+            if (mentionedUser && mentionedUser.id !== ctx.user.id) {
+              await db.createMention({
+                commentId,
+                mentionedUserId: mentionedUser.id,
+                mentionedBy: ctx.user.id,
+              });
+              
+              // Create notification for mentioned user
+              await db.createNotification({
+                userId: mentionedUser.id,
+                type: 'mention',
+                title: 'Nova menção',
+                message: `${ctx.user.name} mencionou você em um comentário`,
+                relatedId: input.postId,
+                relatedType: 'post',
+              });
+            }
+          }
+        }
+
         await db.recordGamificationAction({
           userId: ctx.user.id,
           actionType: 'create_comment',

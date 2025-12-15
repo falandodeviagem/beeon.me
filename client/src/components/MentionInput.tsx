@@ -23,10 +23,11 @@ export function MentionInput({
   const [searchQuery, setSearchQuery] = useState("");
   const [cursorPosition, setCursorPosition] = useState(0);
   const [selectedIndex, setSelectedIndex] = useState(0);
+  const [mentionedUserIds, setMentionedUserIds] = useState<number[]>([]);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
-  const { data: users } = trpc.search.users.useQuery(
+  const { data: users, isLoading } = trpc.search.users.useQuery(
     { query: searchQuery, limit: 5 },
     { enabled: searchQuery.length >= 1 && showDropdown }
   );
@@ -94,8 +95,9 @@ export function MentionInput({
       setShowDropdown(false);
       
       // Update mentions list
-      const mentions = extractMentions(newText);
-      onMentionsChange?.(mentions);
+      const newMentions = [...mentionedUserIds, user.id];
+      setMentionedUserIds(newMentions);
+      onMentionsChange?.(newMentions);
       
       // Set cursor position after mention
       setTimeout(() => {
@@ -104,14 +106,6 @@ export function MentionInput({
         textarea.focus();
       }, 0);
     }
-  };
-
-  const extractMentions = (text: string): number[] => {
-    // This is a simplified version - in production you'd want to match against actual usernames
-    const mentionPattern = /@(\w+)/g;
-    const matches = text.match(mentionPattern);
-    // For now, return empty array - proper implementation would query users by username
-    return [];
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
@@ -131,37 +125,45 @@ export function MentionInput({
         onSelect={(e) => setCursorPosition((e.target as HTMLTextAreaElement).selectionStart)}
       />
 
-      {showDropdown && users && users.length > 0 && (
+      {showDropdown && (
         <Card
           ref={dropdownRef}
           className="absolute z-50 w-full max-w-sm mt-1 p-2 shadow-lg max-h-60 overflow-y-auto"
         >
-          <div className="space-y-1">
-            {users.map((user, index) => (
-              <button
-                key={user.id}
-                onClick={() => insertMention(user)}
-                className={`w-full flex items-center gap-3 p-2 rounded-md transition-colors ${
-                  index === selectedIndex
-                    ? 'bg-accent'
-                    : 'hover:bg-accent/50'
-                }`}
-              >
-                <Avatar className="h-8 w-8">
-                  <AvatarImage src={user.avatarUrl || undefined} />
-                  <AvatarFallback>
-                    {user.name?.[0]?.toUpperCase() || 'U'}
-                  </AvatarFallback>
-                </Avatar>
-                <div className="flex-1 text-left">
-                  <div className="font-medium text-sm">{user.name}</div>
-                  <div className="text-xs text-muted-foreground">
-                    Nível {user.level} • {user.points} pts
+          {isLoading ? (
+            <div className="p-2 text-sm text-muted-foreground">Buscando...</div>
+          ) : !users || users.length === 0 ? (
+            <div className="p-2 text-sm text-muted-foreground">
+              {searchQuery.length === 0 ? "Digite para buscar" : "Nenhum usuário encontrado"}
+            </div>
+          ) : (
+            <div className="space-y-1">
+              {users.map((user, index) => (
+                <button
+                  key={user.id}
+                  onClick={() => insertMention(user)}
+                  className={`w-full flex items-center gap-3 p-2 rounded-md transition-colors ${
+                    index === selectedIndex
+                      ? 'bg-accent'
+                      : 'hover:bg-accent/50'
+                  }`}
+                >
+                  <Avatar className="h-8 w-8">
+                    <AvatarImage src={user.avatarUrl || undefined} />
+                    <AvatarFallback>
+                      {user.name?.[0]?.toUpperCase() || 'U'}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div className="flex-1 text-left">
+                    <div className="font-medium text-sm">{user.name}</div>
+                    <div className="text-xs text-muted-foreground">
+                      Nível {user.level} • {user.points} pts
+                    </div>
                   </div>
-                </div>
-              </button>
-            ))}
-          </div>
+                </button>
+              ))}
+            </div>
+          )}
         </Card>
       )}
     </div>

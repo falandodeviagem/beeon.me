@@ -419,10 +419,10 @@
 - [x] Criar tabela mentions no schema
 - [x] Adicionar helper searchUsers no db.ts
 - [x] Criar procedure searchUsers no routers.ts
-- [ ] Implementar componente MentionInput com autocomplete
-- [ ] Detectar @ e mostrar dropdown de usuários
-- [ ] Salvar menções ao criar post/comentário
-- [ ] Enviar notificações para usuários mencionados
+- [x] Implementar componente MentionInput com autocomplete
+- [x] Detectar @ e mostrar dropdown de usuários
+- [x] Salvar menções ao criar post/comentário
+- [x] Enviar notificações para usuários mencionados
 
 ## 52. Busca Global Unificada
 - [x] Criar procedure globalSearch no routers.ts
@@ -430,7 +430,7 @@
 - [x] Criar componente GlobalSearch no header
 - [x] Agrupar resultados por categoria
 - [x] Highlight de termos encontrados
-- [ ] Navegação por teclado (arrow keys)
+- [x] Navegação por teclado (arrow keys)
 
 ## 53. Dashboard de Estatísticas de Comunidade
 - [x] Instalar chart.js e react-chartjs-2

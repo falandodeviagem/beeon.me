@@ -11,7 +11,9 @@ export function GlobalSearch() {
   const [query, setQuery] = useState("");
   const [isOpen, setIsOpen] = useState(false);
   const [debouncedQuery, setDebouncedQuery] = useState("");
+  const [selectedIndex, setSelectedIndex] = useState(0);
   const containerRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
 
   const { data: results, isLoading } = trpc.search.global.useQuery(
     { query: debouncedQuery, limit: 5 },
@@ -50,11 +52,54 @@ export function GlobalSearch() {
     results.hashtags.length > 0
   );
 
+  // Flatten all results for keyboard navigation
+  const allResults = results ? [
+    ...results.communities.map(c => ({ type: 'community' as const, id: c.id, url: `/community/${c.id}` })),
+    ...results.users.map(u => ({ type: 'user' as const, id: u.id, url: `/profile/${u.id}` })),
+    ...results.posts.map(p => ({ type: 'post' as const, id: p.id, url: `/community/${p.communityId}` })),
+    ...results.hashtags.map(h => ({ type: 'hashtag' as const, id: h.id, url: `/search?q=${encodeURIComponent("#" + h.tag)}` })),
+  ] : [];
+
+  // Reset selected index when results change
+  useEffect(() => {
+    setSelectedIndex(0);
+  }, [debouncedQuery]);
+
+  // Handle keyboard navigation
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (!isOpen || allResults.length === 0) return;
+
+    if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      setSelectedIndex((prev) => (prev + 1) % allResults.length);
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      setSelectedIndex((prev) => (prev - 1 + allResults.length) % allResults.length);
+    } else if (e.key === 'Enter') {
+      e.preventDefault();
+      const selected = allResults[selectedIndex];
+      if (selected) {
+        window.location.href = selected.url;
+        handleClear();
+      }
+    } else if (e.key === 'Escape') {
+      e.preventDefault();
+      setIsOpen(false);
+    }
+  };
+
+  // Helper to check if item is selected
+  const isItemSelected = (type: string, id: number) => {
+    const item = allResults[selectedIndex];
+    return item && item.type === type && item.id === id;
+  };
+
   return (
     <div ref={containerRef} className="relative w-full max-w-md">
       <div className="relative">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
         <Input
+          ref={inputRef}
           type="text"
           placeholder="Buscar comunidades, usuários, posts..."
           value={query}
@@ -63,6 +108,7 @@ export function GlobalSearch() {
             setIsOpen(true);
           }}
           onFocus={() => setIsOpen(true)}
+          onKeyDown={handleKeyDown}
           className="pl-9 pr-9"
         />
         {query && (
@@ -101,7 +147,9 @@ export function GlobalSearch() {
                         href={`/community/${community.id}`}
                         onClick={() => handleClear()}
                       >
-                        <a className="flex items-center gap-3 p-2 rounded-md hover:bg-accent transition-colors">
+                        <a className={`flex items-center gap-3 p-2 rounded-md hover:bg-accent transition-colors ${
+                          isItemSelected('community', community.id) ? 'bg-accent' : ''
+                        }`}>
                           <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center text-white font-bold">
                             {community.name[0].toUpperCase()}
                           </div>
@@ -137,7 +185,9 @@ export function GlobalSearch() {
                         href={`/profile/${user.id}`}
                         onClick={() => handleClear()}
                       >
-                        <a className="flex items-center gap-3 p-2 rounded-md hover:bg-accent transition-colors">
+                        <a className={`flex items-center gap-3 p-2 rounded-md hover:bg-accent transition-colors ${
+                          isItemSelected('user', user.id) ? 'bg-accent' : ''
+                        }`}>
                           <Avatar className="h-10 w-10">
                             <AvatarImage src={user.avatarUrl || undefined} />
                             <AvatarFallback>
@@ -171,7 +221,9 @@ export function GlobalSearch() {
                         href={`/community/${post.communityId}`}
                         onClick={() => handleClear()}
                       >
-                        <a className="block p-2 rounded-md hover:bg-accent transition-colors">
+                        <a className={`block p-2 rounded-md hover:bg-accent transition-colors ${
+                          isItemSelected('post', post.id) ? 'bg-accent' : ''
+                        }`}>
                           <div className="text-sm line-clamp-2">{post.content}</div>
                           <div className="text-xs text-muted-foreground mt-1">
                             {post.likeCount} curtidas • {post.commentCount} comentários

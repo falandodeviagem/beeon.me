@@ -11,6 +11,7 @@ import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { Users, Lock, Heart, MessageCircle, Send, MoreVertical, Flag, Image as ImageIcon } from "lucide-react";
 import ImageUpload from "@/components/ImageUpload";
+import { MentionInput } from "@/components/MentionInput";
 import { useRoute, Link } from "wouter";
 import { Skeleton } from "@/components/ui/skeleton";
 import { PromotedCommunitiesWidget } from "@/components/PromotedCommunitiesWidget";
@@ -376,11 +377,11 @@ export default function CommunityDetail() {
         {isMember && (
           <Card>
             <CardContent className="pt-6 space-y-4">
-              <Textarea
-                placeholder="Compartilhe algo com a comunidade..."
+              <MentionInput
+                placeholder="Compartilhe algo com a comunidade... (use @ para mencionar usuários)"
                 value={postContent}
-                onChange={(e) => setPostContent(e.target.value)}
-                rows={3}
+                onChange={setPostContent}
+                className="min-h-[80px]"
               />
               
               <ImageUpload 

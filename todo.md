@@ -441,3 +441,22 @@
 - [x] Gráfico de posts por semana
 - [x] Gráfico de engajamento médio
 - [x] Seletor de período (7/30/90 dias)
+
+## 54. Autocomplete de Menções
+- [x] Criar componente MentionInput com Textarea
+- [x] Detectar @ e posição do cursor
+- [x] Mostrar dropdown com busca de usuários
+- [x] Navegar dropdown com arrow keys
+- [x] Selecionar usuário com Enter ou click
+- [x] Inserir @username no texto
+- [ ] Extrair menções do texto ao criar post
+- [ ] Salvar menções na tabela mentions
+- [ ] Criar notificações para usuários mencionados
+
+## 55. Navegação por Teclado na Busca Global
+- [x] Adicionar state para índice selecionado
+- [x] Implementar handler de ArrowDown/ArrowUp
+- [x] Highlight visual do item selecionado
+- [x] Enter para navegar ao item selecionado
+- [x] Escape para fechar busca
+- [ ] Scroll automático para item selecionado

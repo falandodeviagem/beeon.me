@@ -1868,3 +1868,5 @@ export async function getCommunityStats(communityId: number, days: number = 30) 
     engagement: engagementData[0] || { avgLikes: 0, avgComments: 0, totalPosts: 0 },
   };
 }
+
+// MODERATION OPERATIONS

@@ -455,3 +455,25 @@ export const mentions = mysqlTable("mentions", {
 
 export type Mention = typeof mentions.$inferSelect;
 export type InsertMention = typeof mentions.$inferInsert;
+
+/**
+ * Moderation Logs - history of moderation actions
+ */
+export const moderationLogs = mysqlTable("moderation_logs", {
+  id: int("id").autoincrement().primaryKey(),
+  moderatorId: int("moderatorId").notNull(),
+  action: mysqlEnum("action", ["remove_post", "remove_comment", "ban_user", "unban_user", "resolve_report"]).notNull(),
+  targetUserId: int("targetUserId"),
+  postId: int("postId"),
+  commentId: int("commentId"),
+  reportId: int("reportId"),
+  reason: text("reason"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+}, (table) => ({
+  moderatorIdx: index("moderator_idx").on(table.moderatorId),
+  targetUserIdx: index("target_user_idx").on(table.targetUserId),
+  actionIdx: index("action_idx").on(table.action),
+}));
+
+export type ModerationLog = typeof moderationLogs.$inferSelect;
+export type InsertModerationLog = typeof moderationLogs.$inferInsert;

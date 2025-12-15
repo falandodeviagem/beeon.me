@@ -646,3 +646,23 @@
 - [x] Validar lógica de procedures tRPC
 - [x] Testar fluxos críticos (login, criar post, comentar, reagir)
 - [x] Verificar inconsistências de dados no banco
+
+## 74. Sistema de Moderação de Conteúdo
+- [ ] Backend: Criar tabela de reports no schema
+- [ ] Backend: Criar tabela de moderation_logs no schema
+- [ ] Backend: Helper para criar report (post ou comentário)
+- [ ] Backend: Helper para listar reports pendentes
+- [ ] Backend: Helper para resolver report (aprovar/rejeitar)
+- [ ] Backend: Helper para remover post/comentário
+- [ ] Backend: Helper para banir usuário (temporário/permanente)
+- [ ] Backend: Helper para listar histórico de moderação
+- [ ] Backend: Procedures tRPC para reports
+- [ ] Backend: Procedures tRPC para moderação (admin only)
+- [ ] Frontend: Botão de reportar em posts
+- [ ] Frontend: Botão de reportar em comentários
+- [ ] Frontend: Modal de report com categorias
+- [ ] Frontend: Página de painel de moderação (admin only)
+- [ ] Frontend: Lista de reports pendentes
+- [ ] Frontend: Ações de moderação (remover, banir)
+- [ ] Frontend: Histórico de moderação
+- [ ] Frontend: Filtros por tipo e status

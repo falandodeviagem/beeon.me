@@ -774,59 +774,6 @@ export const appRouter = router({
       }),
   }),
 
-  moderation: router({
-    report: protectedProcedure
-      .input(z.object({
-        reportType: z.enum(['post', 'comment', 'user']),
-        targetId: z.number(),
-        reason: z.string().min(1),
-      }))
-      .mutation(async ({ ctx, input }) => {
-        const reportId = await db.createReport({
-          ...input,
-          reporterId: ctx.user.id,
-        });
-        return { id: reportId };
-      }),
-
-    getPendingReports: adminProcedure
-      .query(async () => {
-        return await db.getPendingReports();
-      }),
-
-    reviewReport: adminProcedure
-      .input(z.object({
-        id: z.number(),
-        status: z.enum(['reviewed', 'resolved', 'dismissed']),
-        reviewNotes: z.string().optional(),
-      }))
-      .mutation(async ({ ctx, input }) => {
-        await db.updateReport(input.id, {
-          status: input.status,
-          reviewedBy: ctx.user.id,
-          reviewNotes: input.reviewNotes,
-        });
-        return { success: true };
-      }),
-
-    banUser: adminProcedure
-      .input(z.object({
-        userId: z.number(),
-        reason: z.string(),
-        until: z.date().optional(),
-      }))
-      .mutation(async ({ input }) => {
-        await db.banUser(input.userId, input.reason, input.until);
-        return { success: true };
-      }),
-
-    unbanUser: adminProcedure
-      .input(z.object({ userId: z.number() }))
-      .mutation(async ({ input }) => {
-        await db.unbanUser(input.userId);
-        return { success: true };
-      }),
-  }),
 
   notification: router({
     list: protectedProcedure
@@ -1064,6 +1011,171 @@ export const appRouter = router({
       .query(async ({ input }) => {
         const { fetchLinkPreview } = await import('./link-preview');
         return await fetchLinkPreview(input.url);
+      }),
+  }),
+
+  moderation: router({
+    // Create report
+    report: protectedProcedure
+      .input(z.object({
+        reportType: z.enum(["post", "comment", "user"]),
+        targetId: z.number(),
+        reason: z.string().min(1),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const { createReport } = await import('./db-moderation');
+        const reportId = await createReport({
+          reporterId: ctx.user.id,
+          reportType: input.reportType,
+          targetId: input.targetId,
+          reason: input.reason,
+          status: "pending",
+        });
+        return { reportId };
+      }),
+
+    // Get pending reports (admin only)
+    getPendingReports: protectedProcedure
+      .use(({ ctx, next }) => {
+        if (ctx.user.role !== 'admin') {
+          throw new TRPCError({ code: 'FORBIDDEN', message: 'Admin access required' });
+        }
+        return next({ ctx });
+      })
+      .query(async () => {
+        const { getPendingReports } = await import('./db-moderation');
+        return await getPendingReports();
+      }),
+
+    // Get all reports with filter (admin only)
+    getAllReports: protectedProcedure
+      .input(z.object({
+        status: z.enum(["pending", "reviewed", "resolved", "dismissed"]).optional(),
+      }))
+      .use(({ ctx, next }) => {
+        if (ctx.user.role !== 'admin') {
+          throw new TRPCError({ code: 'FORBIDDEN', message: 'Admin access required' });
+        }
+        return next({ ctx });
+      })
+      .query(async ({ input }) => {
+        const { getAllReports } = await import('./db-moderation');
+        return await getAllReports(input.status);
+      }),
+
+    // Resolve report (admin only)
+    resolveReport: protectedProcedure
+      .input(z.object({
+        reportId: z.number(),
+        status: z.enum(["reviewed", "resolved", "dismissed"]),
+        reviewNotes: z.string().optional(),
+      }))
+      .use(({ ctx, next }) => {
+        if (ctx.user.role !== 'admin') {
+          throw new TRPCError({ code: 'FORBIDDEN', message: 'Admin access required' });
+        }
+        return next({ ctx });
+      })
+      .mutation(async ({ ctx, input }) => {
+        const { resolveReport, createModerationLog } = await import('./db-moderation');
+        await resolveReport(input.reportId, ctx.user.id, input.status, input.reviewNotes);
+        await createModerationLog({
+          moderatorId: ctx.user.id,
+          action: "resolve_report",
+          reportId: input.reportId,
+          reason: input.reviewNotes || `Report ${input.status}`,
+        });
+        return { success: true };
+      }),
+
+    // Remove post (admin only)
+    removePost: protectedProcedure
+      .input(z.object({
+        postId: z.number(),
+        reason: z.string().min(1),
+        reportId: z.number().optional(),
+      }))
+      .use(({ ctx, next }) => {
+        if (ctx.user.role !== 'admin') {
+          throw new TRPCError({ code: 'FORBIDDEN', message: 'Admin access required' });
+        }
+        return next({ ctx });
+      })
+      .mutation(async ({ ctx, input }) => {
+        const { removePostAsModerator } = await import('./db-moderation');
+        await removePostAsModerator(input.postId, ctx.user.id, input.reason, input.reportId);
+        return { success: true };
+      }),
+
+    // Remove comment (admin only)
+    removeComment: protectedProcedure
+      .input(z.object({
+        commentId: z.number(),
+        reason: z.string().min(1),
+        reportId: z.number().optional(),
+      }))
+      .use(({ ctx, next }) => {
+        if (ctx.user.role !== 'admin') {
+          throw new TRPCError({ code: 'FORBIDDEN', message: 'Admin access required' });
+        }
+        return next({ ctx });
+      })
+      .mutation(async ({ ctx, input }) => {
+        const { removeCommentAsModerator } = await import('./db-moderation');
+        await removeCommentAsModerator(input.commentId, ctx.user.id, input.reason, input.reportId);
+        return { success: true };
+      }),
+
+    // Ban user (admin only)
+    banUser: protectedProcedure
+      .input(z.object({
+        userId: z.number(),
+        reason: z.string().min(1),
+        until: z.date().optional(),
+        reportId: z.number().optional(),
+      }))
+      .use(({ ctx, next }) => {
+        if (ctx.user.role !== 'admin') {
+          throw new TRPCError({ code: 'FORBIDDEN', message: 'Admin access required' });
+        }
+        return next({ ctx });
+      })
+      .mutation(async ({ ctx, input }) => {
+        const { banUserAsModerator } = await import('./db-moderation');
+        await banUserAsModerator(input.userId, ctx.user.id, input.reason, input.until, input.reportId);
+        return { success: true };
+      }),
+
+    // Unban user (admin only)
+    unbanUser: protectedProcedure
+      .input(z.object({
+        userId: z.number(),
+        reason: z.string().min(1),
+      }))
+      .use(({ ctx, next }) => {
+        if (ctx.user.role !== 'admin') {
+          throw new TRPCError({ code: 'FORBIDDEN', message: 'Admin access required' });
+        }
+        return next({ ctx });
+      })
+      .mutation(async ({ ctx, input }) => {
+        const { unbanUserAsModerator } = await import('./db-moderation');
+        await unbanUserAsModerator(input.userId, ctx.user.id, input.reason);
+        return { success: true };
+      }),
+
+    // Get moderation logs (admin only)
+    getLogs: protectedProcedure
+      .input(z.object({ limit: z.number().default(50) }))
+      .use(({ ctx, next }) => {
+        if (ctx.user.role !== 'admin') {
+          throw new TRPCError({ code: 'FORBIDDEN', message: 'Admin access required' });
+        }
+        return next({ ctx });
+      })
+      .query(async ({ input }) => {
+        const { getModerationLogs } = await import('./db-moderation');
+        return await getModerationLogs(input.limit);
       }),
   }),
 });

@@ -6,6 +6,7 @@ import { MessageCircle, Users, Check, Edit2 } from "lucide-react";
 import { SocialShareButtons } from "@/components/SocialShareButtons";
 import ReactionPicker from "@/components/ReactionPicker";
 import ReactionCounts from "@/components/ReactionCounts";
+import { ReportButton } from "@/components/ReportButton";
 import { trpc } from "@/lib/trpc";
 import { Link } from "wouter";
 import { formatDistanceToNow } from "date-fns";
@@ -161,11 +162,14 @@ export default function PostCard({ post }: PostCardProps) {
               <Button 
                 variant="ghost" 
                 size="sm" 
-                className="gap-2"
                 onClick={() => setShowEditDialog(true)}
               >
                 <Edit2 className="w-4 h-4" />
               </Button>
+            )}
+            
+            {!isAuthor && user && (
+              <ReportButton reportType="post" targetId={post.id} variant="ghost" />
             )}
           </div>
         </div>

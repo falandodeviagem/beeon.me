@@ -33,7 +33,7 @@ export default function Moderation() {
 
   const utils = trpc.useUtils();
 
-  const reviewMutation = trpc.moderation.reviewReport.useMutation({
+  const reviewMutation = trpc.moderation.resolveReport.useMutation({
     onSuccess: () => {
       toast.success("Denúncia revisada!");
       utils.moderation.getPendingReports.invalidate();
@@ -55,7 +55,7 @@ export default function Moderation() {
 
   const handleReview = (reportId: number, status: "reviewed" | "resolved" | "dismissed") => {
     reviewMutation.mutate({
-      id: reportId,
+      reportId,
       status,
       reviewNotes: reviewNotes[reportId],
     });

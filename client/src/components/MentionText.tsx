@@ -1,6 +1,5 @@
 import { Link } from "wouter";
 import { trpc } from "@/lib/trpc";
-import { useState, useEffect } from "react";
 
 interface MentionTextProps {
   content: string;
@@ -8,8 +7,9 @@ interface MentionTextProps {
 }
 
 export function MentionText({ content, className = "" }: MentionTextProps) {
-  // Regex to match @username (alphanumeric and underscore)
+  // Regex to match @username and #hashtag (alphanumeric and underscore)
   const mentionRegex = /@(\w+)/g;
+  const hashtagRegex = /#(\w+)/g;
   
   // Extract unique usernames from content
   const usernames = Array.from(content.matchAll(mentionRegex), m => m[1]);
@@ -21,16 +21,16 @@ export function MentionText({ content, className = "" }: MentionTextProps) {
     { enabled: uniqueUsernames.length > 0 }
   );
   
-  // Split content by mentions and create array of parts
-  const parts: Array<{ type: 'text' | 'mention', content: string }> = [];
+  // Combined regex to match both @mentions and #hashtags
+  const combinedRegex = /(@\w+|#\w+)/g;
+  
+  // Split content by mentions/hashtags and create array of parts
+  const parts: Array<{ type: 'text' | 'mention' | 'hashtag', content: string }> = [];
   let lastIndex = 0;
   let match;
   
-  // Reset regex
-  mentionRegex.lastIndex = 0;
-  
-  while ((match = mentionRegex.exec(content)) !== null) {
-    // Add text before mention
+  while ((match = combinedRegex.exec(content)) !== null) {
+    // Add text before match
     if (match.index > lastIndex) {
       parts.push({
         type: 'text',
@@ -38,11 +38,21 @@ export function MentionText({ content, className = "" }: MentionTextProps) {
       });
     }
     
-    // Add mention
-    parts.push({
-      type: 'mention',
-      content: match[1] // username without @
-    });
+    const matchedText = match[0];
+    
+    if (matchedText.startsWith('@')) {
+      // Add mention
+      parts.push({
+        type: 'mention',
+        content: matchedText.substring(1) // username without @
+      });
+    } else if (matchedText.startsWith('#')) {
+      // Add hashtag
+      parts.push({
+        type: 'hashtag',
+        content: matchedText.substring(1) // hashtag without #
+      });
+    }
     
     lastIndex = match.index + match[0].length;
   }
@@ -64,9 +74,9 @@ export function MentionText({ content, className = "" }: MentionTextProps) {
           if (userId) {
             return (
               <Link key={index} href={`/user/${userId}`}>
-                <a className="text-primary font-medium hover:underline cursor-pointer transition-colors hover:text-primary/80">
+                <span className="text-primary font-medium hover:underline cursor-pointer transition-colors hover:text-primary/80">
                   @{part.content}
-                </a>
+                </span>
               </Link>
             );
           }
@@ -78,6 +88,17 @@ export function MentionText({ content, className = "" }: MentionTextProps) {
             </span>
           );
         }
+        
+        if (part.type === 'hashtag') {
+          return (
+            <Link key={index} href={`/hashtag/${encodeURIComponent(part.content)}`}>
+              <span className="text-primary font-medium hover:underline cursor-pointer transition-colors hover:text-primary/80">
+                #{part.content}
+              </span>
+            </Link>
+          );
+        }
+        
         return <span key={index}>{part.content}</span>;
       })}
     </span>

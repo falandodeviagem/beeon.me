@@ -790,3 +790,15 @@
 - [x] Buscar hashtags em alta (últimos 7 dias)
 - [x] Mostrar no sidebar da Home
 - [x] Estilizar com ícone e contagem de posts
+
+## 88. Hashtags Clicáveis nos Posts [CONCLUÍDO]
+- [x] Criar componente HashtagText para renderizar hashtags clicáveis
+- [x] Detectar #hashtag no conteúdo do post
+- [x] Redirecionar para /hashtag/:tag ao clicar
+- [x] Estilizar hashtags com cor primária e hover
+
+## 89. Criação Automática de Hashtags [CONCLUÍDO]
+- [x] Extrair hashtags do conteúdo ao criar post
+- [x] Criar hashtags novas automaticamente se não existirem
+- [x] Associar hashtags ao post na tabela post_hashtags
+- [x] Incrementar contador de uso das hashtags

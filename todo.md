@@ -395,3 +395,22 @@
 - [x] Usar campo action do toast para botão customizado
 - [x] Timer de 5s antes de confirmar deleção no backend
 - [x] Feedback visual ao desfazer
+
+## 48. Toggle de Sons no Header
+- [x] Criar componente SoundToggle
+- [x] Usar ícones Volume/VolumeX do lucide-react
+- [x] Integrar toggleSounds() e areSoundsEnabled()
+- [x] Adicionar tooltip "Ativar/Desativar sons"
+- [x] Adicionar no MainLayout header
+
+## 49. Progress Bar de Countdown em Deleção
+- [x] Adicionar setInterval no handleDeletePost
+- [x] Atualizar progress de 100 para 0 a cada segundo
+- [x] Limpar interval ao cancelar ou concluir
+- [x] Feedback visual do tempo restante
+
+## 50. Refatorar Criar Post com toast.promise()
+- [x] Substituir handleCreatePost por toast.promise()
+- [x] Remover código manual de loading/update
+- [x] Mensagens dinâmicas baseadas em resposta
+- [x] Demonstrar uso do novo helper

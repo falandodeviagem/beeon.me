@@ -10,6 +10,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Home, Users, Trophy, UserPlus, Shield, LogOut, User, Search, Mail, Sun, Moon } from "lucide-react";
+import { SoundToggle } from "@/components/SoundToggle";
 import NotificationPanel from "@/components/NotificationPanel";
 import { Link, useLocation } from "wouter";
 import { trpc } from "@/lib/trpc";
@@ -102,6 +103,9 @@ export default function MainLayout({ children }: MainLayoutProps) {
             >
               {theme === 'dark' ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
             </Button>
+            
+            {/* Sound toggle */}
+            <SoundToggle />
             {isAuthenticated && user ? (
               <>
                 <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-full bg-secondary/20">

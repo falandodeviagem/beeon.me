@@ -35,7 +35,7 @@ export default function CommunityDetail() {
   const { user, isAuthenticated } = useAuth();
   const [, params] = useRoute("/community/:id");
   const communityId = params?.id ? parseInt(params.id) : 0;
-  const { loading, update, toast } = useToast();
+  const { loading, update, toast, promise } = useToast();
 
   const [postContent, setPostContent] = useState("");
   const [postImages, setPostImages] = useState<string[]>([]);
@@ -94,30 +94,25 @@ export default function CommunityDetail() {
   const handleCreatePost = async () => {
     if (!postContent.trim() && postImages.length === 0) return;
     
-    const toastId = loading("Criando post...");
-    
     try {
-      await createPostMutation.mutateAsync({
-        communityId,
-        content: postContent,
-        imageUrls: postImages,
-      });
-      
-      update(toastId.id, {
-        title: "Sucesso!",
-        description: "Post criado",
-        variant: "success",
-      });
+      await promise(
+        createPostMutation.mutateAsync({
+          communityId,
+          content: postContent,
+          imageUrls: postImages,
+        }),
+        {
+          loading: "Criando post...",
+          success: "Post criado com sucesso!",
+          error: (err) => err.message || "Erro ao criar post",
+        }
+      );
       
       setPostContent("");
       setPostImages([]);
       utils.post.list.invalidate();
-    } catch (error: any) {
-      update(toastId.id, {
-        title: "Erro",
-        description: error.message || "Erro ao criar post",
-        variant: "destructive",
-      });
+    } catch (error) {
+      // Error already handled by toast.promise()
     }
   };
 
@@ -230,12 +225,15 @@ export default function CommunityDetail() {
   
   const handleDeletePost = (postId: number) => {
     let timeoutId: NodeJS.Timeout;
+    let intervalId: NodeJS.Timeout;
     let cancelled = false;
+    let remainingTime = 5;
     
     const toastId = toast({
       title: "Post deletado",
       description: "O post será removido em 5 segundos",
       variant: "warning",
+      progress: 100,
       action: (
         <Button
           size="sm"
@@ -243,6 +241,7 @@ export default function CommunityDetail() {
           onClick={() => {
             cancelled = true;
             clearTimeout(timeoutId);
+            clearInterval(intervalId);
             toast({
               title: "Cancelado",
               description: "A deleção foi cancelada",
@@ -255,14 +254,30 @@ export default function CommunityDetail() {
       ),
     });
     
+    // Update progress bar every second
+    intervalId = setInterval(() => {
+      remainingTime -= 1;
+      const progressPercent = (remainingTime / 5) * 100;
+      update(toastId.id, {
+        progress: progressPercent,
+        description: `O post será removido em ${remainingTime} segundo${remainingTime !== 1 ? 's' : ''}`,
+      });
+      
+      if (remainingTime <= 0) {
+        clearInterval(intervalId);
+      }
+    }, 1000);
+    
     timeoutId = setTimeout(async () => {
       if (!cancelled) {
+        clearInterval(intervalId);
         try {
           await deletePostMutation.mutateAsync({ id: postId });
           update(toastId.id, {
             title: "Sucesso!",
             description: "Post deletado permanentemente",
             variant: "success",
+            progress: undefined,
           });
           utils.post.list.invalidate();
         } catch (error: any) {
@@ -270,6 +285,7 @@ export default function CommunityDetail() {
             title: "Erro",
             description: error.message || "Erro ao deletar post",
             variant: "destructive",
+            progress: undefined,
           });
         }
       }

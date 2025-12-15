@@ -1245,6 +1245,113 @@ export const appRouter = router({
         await deactivateWarning(input.warningId, ctx.user.id);
         return { success: true };
       }),
+
+    // ============ BAN APPEALS ============
+
+    // Create ban appeal (for banned users)
+    createAppeal: protectedProcedure
+      .input(z.object({
+        reason: z.string().min(10, "A apelação deve ter pelo menos 10 caracteres"),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        // Check if user is banned
+        const user = await db.getUserById(ctx.user.id);
+        if (!user?.isBanned) {
+          throw new TRPCError({ code: 'BAD_REQUEST', message: 'Você não está banido' });
+        }
+
+        const { createBanAppeal } = await import('./db-moderation');
+        const appealId = await createBanAppeal(ctx.user.id, input.reason);
+        return { appealId };
+      }),
+
+    // Get user's own appeal status
+    getMyAppeal: protectedProcedure
+      .query(async ({ ctx }) => {
+        const { getUserAppeal } = await import('./db-moderation');
+        return await getUserAppeal(ctx.user.id);
+      }),
+
+    // Get pending appeals (admin only)
+    getPendingAppeals: adminProcedure
+      .query(async () => {
+        const { getPendingAppeals } = await import('./db-moderation');
+        return await getPendingAppeals();
+      }),
+
+    // Get all appeals (admin only)
+    getAllAppeals: adminProcedure
+      .input(z.object({
+        status: z.enum(["pending", "approved", "rejected"]).optional(),
+      }))
+      .query(async ({ input }) => {
+        const { getAllAppeals } = await import('./db-moderation');
+        return await getAllAppeals(input.status);
+      }),
+
+    // Resolve appeal (admin only)
+    resolveAppeal: adminProcedure
+      .input(z.object({
+        appealId: z.number(),
+        status: z.enum(["approved", "rejected"]),
+        adminResponse: z.string().min(1),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const { resolveAppeal } = await import('./db-moderation');
+        return await resolveAppeal(
+          input.appealId,
+          ctx.user.id,
+          input.status,
+          input.adminResponse
+        );
+      }),
+
+    // ============ AUDIT LOGS ============
+
+    // Get audit logs (admin only)
+    getAuditLogs: adminProcedure
+      .input(z.object({
+        action: z.string().optional(),
+        entityType: z.string().optional(),
+        userId: z.number().optional(),
+        startDate: z.date().optional(),
+        endDate: z.date().optional(),
+        limit: z.number().default(50),
+        offset: z.number().default(0),
+      }))
+      .query(async ({ input }) => {
+        const { getAuditLogs } = await import('./db-moderation');
+        return await getAuditLogs(input);
+      }),
+
+    // Get audit log action types (admin only)
+    getAuditLogActions: adminProcedure
+      .query(async () => {
+        const { getAuditLogActions } = await import('./db-moderation');
+        return await getAuditLogActions();
+      }),
+
+    // Get audit log entity types (admin only)
+    getAuditLogEntityTypes: adminProcedure
+      .query(async () => {
+        const { getAuditLogEntityTypes } = await import('./db-moderation');
+        return await getAuditLogEntityTypes();
+      }),
+
+    // Export audit logs as CSV (admin only)
+    exportAuditLogsCSV: adminProcedure
+      .input(z.object({
+        action: z.string().optional(),
+        entityType: z.string().optional(),
+        userId: z.number().optional(),
+        startDate: z.date().optional(),
+        endDate: z.date().optional(),
+      }))
+      .mutation(async ({ input }) => {
+        const { exportAuditLogsCSV } = await import('./db-moderation');
+        const csv = await exportAuditLogsCSV(input);
+        return { csv };
+      }),
   }),
 });
 

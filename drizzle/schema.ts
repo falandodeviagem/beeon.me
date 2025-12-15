@@ -500,3 +500,62 @@ export const userWarnings = mysqlTable("user_warnings", {
 
 export type UserWarning = typeof userWarnings.$inferSelect;
 export type InsertUserWarning = typeof userWarnings.$inferInsert;
+
+
+/**
+ * Ban Appeals - allows banned users to request review
+ */
+export const banAppeals = mysqlTable("ban_appeals", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull(),
+  
+  // Appeal content
+  reason: text("reason").notNull(),
+  
+  // Status
+  status: mysqlEnum("status", ["pending", "approved", "rejected"]).default("pending").notNull(),
+  
+  // Admin response
+  adminId: int("adminId"),
+  adminResponse: text("adminResponse"),
+  
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  resolvedAt: timestamp("resolvedAt"),
+}, (table) => ({
+  userIdx: index("appeal_user_idx").on(table.userId),
+  statusIdx: index("appeal_status_idx").on(table.status),
+}));
+
+export type BanAppeal = typeof banAppeals.$inferSelect;
+export type InsertBanAppeal = typeof banAppeals.$inferInsert;
+
+/**
+ * Audit Logs - detailed logging of all administrative actions
+ */
+export const auditLogs = mysqlTable("audit_logs", {
+  id: int("id").autoincrement().primaryKey(),
+  
+  // Action details
+  action: varchar("action", { length: 100 }).notNull(), // e.g., "ban_user", "edit_community", "delete_post"
+  entityType: varchar("entityType", { length: 50 }).notNull(), // e.g., "user", "community", "post", "comment"
+  entityId: int("entityId").notNull(),
+  
+  // Who performed the action
+  userId: int("userId").notNull(),
+  
+  // Additional details (JSON string)
+  details: text("details"),
+  
+  // IP address for security
+  ipAddress: varchar("ipAddress", { length: 45 }),
+  
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+}, (table) => ({
+  actionIdx: index("audit_action_idx").on(table.action),
+  entityTypeIdx: index("audit_entity_type_idx").on(table.entityType),
+  userIdx: index("audit_user_idx").on(table.userId),
+  createdAtIdx: index("audit_created_at_idx").on(table.createdAt),
+}));
+
+export type AuditLog = typeof auditLogs.$inferSelect;
+export type InsertAuditLog = typeof auditLogs.$inferInsert;

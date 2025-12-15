@@ -1,9 +1,12 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { trpc } from "@/lib/trpc";
-import { AlertTriangle, CheckCircle, Clock, Flag, Users, XCircle } from "lucide-react";
+import { AlertTriangle, CheckCircle, Clock, Flag, Users, XCircle, MessageSquareWarning } from "lucide-react";
+import { Link } from "wouter";
+import { Badge } from "@/components/ui/badge";
 
 export function ModerationStats() {
   const { data: stats, isLoading } = trpc.moderation.getStats.useQuery();
+  const { data: pendingAppeals } = trpc.moderation.getPendingAppeals.useQuery();
 
   if (isLoading) {
     return (
@@ -49,25 +52,39 @@ export function ModerationStats() {
       icon: XCircle,
       color: "text-red-500",
     },
+    {
+      title: "Apelações Pendentes",
+      value: pendingAppeals?.length || 0,
+      icon: MessageSquareWarning,
+      color: "text-purple-500",
+      link: "/moderation/appeals",
+    },
   ];
 
   return (
     <div className="space-y-6">
       {/* Main Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        {cards.map((card) => (
-          <Card key={card.title}>
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">
-                {card.title}
-              </CardTitle>
-              <card.icon className={`w-5 h-5 ${card.color}`} />
-            </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-bold">{card.value}</div>
-            </CardContent>
-          </Card>
-        ))}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+        {cards.map((card: any) => {
+          const content = (
+            <Card className={card.link ? "hover:shadow-md transition-shadow cursor-pointer" : ""}>
+              <CardHeader className="flex flex-row items-center justify-between pb-2">
+                <CardTitle className="text-sm font-medium text-muted-foreground">
+                  {card.title}
+                </CardTitle>
+                <card.icon className={`w-5 h-5 ${card.color}`} />
+              </CardHeader>
+              <CardContent>
+                <div className="text-3xl font-bold">{card.value}</div>
+              </CardContent>
+            </Card>
+          );
+          
+          if (card.link) {
+            return <Link key={card.title} href={card.link}>{content}</Link>;
+          }
+          return <div key={card.title}>{content}</div>;
+        })}
       </div>
 
       {/* Additional Stats */}

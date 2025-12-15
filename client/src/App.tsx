@@ -25,6 +25,8 @@ import HashtagPage from "./pages/HashtagPage";
 import Onboarding from "./pages/Onboarding";
 import CommunityStats from "./pages/CommunityStats";
 import Notifications from "./pages/Notifications";
+import BanAppeal from "./pages/BanAppeal";
+import AuditLogs from "./pages/AuditLogs";
 
 function Router() {
   return (
@@ -48,6 +50,8 @@ function Router() {
       <Route path="/user/:userId/following" component={Following} />
       <Route path="/messages" component={Messages} />
       <Route path="/moderation" component={Moderation} />
+      <Route path="/moderation/appeals" component={BanAppeal} />
+      <Route path="/moderation/audit-logs" component={AuditLogs} />
       <Route path="/404" component={NotFound} />
       <Route component={NotFound} />
     </Switch>

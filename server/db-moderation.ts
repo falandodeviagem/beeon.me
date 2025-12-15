@@ -486,3 +486,324 @@ export async function deactivateWarning(warningId: number, moderatorId: number) 
     reason: `Warning #${warningId} deactivated`,
   });
 }
+
+
+// BAN APPEALS SYSTEM
+
+export async function createBanAppeal(userId: number, reason: string) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  const { banAppeals } = await import('../drizzle/schema');
+
+  // Check if user already has a pending appeal
+  const existingAppeal = await db
+    .select()
+    .from(banAppeals)
+    .where(and(
+      eq(banAppeals.userId, userId),
+      eq(banAppeals.status, 'pending')
+    ))
+    .limit(1);
+
+  if (existingAppeal.length > 0) {
+    throw new Error("Você já tem uma apelação pendente");
+  }
+
+  const [result] = await db.insert(banAppeals).values({
+    userId,
+    reason,
+    status: 'pending',
+  });
+
+  return result.insertId;
+}
+
+export async function getPendingAppeals() {
+  const db = await getDb();
+  if (!db) return [];
+
+  const { banAppeals } = await import('../drizzle/schema');
+
+  return db
+    .select({
+      id: banAppeals.id,
+      userId: banAppeals.userId,
+      userName: users.name,
+      userEmail: users.email,
+      banReason: users.banReason,
+      reason: banAppeals.reason,
+      status: banAppeals.status,
+      createdAt: banAppeals.createdAt,
+    })
+    .from(banAppeals)
+    .leftJoin(users, eq(banAppeals.userId, users.id))
+    .where(eq(banAppeals.status, 'pending'))
+    .orderBy(desc(banAppeals.createdAt));
+}
+
+export async function getAllAppeals(status?: "pending" | "approved" | "rejected") {
+  const db = await getDb();
+  if (!db) return [];
+
+  const { banAppeals } = await import('../drizzle/schema');
+  const adminUsers = users;
+
+  const baseQuery = db
+    .select({
+      id: banAppeals.id,
+      userId: banAppeals.userId,
+      userName: users.name,
+      userEmail: users.email,
+      banReason: users.banReason,
+      reason: banAppeals.reason,
+      status: banAppeals.status,
+      adminId: banAppeals.adminId,
+      adminResponse: banAppeals.adminResponse,
+      createdAt: banAppeals.createdAt,
+      resolvedAt: banAppeals.resolvedAt,
+    })
+    .from(banAppeals)
+    .leftJoin(users, eq(banAppeals.userId, users.id));
+
+  if (status) {
+    return baseQuery
+      .where(eq(banAppeals.status, status))
+      .orderBy(desc(banAppeals.createdAt));
+  }
+
+  return baseQuery.orderBy(desc(banAppeals.createdAt));
+}
+
+export async function getUserAppeal(userId: number) {
+  const db = await getDb();
+  if (!db) return null;
+
+  const { banAppeals } = await import('../drizzle/schema');
+
+  const result = await db
+    .select({
+      id: banAppeals.id,
+      reason: banAppeals.reason,
+      status: banAppeals.status,
+      adminResponse: banAppeals.adminResponse,
+      createdAt: banAppeals.createdAt,
+      resolvedAt: banAppeals.resolvedAt,
+    })
+    .from(banAppeals)
+    .where(eq(banAppeals.userId, userId))
+    .orderBy(desc(banAppeals.createdAt))
+    .limit(1);
+
+  return result.length > 0 ? result[0] : null;
+}
+
+export async function resolveAppeal(
+  appealId: number,
+  adminId: number,
+  status: "approved" | "rejected",
+  adminResponse: string
+) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  const { banAppeals } = await import('../drizzle/schema');
+
+  // Get the appeal to find the user
+  const appeal = await db
+    .select()
+    .from(banAppeals)
+    .where(eq(banAppeals.id, appealId))
+    .limit(1);
+
+  if (appeal.length === 0) {
+    throw new Error("Apelação não encontrada");
+  }
+
+  // Update appeal
+  await db
+    .update(banAppeals)
+    .set({
+      status,
+      adminId,
+      adminResponse,
+      resolvedAt: new Date(),
+    })
+    .where(eq(banAppeals.id, appealId));
+
+  // If approved, unban the user
+  if (status === "approved") {
+    await unbanUserAsModerator(appeal[0].userId, adminId, `Apelação aprovada: ${adminResponse}`);
+  }
+
+  // Create audit log
+  await createAuditLog({
+    action: status === "approved" ? "approve_appeal" : "reject_appeal",
+    entityType: "ban_appeal",
+    entityId: appealId,
+    userId: adminId,
+    details: JSON.stringify({
+      appealUserId: appeal[0].userId,
+      adminResponse,
+    }),
+  });
+
+  return { userId: appeal[0].userId, status };
+}
+
+// AUDIT LOGS SYSTEM
+
+export async function createAuditLog(data: {
+  action: string;
+  entityType: string;
+  entityId: number;
+  userId: number;
+  details?: string;
+  ipAddress?: string;
+}) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  const { auditLogs } = await import('../drizzle/schema');
+
+  const [result] = await db.insert(auditLogs).values({
+    action: data.action,
+    entityType: data.entityType,
+    entityId: data.entityId,
+    userId: data.userId,
+    details: data.details,
+    ipAddress: data.ipAddress,
+  });
+
+  return result.insertId;
+}
+
+export async function getAuditLogs(filters?: {
+  action?: string;
+  entityType?: string;
+  userId?: number;
+  startDate?: Date;
+  endDate?: Date;
+  limit?: number;
+  offset?: number;
+}) {
+  const db = await getDb();
+  if (!db) return { logs: [], total: 0 };
+
+  const { auditLogs } = await import('../drizzle/schema');
+
+  const conditions = [];
+
+  if (filters?.action) {
+    conditions.push(eq(auditLogs.action, filters.action));
+  }
+  if (filters?.entityType) {
+    conditions.push(eq(auditLogs.entityType, filters.entityType));
+  }
+  if (filters?.userId) {
+    conditions.push(eq(auditLogs.userId, filters.userId));
+  }
+  if (filters?.startDate) {
+    conditions.push(gte(auditLogs.createdAt, filters.startDate));
+  }
+  if (filters?.endDate) {
+    const { lte } = await import('drizzle-orm');
+    conditions.push(lte(auditLogs.createdAt, filters.endDate));
+  }
+
+  const whereClause = conditions.length > 0 ? and(...conditions) : undefined;
+
+  // Get total count
+  const countResult = await db
+    .select({ count: sql<number>`count(*)` })
+    .from(auditLogs)
+    .where(whereClause);
+
+  const total = countResult[0]?.count || 0;
+
+  // Get logs with user info
+  const logs = await db
+    .select({
+      id: auditLogs.id,
+      action: auditLogs.action,
+      entityType: auditLogs.entityType,
+      entityId: auditLogs.entityId,
+      userId: auditLogs.userId,
+      userName: users.name,
+      details: auditLogs.details,
+      ipAddress: auditLogs.ipAddress,
+      createdAt: auditLogs.createdAt,
+    })
+    .from(auditLogs)
+    .leftJoin(users, eq(auditLogs.userId, users.id))
+    .where(whereClause)
+    .orderBy(desc(auditLogs.createdAt))
+    .limit(filters?.limit || 50)
+    .offset(filters?.offset || 0);
+
+  return { logs, total };
+}
+
+export async function getAuditLogActions() {
+  const db = await getDb();
+  if (!db) return [];
+
+  const { auditLogs } = await import('../drizzle/schema');
+
+  const result = await db
+    .select({ action: auditLogs.action })
+    .from(auditLogs)
+    .groupBy(auditLogs.action)
+    .orderBy(auditLogs.action);
+
+  return result.map(r => r.action);
+}
+
+export async function getAuditLogEntityTypes() {
+  const db = await getDb();
+  if (!db) return [];
+
+  const { auditLogs } = await import('../drizzle/schema');
+
+  const result = await db
+    .select({ entityType: auditLogs.entityType })
+    .from(auditLogs)
+    .groupBy(auditLogs.entityType)
+    .orderBy(auditLogs.entityType);
+
+  return result.map(r => r.entityType);
+}
+
+export async function exportAuditLogsCSV(filters?: {
+  action?: string;
+  entityType?: string;
+  userId?: number;
+  startDate?: Date;
+  endDate?: Date;
+}) {
+  const { logs } = await getAuditLogs({ ...filters, limit: 10000 });
+
+  // Generate CSV header
+  const headers = ['ID', 'Ação', 'Tipo de Entidade', 'ID da Entidade', 'Usuário ID', 'Usuário Nome', 'Detalhes', 'IP', 'Data'];
+  
+  // Generate CSV rows
+  const rows = logs.map(log => [
+    log.id,
+    log.action,
+    log.entityType,
+    log.entityId,
+    log.userId,
+    log.userName || '',
+    log.details ? log.details.replace(/"/g, '""') : '',
+    log.ipAddress || '',
+    log.createdAt.toISOString(),
+  ]);
+
+  // Combine into CSV string
+  const csvContent = [
+    headers.join(','),
+    ...rows.map(row => row.map(cell => `"${cell}"`).join(','))
+  ].join('\n');
+
+  return csvContent;
+}

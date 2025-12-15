@@ -7,7 +7,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { trpc } from "@/lib/trpc";
 import { useState } from "react";
 import { toast } from "sonner";
-import { Shield, AlertTriangle, CheckCircle, XCircle, Ban } from "lucide-react";
+import { Shield, AlertTriangle, CheckCircle, XCircle, Ban, FileText, MessageSquareWarning } from "lucide-react";
+import { Link } from "wouter";
 import { ModerationStats } from "@/components/ModerationStats";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
@@ -89,13 +90,26 @@ export default function Moderation() {
             </p>
           </div>
 
-          <Dialog>
-            <DialogTrigger asChild>
-              <Button variant="destructive" className="gap-2">
-                <Ban className="w-4 h-4" />
-                Banir Usuário
+          <div className="flex gap-2">
+            <Link href="/moderation/appeals">
+              <Button variant="outline" className="gap-2">
+                <MessageSquareWarning className="w-4 h-4" />
+                Apelações
               </Button>
-            </DialogTrigger>
+            </Link>
+            <Link href="/moderation/audit-logs">
+              <Button variant="outline" className="gap-2">
+                <FileText className="w-4 h-4" />
+                Logs de Auditoria
+              </Button>
+            </Link>
+            <Dialog>
+              <DialogTrigger asChild>
+                <Button variant="destructive" className="gap-2">
+                  <Ban className="w-4 h-4" />
+                  Banir Usuário
+                </Button>
+              </DialogTrigger>
             <DialogContent>
               <DialogHeader>
                 <DialogTitle>Banir Usuário</DialogTitle>
@@ -138,6 +152,7 @@ export default function Moderation() {
               </div>
             </DialogContent>
           </Dialog>
+          </div>
         </div>
 
         {/* Stats Dashboard */}

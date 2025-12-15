@@ -692,3 +692,29 @@
 - [x] Frontend: Modal de emitir aviso no painel de moderação
 - [x] Frontend: Histórico de avisos do usuário
 - [x] Frontend: Indicador de strikes no perfil (para admins)
+
+## 78. Sistema de Apelação de Banimento (CONCLUÍDO)
+- [x] Backend: Criar tabela ban_appeals no schema (userId, reason, status, adminResponse, createdAt, resolvedAt)
+- [x] Backend: Helper para criar apelação
+- [x] Backend: Helper para listar apelações pendentes
+- [x] Backend: Helper para resolver apelação (aprovar/rejeitar)
+- [x] Backend: Procedures tRPC para apelações
+- [x] Frontend: Página de apelação para usuários banidos
+- [x] Frontend: Formulário com motivo da apelação
+- [x] Frontend: Status da apelação (pendente/aprovada/rejeitada)
+- [x] Frontend: Fila de apelações no painel de moderação
+- [x] Frontend: Modal para responder apelação
+- [x] Frontend: Histórico de apelações resolvidas
+
+## 79. Logs de Auditoria Detalhados (CONCLUÍDO)
+- [x] Backend: Criar tabela audit_logs no schema (action, entityType, entityId, userId, details, createdAt)
+- [x] Backend: Helper para criar log de auditoria
+- [x] Backend: Helper para listar logs com filtros
+- [x] Backend: Helper para exportar logs como CSV
+- [x] Backend: Integrar logging em todas ações administrativas
+- [x] Backend: Procedures tRPC para auditoria
+- [x] Frontend: Página de logs de auditoria (admin only)
+- [x] Frontend: Tabela com paginação e ordenação
+- [x] Frontend: Filtros por tipo de ação, usuário, período
+- [x] Frontend: Botão de exportar CSV
+- [x] Frontend: Detalhes expandíveis por linha

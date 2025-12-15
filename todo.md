@@ -449,9 +449,9 @@
 - [x] Navegar dropdown com arrow keys
 - [x] Selecionar usuário com Enter ou click
 - [x] Inserir @username no texto
-- [ ] Extrair menções do texto ao criar post
-- [ ] Salvar menções na tabela mentions
-- [ ] Criar notificações para usuários mencionados
+- [x] Extrair menções do texto ao criar post
+- [x] Salvar menções na tabela mentions
+- [x] Criar notificações para usuários mencionados
 
 ## 55. Navegação por Teclado na Busca Global
 - [x] Adicionar state para índice selecionado
@@ -459,7 +459,7 @@
 - [x] Highlight visual do item selecionado
 - [x] Enter para navegar ao item selecionado
 - [x] Escape para fechar busca
-- [ ] Scroll automático para item selecionado
+- [x] Scroll automático para item selecionado
 
 ## 56. Salvar Menções e Notificações
 - [x] Criar função para extrair @usernames do texto
@@ -490,3 +490,33 @@
 - [x] Botão "Marcar todas como lidas"
 - [x] Adicionar badge de contador no header
 - [x] Adicionar rota no App.tsx
+
+## 60. Comentários com Menções
+- [x] Substituir Textarea por MentionInput em comentários
+- [x] Processar @username ao criar comentário
+- [x] Salvar menções com commentId na tabela mentions
+- [x] Enviar notificações para mencionados em comentários
+- [x] Placeholder informativo "use @ para mencionar"
+
+## 61. Rich Text Editor com TipTap
+- [x] Instalar TipTap e extensões (starter-kit, placeholder, link, image)
+- [x] Criar componente RichTextEditor com toolbar
+- [x] Implementar formatação: negrito, itálico, código
+- [x] Implementar listas: bullet list, ordered list
+- [x] Adicionar inserção de links com dialog modal
+- [x] Adicionar inserção de imagens inline via URL
+- [x] Criar componente RichTextDisplay para renderizar HTML
+- [x] Substituir MentionInput por RichTextEditor em criar post
+- [x] Atualizar exibição de posts com RichTextDisplay
+
+## 62. Sistema de Reações Expandido
+- [x] Criar helper getPostReactionUsers no db-reactions-users.ts
+- [x] Adicionar router reactions no routers.ts
+- [x] Implementar procedures: add, remove, getCounts, getUserReaction, getUsers
+- [x] Atualizar ReactionPicker para usar novo router
+- [x] Implementar toggle de reações (clicar novamente remove)
+- [x] Atualizar ReactionCounts com tooltip
+- [x] Mostrar usuários que reagiram no tooltip
+- [x] Agrupar usuários por tipo de reação
+- [x] Exibir avatares e nomes no tooltip
+- [x] Limitar a 10 usuários por tipo com contador "+X mais"

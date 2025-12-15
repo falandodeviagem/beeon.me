@@ -482,13 +482,44 @@ export async function hasUserLikedPost(postId: number, userId: number) {
 
 // COMMENT OPERATIONS
 
-export async function createComment(data: InsertComment) {
+export async function createComment(data: InsertComment, authorId: number) {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
 
   const result = await db.insert(comments).values(data);
+  const commentId = result[0].insertId;
   await incrementPostComments(data.postId);
-  return result[0].insertId;
+  
+  // Process mentions in comment content
+  if (data.content) {
+    const mentionRegex = /@(\w+)/g;
+    const matches = Array.from(data.content.matchAll(mentionRegex));
+    
+    for (const match of matches) {
+      const username = match[1];
+      const mentionedUser = await getUserByName(username);
+      
+      if (mentionedUser && mentionedUser.id !== authorId) {
+        // Save mention
+        await db.insert(mentions).values({
+          commentId,
+          mentionedUserId: mentionedUser.id,
+          mentionedBy: authorId,
+        });
+        
+        // Create notification
+        await createNotification({
+          userId: mentionedUser.id,
+          type: "mention",
+          title: "Você foi mencionado em um comentário",
+          message: `@${username} mencionou você em um comentário`,
+          relatedId: data.postId,
+        });
+      }
+    }
+  }
+  
+  return commentId;
 }
 
 export async function getPostComments(postId: number) {

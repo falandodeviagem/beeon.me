@@ -13,6 +13,8 @@ import { Users, Lock, Heart, MessageCircle, Send, MoreVertical, Flag, Image as I
 import ImageUpload from "@/components/ImageUpload";
 import { MentionInput } from "@/components/MentionInput";
 import { MentionText } from "@/components/MentionText";
+import { RichTextEditor } from "@/components/RichTextEditor";
+import { RichTextDisplay } from "@/components/RichTextDisplay";
 import { useRoute, Link } from "wouter";
 import { Skeleton } from "@/components/ui/skeleton";
 import { PromotedCommunitiesWidget } from "@/components/PromotedCommunitiesWidget";
@@ -378,11 +380,11 @@ export default function CommunityDetail() {
         {isMember && (
           <Card>
             <CardContent className="pt-6 space-y-4">
-              <MentionInput
-                placeholder="Compartilhe algo com a comunidade... (use @ para mencionar usuários)"
+              <RichTextEditor
+                placeholder="Compartilhe algo com a comunidade... Use a barra de ferramentas para formatar"
                 value={postContent}
                 onChange={setPostContent}
-                className="min-h-[80px]"
+                className="w-full"
               />
               
               <ImageUpload 
@@ -449,7 +451,7 @@ export default function CommunityDetail() {
                     </DropdownMenu>
                   </div>
 
-                  <MentionText content={post.content} className="text-foreground whitespace-pre-wrap" />
+                  <RichTextDisplay content={post.content} className="text-foreground" />
 
                   <Separator />
 
@@ -472,13 +474,12 @@ export default function CommunityDetail() {
                   {/* Comment Input */}
                   {isMember && (
                     <div className="flex gap-2">
-                      <Textarea
-                        placeholder="Escreva um comentário..."
+                      <MentionInput
+                        placeholder="Escreva um comentário... (use @ para mencionar)"
                         value={commentContent[post.id] || ""}
-                        onChange={(e) =>
-                          setCommentContent((prev) => ({ ...prev, [post.id]: e.target.value }))
+                        onChange={(value) =>
+                          setCommentContent((prev) => ({ ...prev, [post.id]: value }))
                         }
-                        rows={2}
                         className="flex-1"
                       />
                       <Button onClick={() => handleComment(post.id)} size="sm">

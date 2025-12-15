@@ -26,17 +26,32 @@ export default function ReactionPicker({ postId, currentReaction, onReact }: Rea
   const [open, setOpen] = useState(false);
   const utils = trpc.useUtils();
 
-  const reactMutation = trpc.post.react.useMutation({
+  const addReactionMutation = trpc.reactions.add.useMutation({
     onSuccess: () => {
-      utils.post.getReactions.invalidate({ postId });
-      utils.post.getUserReaction.invalidate({ postId });
-      utils.feed.get.invalidate();
+      utils.reactions.getCounts.invalidate({ postId });
+      utils.reactions.getUserReaction.invalidate({ postId });
+      utils.post.list.invalidate();
+      onReact?.();
+    },
+  });
+
+  const removeReactionMutation = trpc.reactions.remove.useMutation({
+    onSuccess: () => {
+      utils.reactions.getCounts.invalidate({ postId });
+      utils.reactions.getUserReaction.invalidate({ postId });
+      utils.post.list.invalidate();
       onReact?.();
     },
   });
 
   const handleReact = (reactionType: string) => {
-    reactMutation.mutate({ postId, reactionType: reactionType as any });
+    if (currentReaction === reactionType) {
+      // Remove reaction if clicking same one
+      removeReactionMutation.mutate({ postId });
+    } else {
+      // Add or change reaction
+      addReactionMutation.mutate({ postId, reactionType: reactionType as any });
+    }
     setOpen(false);
   };
 

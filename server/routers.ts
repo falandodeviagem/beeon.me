@@ -584,7 +584,7 @@ export const appRouter = router({
         const commentId = await db.createComment({
           ...input,
           authorId: ctx.user.id,
-        });
+        }, ctx.user.id);
 
         await db.recordGamificationAction({
           userId: ctx.user.id,
@@ -940,6 +940,47 @@ export const appRouter = router({
       .input(z.object({ limit: z.number().default(10) }))
       .query(async ({ input }) => {
         return await db.getTrendingHashtags(input.limit);
+      }),
+  }),
+
+  reactions: router({
+    add: protectedProcedure
+      .input(z.object({
+        postId: z.number(),
+        reactionType: z.enum(["love", "like", "laugh", "wow", "sad", "angry"]),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        await db.addPostReaction(input.postId, ctx.user.id, input.reactionType);
+        return { success: true };
+      }),
+
+    remove: protectedProcedure
+      .input(z.object({ postId: z.number() }))
+      .mutation(async ({ ctx, input }) => {
+        await db.removePostReaction(input.postId, ctx.user.id);
+        return { success: true };
+      }),
+
+    getCounts: publicProcedure
+      .input(z.object({ postId: z.number() }))
+      .query(async ({ input }) => {
+        return await db.getPostReactionCounts(input.postId);
+      }),
+
+    getUserReaction: protectedProcedure
+      .input(z.object({ postId: z.number() }))
+      .query(async ({ ctx, input }) => {
+        return await db.getUserReaction(input.postId, ctx.user.id);
+      }),
+
+    getUsers: publicProcedure
+      .input(z.object({ 
+        postId: z.number(),
+        reactionType: z.string().optional()
+      }))
+      .query(async ({ input }) => {
+        const { getPostReactionUsers } = await import('./db-reactions-users');
+        return await getPostReactionUsers(input.postId, input.reactionType || '');
       }),
   }),
 });

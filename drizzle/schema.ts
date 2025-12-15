@@ -559,3 +559,33 @@ export const auditLogs = mysqlTable("audit_logs", {
 
 export type AuditLog = typeof auditLogs.$inferSelect;
 export type InsertAuditLog = typeof auditLogs.$inferInsert;
+
+
+/**
+ * Response Templates - pre-defined responses for moderation
+ */
+export const responseTemplates = mysqlTable("response_templates", {
+  id: int("id").autoincrement().primaryKey(),
+  
+  // Template content
+  name: varchar("name", { length: 255 }).notNull(),
+  content: text("content").notNull(),
+  
+  // Category for organization
+  category: mysqlEnum("category", ["appeal_approve", "appeal_reject", "report_resolve", "report_dismiss", "warning", "ban"]).notNull(),
+  
+  // Who created it
+  createdBy: int("createdBy").notNull(),
+  
+  // Usage count for popularity sorting
+  useCount: int("useCount").default(0).notNull(),
+  
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+}, (table) => ({
+  categoryIdx: index("template_category_idx").on(table.category),
+  createdByIdx: index("template_created_by_idx").on(table.createdBy),
+}));
+
+export type ResponseTemplate = typeof responseTemplates.$inferSelect;
+export type InsertResponseTemplate = typeof responseTemplates.$inferInsert;

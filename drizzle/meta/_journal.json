@@ -120,6 +120,13 @@
       "when": 1765793624224,
       "tag": "0016_flawless_paladin",
       "breakpoints": true
+    },
+    {
+      "idx": 17,
+      "version": "5",
+      "when": 1765795577138,
+      "tag": "0017_daffy_marten_broadcloak",
+      "breakpoints": true
     }
   ]
 }

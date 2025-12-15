@@ -27,6 +27,8 @@ import CommunityStats from "./pages/CommunityStats";
 import Notifications from "./pages/Notifications";
 import BanAppeal from "./pages/BanAppeal";
 import AuditLogs from "./pages/AuditLogs";
+import ModerationAnalytics from "./pages/ModerationAnalytics";
+import ResponseTemplates from "./pages/ResponseTemplates";
 
 function Router() {
   return (
@@ -52,6 +54,8 @@ function Router() {
       <Route path="/moderation" component={Moderation} />
       <Route path="/moderation/appeals" component={BanAppeal} />
       <Route path="/moderation/audit-logs" component={AuditLogs} />
+      <Route path="/moderation/analytics" component={ModerationAnalytics} />
+      <Route path="/moderation/templates" component={ResponseTemplates} />
       <Route path="/404" component={NotFound} />
       <Route component={NotFound} />
     </Switch>

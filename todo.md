@@ -718,3 +718,29 @@
 - [x] Frontend: Filtros por tipo de ação, usuário, período
 - [x] Frontend: Botão de exportar CSV
 - [x] Frontend: Detalhes expandíveis por linha
+
+## 80. Dashboard de Analytics de Moderação (CONCLUÍDO)
+- [x] Backend: Query de denúncias por dia (últimos 30 dias)
+- [x] Backend: Query de ações de moderação por tipo
+- [x] Backend: Query de tempo médio de resolução por período
+- [x] Backend: Query de top moderadores por período
+- [x] Backend: Procedures tRPC para analytics
+- [x] Frontend: Página /moderation/analytics
+- [x] Frontend: Gráfico de linha de denúncias ao longo do tempo
+- [x] Frontend: Gráfico de pizza de tipos de denúncia
+- [x] Frontend: Gráfico de barras de ações por moderador
+- [x] Frontend: Cards de métricas principais
+- [x] Frontend: Filtro de período (7d, 30d, 90d)
+
+## 81. Sistema de Templates de Resposta (CONCLUÍDO)
+- [x] Backend: Criar tabela response_templates no schema
+- [x] Backend: Helper para criar template
+- [x] Backend: Helper para listar templates
+- [x] Backend: Helper para editar/deletar template
+- [x] Backend: Procedures tRPC para templates
+- [x] Frontend: Página de gerenciamento de templates
+- [x] Frontend: Formulário de criação de template
+- [x] Frontend: Lista de templates existentes
+- [x] Frontend: Botões de editar/deletar
+- [x] Frontend: Integrar seletor de templates no modal de apelação
+- [x] Frontend: Integrar seletor de templates no modal de denúncia

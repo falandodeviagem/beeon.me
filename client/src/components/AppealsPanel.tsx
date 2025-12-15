@@ -8,6 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Clock, CheckCircle, XCircle, User, MessageSquare, Calendar } from "lucide-react";
 import { trpc } from "@/lib/trpc";
 import { useToast } from "@/hooks/use-toast";
+import { TemplateSelector } from "@/components/TemplateSelector";
 import { formatDistanceToNow } from "date-fns";
 import { ptBR } from "date-fns/locale";
 
@@ -187,7 +188,19 @@ export default function AppealsPanel() {
               </div>
 
               <div>
-                <label className="text-sm font-medium mb-1 block">Sua resposta:</label>
+                <div className="flex items-center justify-between mb-1">
+                  <label className="text-sm font-medium">Sua resposta:</label>
+                  <div className="flex gap-2">
+                    <TemplateSelector
+                      category="appeal_approve"
+                      onSelect={(content) => setAdminResponse(content)}
+                    />
+                    <TemplateSelector
+                      category="appeal_reject"
+                      onSelect={(content) => setAdminResponse(content)}
+                    />
+                  </div>
+                </div>
                 <Textarea
                   value={adminResponse}
                   onChange={(e) => setAdminResponse(e.target.value)}

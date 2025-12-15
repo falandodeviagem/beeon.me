@@ -1352,6 +1352,79 @@ export const appRouter = router({
         const csv = await exportAuditLogsCSV(input);
         return { csv };
       }),
+
+    // ============ ANALYTICS ============
+
+    // Get analytics by period (admin only)
+    getAnalytics: adminProcedure
+      .input(z.object({
+        days: z.number().default(30),
+      }))
+      .query(async ({ input }) => {
+        const { getAnalyticsByPeriod } = await import('./db-moderation');
+        return await getAnalyticsByPeriod(input.days);
+      }),
+
+    // ============ RESPONSE TEMPLATES ============
+
+    // Create response template (admin only)
+    createTemplate: adminProcedure
+      .input(z.object({
+        name: z.string().min(1),
+        content: z.string().min(1),
+        category: z.enum(["appeal_approve", "appeal_reject", "report_resolve", "report_dismiss", "warning", "ban"]),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const { createResponseTemplate } = await import('./db-moderation');
+        const id = await createResponseTemplate({
+          ...input,
+          createdBy: ctx.user.id,
+        });
+        return { id };
+      }),
+
+    // Get response templates (admin only)
+    getTemplates: adminProcedure
+      .input(z.object({
+        category: z.string().optional(),
+      }))
+      .query(async ({ input }) => {
+        const { getResponseTemplates } = await import('./db-moderation');
+        return await getResponseTemplates(input.category);
+      }),
+
+    // Update response template (admin only)
+    updateTemplate: adminProcedure
+      .input(z.object({
+        id: z.number(),
+        name: z.string().optional(),
+        content: z.string().optional(),
+        category: z.enum(["appeal_approve", "appeal_reject", "report_resolve", "report_dismiss", "warning", "ban"]).optional(),
+      }))
+      .mutation(async ({ input }) => {
+        const { updateResponseTemplate } = await import('./db-moderation');
+        const { id, ...data } = input;
+        await updateResponseTemplate(id, data);
+        return { success: true };
+      }),
+
+    // Delete response template (admin only)
+    deleteTemplate: adminProcedure
+      .input(z.object({ id: z.number() }))
+      .mutation(async ({ input }) => {
+        const { deleteResponseTemplate } = await import('./db-moderation');
+        await deleteResponseTemplate(input.id);
+        return { success: true };
+      }),
+
+    // Increment template use count (admin only)
+    useTemplate: adminProcedure
+      .input(z.object({ id: z.number() }))
+      .mutation(async ({ input }) => {
+        const { incrementTemplateUseCount } = await import('./db-moderation');
+        await incrementTemplateUseCount(input.id);
+        return { success: true };
+      }),
   }),
 });
 

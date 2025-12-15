@@ -7,10 +7,11 @@ import { Textarea } from "@/components/ui/textarea";
 import { trpc } from "@/lib/trpc";
 import { useState } from "react";
 import { toast } from "sonner";
-import { Shield, AlertTriangle, CheckCircle, XCircle, Ban, FileText, MessageSquareWarning } from "lucide-react";
+import { Shield, AlertTriangle, CheckCircle, XCircle, Ban, FileText, MessageSquareWarning, BarChart3, MessageSquare } from "lucide-react";
 import { Link } from "wouter";
 import { ModerationStats } from "@/components/ModerationStats";
 import { Skeleton } from "@/components/ui/skeleton";
+import { TemplateSelector } from "@/components/TemplateSelector";
 import {
   Dialog,
   DialogContent,
@@ -101,6 +102,18 @@ export default function Moderation() {
               <Button variant="outline" className="gap-2">
                 <FileText className="w-4 h-4" />
                 Logs de Auditoria
+              </Button>
+            </Link>
+            <Link href="/moderation/analytics">
+              <Button variant="outline" className="gap-2">
+                <BarChart3 className="w-4 h-4" />
+                Analytics
+              </Button>
+            </Link>
+            <Link href="/moderation/templates">
+              <Button variant="outline" className="gap-2">
+                <MessageSquare className="w-4 h-4" />
+                Templates
               </Button>
             </Link>
             <Dialog>
@@ -250,7 +263,19 @@ export default function Moderation() {
                       </div>
 
                       <div>
-                        <Label htmlFor={`notes-${report.id}`}>Notas da Revisão</Label>
+                        <div className="flex items-center justify-between mb-1">
+                          <Label htmlFor={`notes-${report.id}`}>Notas da Revisão</Label>
+                          <div className="flex gap-2">
+                            <TemplateSelector
+                              category="report_resolve"
+                              onSelect={(content) => setReviewNotes((prev) => ({ ...prev, [report.id]: content }))}
+                            />
+                            <TemplateSelector
+                              category="report_dismiss"
+                              onSelect={(content) => setReviewNotes((prev) => ({ ...prev, [report.id]: content }))}
+                            />
+                          </div>
+                        </div>
                         <Textarea
                           id={`notes-${report.id}`}
                           value={reviewNotes[report.id] || ""}

@@ -807,3 +807,203 @@ export async function exportAuditLogsCSV(filters?: {
 
   return csvContent;
 }
+
+
+// ANALYTICS HELPERS
+
+export async function getAnalyticsByPeriod(days: number = 30) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  const startDate = new Date();
+  startDate.setDate(startDate.getDate() - days);
+
+  // Reports per day - using raw SQL to avoid ONLY_FULL_GROUP_BY issues
+  const reportsPerDay = await db.execute(
+    sql`SELECT DATE(createdAt) as date, COUNT(*) as count FROM reports WHERE createdAt >= ${startDate} GROUP BY DATE(createdAt) ORDER BY DATE(createdAt)`
+  ) as any;
+  const reportsPerDayData = reportsPerDay[0] || [];
+
+  // Reports by type
+  const reportsByType = await db
+    .select({
+      type: reports.reportType,
+      count: sql<number>`count(*)`,
+    })
+    .from(reports)
+    .where(gte(reports.createdAt, startDate))
+    .groupBy(reports.reportType);
+
+  // Reports by status
+  const reportsByStatus = await db
+    .select({
+      status: reports.status,
+      count: sql<number>`count(*)`,
+    })
+    .from(reports)
+    .where(gte(reports.createdAt, startDate))
+    .groupBy(reports.status);
+
+  // Moderation actions per day - using raw SQL to avoid ONLY_FULL_GROUP_BY issues
+  const actionsPerDay = await db.execute(
+    sql`SELECT DATE(createdAt) as date, COUNT(*) as count FROM moderation_logs WHERE createdAt >= ${startDate} GROUP BY DATE(createdAt) ORDER BY DATE(createdAt)`
+  ) as any;
+  const actionsPerDayData = actionsPerDay[0] || [];
+
+  // Actions by type
+  const actionsByType = await db
+    .select({
+      action: moderationLogs.action,
+      count: sql<number>`count(*)`,
+    })
+    .from(moderationLogs)
+    .where(gte(moderationLogs.createdAt, startDate))
+    .groupBy(moderationLogs.action);
+
+  // Top moderators
+  const topModerators = await db
+    .select({
+      moderatorId: moderationLogs.moderatorId,
+      moderatorName: users.name,
+      count: sql<number>`count(*)`,
+    })
+    .from(moderationLogs)
+    .leftJoin(users, eq(moderationLogs.moderatorId, users.id))
+    .where(gte(moderationLogs.createdAt, startDate))
+    .groupBy(moderationLogs.moderatorId, users.name)
+    .orderBy(desc(sql`count(*)`))
+    .limit(10);
+
+  // Average resolution time
+  const avgResolutionTime = await db
+    .select({
+      avgHours: sql<number>`AVG(TIMESTAMPDIFF(HOUR, ${reports.createdAt}, ${reports.reviewedAt}))`,
+    })
+    .from(reports)
+    .where(and(
+      gte(reports.createdAt, startDate),
+      isNotNull(reports.reviewedAt)
+    ));
+
+  // Total counts
+  const totalReports = await db
+    .select({ count: sql<number>`count(*)` })
+    .from(reports)
+    .where(gte(reports.createdAt, startDate));
+
+  const totalActions = await db
+    .select({ count: sql<number>`count(*)` })
+    .from(moderationLogs)
+    .where(gte(moderationLogs.createdAt, startDate));
+
+  // Pending reports
+  const pendingReports = await db
+    .select({ count: sql<number>`count(*)` })
+    .from(reports)
+    .where(and(
+      gte(reports.createdAt, startDate),
+      eq(reports.status, 'pending')
+    ));
+
+  return {
+    period: days,
+    reportsPerDay: reportsPerDayData,
+    reportsByType,
+    reportsByStatus,
+    actionsPerDay: actionsPerDayData,
+    actionsByType,
+    topModerators,
+    avgResolutionHours: avgResolutionTime[0]?.avgHours || 0,
+    totalReports: totalReports[0]?.count || 0,
+    totalActions: totalActions[0]?.count || 0,
+    pendingReports: pendingReports[0]?.count || 0,
+  };
+}
+
+// RESPONSE TEMPLATES HELPERS
+
+export async function createResponseTemplate(data: {
+  name: string;
+  content: string;
+  category: "appeal_approve" | "appeal_reject" | "report_resolve" | "report_dismiss" | "warning" | "ban";
+  createdBy: number;
+}) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  const { responseTemplates } = await import('../drizzle/schema');
+
+  const [result] = await db.insert(responseTemplates).values({
+    name: data.name,
+    content: data.content,
+    category: data.category,
+    createdBy: data.createdBy,
+  });
+
+  return result.insertId;
+}
+
+export async function getResponseTemplates(category?: string) {
+  const db = await getDb();
+  if (!db) return [];
+
+  const { responseTemplates } = await import('../drizzle/schema');
+
+  const query = db
+    .select({
+      id: responseTemplates.id,
+      name: responseTemplates.name,
+      content: responseTemplates.content,
+      category: responseTemplates.category,
+      createdBy: responseTemplates.createdBy,
+      creatorName: users.name,
+      useCount: responseTemplates.useCount,
+      createdAt: responseTemplates.createdAt,
+    })
+    .from(responseTemplates)
+    .leftJoin(users, eq(responseTemplates.createdBy, users.id));
+
+  if (category) {
+    return query
+      .where(eq(responseTemplates.category, category as any))
+      .orderBy(desc(responseTemplates.useCount));
+  }
+
+  return query.orderBy(desc(responseTemplates.useCount));
+}
+
+export async function updateResponseTemplate(
+  id: number,
+  data: { name?: string; content?: string; category?: string }
+) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  const { responseTemplates } = await import('../drizzle/schema');
+
+  await db
+    .update(responseTemplates)
+    .set(data as any)
+    .where(eq(responseTemplates.id, id));
+}
+
+export async function deleteResponseTemplate(id: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  const { responseTemplates } = await import('../drizzle/schema');
+
+  await db.delete(responseTemplates).where(eq(responseTemplates.id, id));
+}
+
+export async function incrementTemplateUseCount(id: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  const { responseTemplates } = await import('../drizzle/schema');
+
+  await db
+    .update(responseTemplates)
+    .set({ useCount: sql`${responseTemplates.useCount} + 1` })
+    .where(eq(responseTemplates.id, id));
+}

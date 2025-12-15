@@ -20,6 +20,7 @@ import Search from "./pages/Search";
 import HashtagPage from "./pages/HashtagPage";
 import Onboarding from "./pages/Onboarding";
 import CommunityStats from "./pages/CommunityStats";
+import Notifications from "./pages/Notifications";
 
 function Router() {
   return (
@@ -31,6 +32,7 @@ function Router() {
       <Route path="/communities" component={Communities} />
       <Route path="/community/:id" component={CommunityDetail} />
       <Route path="/community/:id/stats" component={CommunityStats} />
+      <Route path="/notifications" component={Notifications} />
       <Route path="/leaderboard" component={Leaderboard} />
       <Route path="/invites" component={Invites} />
       <Route path="/search" component={Search} />

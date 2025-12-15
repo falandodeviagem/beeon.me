@@ -144,6 +144,17 @@ export default function NotificationPanel() {
             ))
           )}
         </ScrollArea>
+        
+        <DropdownMenuSeparator />
+        <div className="p-2">
+          <Button
+            variant="ghost"
+            className="w-full"
+            onClick={() => setLocation("/notifications")}
+          >
+            Ver todas as notificações
+          </Button>
+        </div>
       </DropdownMenuContent>
     </DropdownMenu>
   );

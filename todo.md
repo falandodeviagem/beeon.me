@@ -474,3 +474,19 @@
 - [x] Implementar scrollIntoView() quando selectedIndex muda
 - [x] Configurar scroll behavior smooth
 - [x] Testar com listas longas de resultados
+
+## 58. Highlight de Menções em Posts
+- [x] Criar componente MentionText para renderizar conteúdo
+- [x] Detectar @username com regex
+- [x] Substituir por Link clicável para perfil
+- [x] Aplicar cor diferenciada (text-primary)
+- [x] Integrar em posts e comentários
+
+## 59. Página de Notificações
+- [x] Criar procedure markAsRead e markAllAsRead
+- [x] Criar procedure getUnreadCount
+- [x] Criar página Notifications.tsx
+- [x] Listar notificações com filtro lido/não lido
+- [x] Botão "Marcar todas como lidas"
+- [x] Adicionar badge de contador no header
+- [x] Adicionar rota no App.tsx

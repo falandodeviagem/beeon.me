@@ -12,6 +12,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Users, Lock, Heart, MessageCircle, Send, MoreVertical, Flag, Image as ImageIcon } from "lucide-react";
 import ImageUpload from "@/components/ImageUpload";
 import { MentionInput } from "@/components/MentionInput";
+import { MentionText } from "@/components/MentionText";
 import { useRoute, Link } from "wouter";
 import { Skeleton } from "@/components/ui/skeleton";
 import { PromotedCommunitiesWidget } from "@/components/PromotedCommunitiesWidget";
@@ -448,7 +449,7 @@ export default function CommunityDetail() {
                     </DropdownMenu>
                   </div>
 
-                  <p className="text-foreground whitespace-pre-wrap">{post.content}</p>
+                  <MentionText content={post.content} className="text-foreground whitespace-pre-wrap" />
 
                   <Separator />
 

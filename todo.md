@@ -777,3 +777,16 @@
 - [x] Detectar # no MentionInput e mostrar dropdown
 - [x] Mostrar contagem de uso das hashtags
 - [x] Inserir hashtag selecionada no texto
+
+## 86. Página de Hashtag [CONCLUÍDO]
+- [x] Criar procedure para buscar posts por hashtag
+- [x] Criar página /hashtag/:tag
+- [x] Mostrar header com nome da hashtag e contagem
+- [x] Listar posts com a hashtag
+- [x] Adicionar link no HashtagText para a página
+
+## 87. Widget de Trending Hashtags [CONCLUÍDO]
+- [x] Criar componente TrendingHashtags
+- [x] Buscar hashtags em alta (últimos 7 dias)
+- [x] Mostrar no sidebar da Home
+- [x] Estilizar com ícone e contagem de posts

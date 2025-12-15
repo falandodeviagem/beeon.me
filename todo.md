@@ -350,3 +350,12 @@
 - [x] Adicionar animações de entrada/saída
 - [x] Integrar em RecommendedCommunities (substituir alert)
 - [x] Integrar em outros pontos de feedback da aplicação
+
+## 42. Toast de Loading Persistente
+- [x] Adicionar helper toast.loading() ao useToast
+- [x] Implementar toast.update() para atualizar toast existente
+- [x] Criar componente Spinner animado
+- [x] Adicionar variante "loading" ao Toast
+- [x] Configurar duração infinita para loading toasts
+- [x] Integrar no ImageUpload para feedback de upload
+- [x] Testar fluxo completo: loading → success/error

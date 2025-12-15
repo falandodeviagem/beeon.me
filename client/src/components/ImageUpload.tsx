@@ -2,7 +2,7 @@ import { useState, useRef, DragEvent, ChangeEvent } from "react";
 import { Button } from "@/components/ui/button";
 import { X, Upload, Image as ImageIcon } from "lucide-react";
 import { trpc } from "@/lib/trpc";
-import { toast } from "sonner";
+import { useToast } from "@/hooks/use-toast";
 
 interface ImageUploadProps {
   onImagesChange: (urls: string[]) => void;
@@ -15,6 +15,7 @@ export default function ImageUpload({ onImagesChange, maxImages = 5 }: ImageUplo
   const [uploadProgress, setUploadProgress] = useState<number>(0);
   const [isDragging, setIsDragging] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const { loading, update, toast } = useToast();
 
   const uploadMutation = trpc.post.uploadImage.useMutation();
 
@@ -23,7 +24,11 @@ export default function ImageUpload({ onImagesChange, maxImages = 5 }: ImageUplo
 
     const remainingSlots = maxImages - images.length;
     if (remainingSlots <= 0) {
-      toast.error(`Máximo de ${maxImages} imagens por post`);
+      toast({
+        title: "Erro",
+        description: `Máximo de ${maxImages} imagens por post`,
+        variant: "destructive",
+      });
       return;
     }
 
@@ -32,11 +37,19 @@ export default function ImageUpload({ onImagesChange, maxImages = 5 }: ImageUplo
     // Validate file types and sizes
     const validFiles = filesToUpload.filter(file => {
       if (!file.type.startsWith('image/')) {
-        toast.error(`${file.name} não é uma imagem válida`);
+        toast({
+          title: "Erro",
+          description: `${file.name} não é uma imagem válida`,
+          variant: "destructive",
+        });
         return false;
       }
       if (file.size > 5 * 1024 * 1024) { // 5MB limit
-        toast.error(`${file.name} é muito grande (máx 5MB)`);
+        toast({
+          title: "Erro",
+          description: `${file.name} é muito grande (máx 5MB)`,
+          variant: "destructive",
+        });
         return false;
       }
       return true;
@@ -47,39 +60,64 @@ export default function ImageUpload({ onImagesChange, maxImages = 5 }: ImageUplo
     setUploading(true);
     setUploadProgress(0);
 
+    const toastId = loading(
+      validFiles.length === 1
+        ? "Enviando imagem..."
+        : `Enviando ${validFiles.length} imagens...`
+    );
+
     const uploadedUrls: string[] = [];
 
-    for (let i = 0; i < validFiles.length; i++) {
-      const file = validFiles[i]!;
-      
-      try {
-        // Compress and convert to base64
-        const base64 = await compressImage(file);
-        const base64Data = base64.split(',')[1]; // Remove data:image/...;base64, prefix
+    try {
+      for (let i = 0; i < validFiles.length; i++) {
+        const file = validFiles[i]!;
+        
+        try {
+          // Compress and convert to base64
+          const base64 = await compressImage(file);
+          const base64Data = base64.split(',')[1]; // Remove data:image/...;base64, prefix
 
-        // Upload to S3
-        const result = await uploadMutation.mutateAsync({
-          file: base64Data!,
-          filename: file.name,
-        });
+          // Upload to S3
+          const result = await uploadMutation.mutateAsync({
+            file: base64Data!,
+            filename: file.name,
+          });
 
-        uploadedUrls.push(result.url);
-        setUploadProgress(((i + 1) / validFiles.length) * 100);
-      } catch (error) {
-        console.error('Upload error:', error);
-        toast.error(`Erro ao fazer upload de ${file.name}`);
+          uploadedUrls.push(result.url);
+          setUploadProgress(((i + 1) / validFiles.length) * 100);
+        } catch (error) {
+          console.error('Upload error:', error);
+          toast({
+            title: "Erro",
+            description: `Erro ao fazer upload de ${file.name}`,
+            variant: "destructive",
+          });
+        }
       }
-    }
 
-    const newImages = [...images, ...uploadedUrls];
-    setImages(newImages);
-    onImagesChange(newImages);
-    
-    setUploading(false);
-    setUploadProgress(0);
-    
-    if (uploadedUrls.length > 0) {
-      toast.success(`${uploadedUrls.length} imagem(ns) enviada(s)`);
+      const newImages = [...images, ...uploadedUrls];
+      setImages(newImages);
+      onImagesChange(newImages);
+      
+      // Update loading toast to success
+      update(toastId.id, {
+        title: "Sucesso!",
+        description:
+          uploadedUrls.length === 1
+            ? "Imagem enviada com sucesso"
+            : `${uploadedUrls.length} imagens enviadas com sucesso`,
+        variant: "success",
+      });
+    } catch (error) {
+      // Update loading toast to error
+      update(toastId.id, {
+        title: "Erro",
+        description: "Erro ao fazer upload das imagens",
+        variant: "destructive",
+      });
+    } finally {
+      setUploading(false);
+      setUploadProgress(0);
     }
   };
 

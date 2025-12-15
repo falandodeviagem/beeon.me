@@ -137,7 +137,7 @@ type Toast = Omit<ToasterToast, "id">;
 function toast({ ...props }: Toast) {
   const id = genId();
 
-  const update = (props: ToasterToast) =>
+  const update = (props: Partial<ToasterToast>) =>
     dispatch({
       type: "UPDATE_TOAST",
       toast: { ...props, id },
@@ -163,6 +163,24 @@ function toast({ ...props }: Toast) {
   };
 }
 
+// Helper for loading toasts
+function loading(description: string) {
+  return toast({
+    title: "Carregando...",
+    description,
+    variant: "default",
+    duration: Infinity, // Never auto-dismiss
+  });
+}
+
+// Helper to update existing toast
+function update(toastId: string, props: Partial<Toast>) {
+  dispatch({
+    type: "UPDATE_TOAST",
+    toast: { ...props, id: toastId, open: true },
+  });
+}
+
 function useToast() {
   const [state, setState] = React.useState<State>(memoryState);
 
@@ -179,6 +197,8 @@ function useToast() {
   return {
     ...state,
     toast,
+    loading,
+    update,
     dismiss: (toastId?: string) => dispatch({ type: "DISMISS_TOAST", toastId }),
   };
 }

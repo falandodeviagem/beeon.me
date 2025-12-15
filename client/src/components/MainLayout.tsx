@@ -108,6 +108,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
               size="icon"
               onClick={toggleTheme}
               className="w-9 h-9"
+              aria-label={theme === 'dark' ? 'Mudar para tema claro' : 'Mudar para tema escuro'}
               title={theme === 'dark' ? 'Mudar para tema claro' : 'Mudar para tema escuro'}
             >
               {theme === 'dark' ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
@@ -130,7 +131,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
                 
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" className="relative h-10 w-10 rounded-full">
+                    <Button variant="ghost" className="relative h-10 w-10 rounded-full" aria-label="Menu do usuário">
                       <Avatar>
                         <AvatarImage src={user.avatarUrl || undefined} alt={user.name || "User"} />
                         <AvatarFallback className="bg-primary text-primary-foreground">
@@ -175,7 +176,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
       </header>
 
       {/* Main content */}
-      <main className="flex-1">
+      <main id="main-content" className="flex-1">
         {children}
       </main>
 

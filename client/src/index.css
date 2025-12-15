@@ -55,15 +55,15 @@
   --chart-5: oklch(0.55 0.20 45);
   --radius: 0.75rem;
   --background: oklch(0.98 0.01 85);
-  --foreground: oklch(0.20 0.02 85);
+  --foreground: oklch(0.15 0.02 85); /* Darker for better contrast (WCAG AA) */
   --card: oklch(1 0 0);
   --card-foreground: oklch(0.20 0.02 85);
   --popover: oklch(1 0 0);
   --popover-foreground: oklch(0.20 0.02 85);
   --secondary: oklch(0.75 0.15 85); /* Warm yellow */
-  --secondary-foreground: oklch(0.20 0.02 85);
+  --secondary-foreground: oklch(0.10 0.02 85); /* Darker for better contrast on yellow background */
   --muted: oklch(0.95 0.01 85);
-  --muted-foreground: oklch(0.45 0.02 85);
+  --muted-foreground: oklch(0.40 0.02 85); /* Darker for better contrast */
   --accent: oklch(0.70 0.16 70); /* Honey amber */
   --accent-foreground: oklch(1 0 0);
   --destructive: oklch(0.55 0.22 25);
@@ -117,7 +117,24 @@
 
 @layer base {
   * {
-    @apply border-border outline-ring/50;
+    @apply border-border;
+  }
+  
+  /* Enhanced focus indicators for keyboard navigation */
+  *:focus-visible {
+    @apply outline-2 outline-offset-2 outline-ring;
+  }
+  
+  /* Specific focus styles for interactive elements */
+  button:focus-visible,
+  a:focus-visible,
+  input:focus-visible,
+  textarea:focus-visible,
+  select:focus-visible,
+  [role="button"]:focus-visible,
+  [role="link"]:focus-visible,
+  [tabindex]:not([tabindex="-1"]):focus-visible {
+    @apply ring-2 ring-ring ring-offset-2 ring-offset-background;
   }
   body {
     @apply bg-background text-foreground;

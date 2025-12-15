@@ -582,3 +582,15 @@
 - [x] Frontend: Integrar no PostCard (substituir botão de share genérico)
 - [x] Frontend: Modal de compartilhamento com preview
 - [x] Frontend: Copiar link com toast de confirmação
+
+## 68. Melhorias de Acessibilidade e Responsividade
+- [x] Layout totalmente responsivo para mobile (320px+)
+- [x] Layout otimizado para tablet (768px+)
+- [x] Layout otimizado para desktop (1024px+)
+- [x] Ajustar contraste de cores para WCAG AA (4.5:1)
+- [x] Adicionar texto alternativo em todas as imagens
+- [x] Adicionar aria-labels em botões de ícone
+- [x] Melhorar focus indicators (outline visível)
+- [x] Testar navegação por teclado em todos os componentes
+- [x] Adicionar skip-to-content link
+- [x] Garantir que modais trapem o foco

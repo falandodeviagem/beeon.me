@@ -8,6 +8,7 @@ import Messages from "@/pages/Messages";
 import { Route, Switch } from "wouter";
 import ErrorBoundary from "./components/ErrorBoundary";
 import { ThemeProvider } from "./contexts/ThemeContext";
+import { SkipToContent } from "./components/SkipToContent";
 import Home from "./pages/Home";
 import Login from "./pages/Login";
 import Profile from "./pages/Profile";
@@ -60,6 +61,7 @@ function Router() {
 function App() {
   return (
     <ErrorBoundary>
+      <SkipToContent />
       <ThemeProvider defaultTheme="light" switchable>
         <TooltipProvider>
           <Toaster />

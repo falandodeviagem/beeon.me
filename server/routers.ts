@@ -104,6 +104,19 @@ export const appRouter = router({
       .query(async ({ ctx }) => {
         return await db.getUserActions(ctx.user.id);
       }),
+
+    getUserIdsByNames: publicProcedure
+      .input(z.object({ names: z.array(z.string()) }))
+      .query(async ({ input }) => {
+        const result: Record<string, number> = {};
+        for (const name of input.names) {
+          const user = await db.getUserByName(name);
+          if (user) {
+            result[name] = user.id;
+          }
+        }
+        return result;
+      }),
   }),
 
   community: router({
@@ -800,6 +813,12 @@ export const appRouter = router({
         const { getSearchSuggestions } = await import('./db-search');
         return await getSearchSuggestions(input.query);
       }),
+
+    hashtags: publicProcedure
+      .input(z.object({ query: z.string().min(1), limit: z.number().default(10) }))
+      .query(async ({ input }) => {
+        return await db.searchHashtags(input.query, input.limit);
+      }),
   }),
 
 
@@ -826,6 +845,12 @@ export const appRouter = router({
       .mutation(async ({ ctx }) => {
         await db.markAllNotificationsAsRead(ctx.user.id);
         return { success: true };
+      }),
+
+    getMentions: protectedProcedure
+      .input(z.object({ limit: z.number().default(50) }))
+      .query(async ({ ctx, input }) => {
+        return await db.getUserMentions(ctx.user.id, input.limit);
       }),
   }),
 

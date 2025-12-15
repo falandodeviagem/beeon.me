@@ -760,3 +760,20 @@
 - [x] Frontend: Histórico de moderação do usuário
 - [x] Frontend: Seção de gamificação (badges, nível, pontos)
 - [x] Frontend: Integrar link no painel de moderação
+
+## 83. Menções Clicáveis [CONCLUÍDO]
+- [x] Atualizar MentionText para tornar @username clicável
+- [x] Redirecionar para /user/:userId ao clicar
+- [x] Estilizar menções com cor primária e hover
+
+## 84. Página de Menções [CONCLUÍDO]
+- [x] Criar procedure para listar menções do usuário
+- [x] Adicionar aba "Menções" na página de notificações
+- [x] Mostrar contexto (post/comentário) da menção
+- [x] Marcar menções como lidas
+
+## 85. Autocomplete de Hashtags [CONCLUÍDO]
+- [x] Criar procedure para buscar hashtags por prefixo
+- [x] Detectar # no MentionInput e mostrar dropdown
+- [x] Mostrar contagem de uso das hashtags
+- [x] Inserir hashtag selecionada no texto

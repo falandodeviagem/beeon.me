@@ -1869,4 +1869,28 @@ export async function getCommunityStats(communityId: number, days: number = 30) 
   };
 }
 
+/**
+ * Search hashtags by prefix for autocomplete
+ */
+export async function searchHashtags(query: string, limit: number = 10) {
+  const db = await getDb();
+  if (!db) return [];
+
+  const searchTerm = query.replace(/^#/, '').toLowerCase();
+  if (!searchTerm) return [];
+
+  const result = await db
+    .select({
+      id: hashtags.id,
+      tag: hashtags.tag,
+      useCount: hashtags.useCount,
+    })
+    .from(hashtags)
+    .where(like(hashtags.tag, `${searchTerm}%`))
+    .orderBy(desc(hashtags.useCount))
+    .limit(limit);
+
+  return result;
+}
+
 // MODERATION OPERATIONS

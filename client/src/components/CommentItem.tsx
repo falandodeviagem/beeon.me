@@ -21,7 +21,8 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { MentionInput } from "@/components/MentionInput";
 import { MentionText } from "@/components/MentionText";
-import { Edit2, MoreVertical, Trash2 } from "lucide-react";
+import { Edit2, Flag, MoreVertical, Trash2 } from "lucide-react";
+import { ReportButton } from "@/components/ReportButton";
 import { formatDistanceToNow } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { useState } from "react";
@@ -149,7 +150,7 @@ export function CommentItem({ comment, postId, onDeleted }: CommentItemProps) {
               )}
             </div>
 
-            {isAuthor && (
+            {isAuthor ? (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
@@ -170,6 +171,12 @@ export function CommentItem({ comment, postId, onDeleted }: CommentItemProps) {
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
+            ) : user && (
+              <ReportButton 
+                reportType="comment" 
+                targetId={comment.id} 
+                variant="ghost"
+              />
             )}
           </div>
 

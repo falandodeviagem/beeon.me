@@ -477,3 +477,26 @@ export const moderationLogs = mysqlTable("moderation_logs", {
 
 export type ModerationLog = typeof moderationLogs.$inferSelect;
 export type InsertModerationLog = typeof moderationLogs.$inferInsert;
+
+/**
+ * User Warnings - strike system for moderation
+ */
+export const userWarnings = mysqlTable("user_warnings", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull(),
+  moderatorId: int("moderatorId").notNull(),
+  level: mysqlEnum("level", ["warning_1", "warning_2", "temp_ban", "perm_ban"]).notNull(),
+  reason: text("reason").notNull(),
+  reportId: int("reportId"),
+  expiresAt: timestamp("expiresAt"),
+  isActive: boolean("isActive").default(true).notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+}, (table) => ({
+  userIdx: index("warning_user_idx").on(table.userId),
+  moderatorIdx: index("warning_moderator_idx").on(table.moderatorId),
+  levelIdx: index("warning_level_idx").on(table.level),
+  activeIdx: index("warning_active_idx").on(table.isActive),
+}));
+
+export type UserWarning = typeof userWarnings.$inferSelect;
+export type InsertUserWarning = typeof userWarnings.$inferInsert;

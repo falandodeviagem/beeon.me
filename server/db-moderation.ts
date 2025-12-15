@@ -1,7 +1,7 @@
 import { getDb } from './db';
 import { reports, moderationLogs, posts, comments, users } from '../drizzle/schema';
 import type { InsertReport, InsertModerationLog } from '../drizzle/schema';
-import { eq, desc, and } from 'drizzle-orm';
+import { eq, desc, and, sql, gte, isNotNull } from 'drizzle-orm';
 
 export async function createReport(data: InsertReport) {
   const db = await getDb();
@@ -222,5 +222,267 @@ export async function unbanUserAsModerator(userId: number, moderatorId: number, 
     action: "unban_user",
     targetUserId: userId,
     reason,
+  });
+}
+
+// MODERATION STATISTICS
+
+export async function getModerationStats() {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  // Get total reports
+  const totalReports = await db
+    .select({ count: sql<number>`count(*)` })
+    .from(reports);
+
+  // Get pending reports
+  const pendingReports = await db
+    .select({ count: sql<number>`count(*)` })
+    .from(reports)
+    .where(eq(reports.status, 'pending'));
+
+  // Get resolved reports
+  const resolvedReports = await db
+    .select({ count: sql<number>`count(*)` })
+    .from(reports)
+    .where(eq(reports.status, 'resolved'));
+
+  // Get dismissed reports
+  const dismissedReports = await db
+    .select({ count: sql<number>`count(*)` })
+    .from(reports)
+    .where(eq(reports.status, 'dismissed'));
+
+  // Get reports by type
+  const reportsByType = await db
+    .select({
+      type: reports.reportType,
+      count: sql<number>`count(*)`,
+    })
+    .from(reports)
+    .groupBy(reports.reportType);
+
+  // Get reports per day (last 30 days)
+  const thirtyDaysAgo = new Date();
+  thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+
+  const reportsPerDay = await db
+    .select({
+      date: sql<string>`DATE(${reports.createdAt})`,
+      count: sql<number>`count(*)`,
+    })
+    .from(reports)
+    .where(gte(reports.createdAt, thirtyDaysAgo))
+    .groupBy(sql`DATE(${reports.createdAt})`)
+    .orderBy(sql`DATE(${reports.createdAt})`);
+
+  // Get average resolution time (in hours)
+  const avgResolutionTime = await db
+    .select({
+      avgHours: sql<number>`AVG(TIMESTAMPDIFF(HOUR, ${reports.createdAt}, ${reports.reviewedAt}))`,
+    })
+    .from(reports)
+    .where(isNotNull(reports.reviewedAt));
+
+  // Get top moderators
+  const topModerators = await db
+    .select({
+      moderatorId: reports.reviewedBy,
+      moderatorName: users.name,
+      count: sql<number>`count(*)`,
+    })
+    .from(reports)
+    .leftJoin(users, eq(reports.reviewedBy, users.id))
+    .where(isNotNull(reports.reviewedBy))
+    .groupBy(reports.reviewedBy, users.name)
+    .orderBy(desc(sql`count(*)`))
+    .limit(10);
+
+  return {
+    total: totalReports[0]?.count || 0,
+    pending: pendingReports[0]?.count || 0,
+    resolved: resolvedReports[0]?.count || 0,
+    dismissed: dismissedReports[0]?.count || 0,
+    byType: reportsByType,
+    perDay: reportsPerDay,
+    avgResolutionHours: avgResolutionTime[0]?.avgHours || 0,
+    topModerators,
+  };
+}
+
+
+// USER WARNINGS SYSTEM
+
+export async function createWarning(data: {
+  userId: number;
+  moderatorId: number;
+  level: "warning_1" | "warning_2" | "temp_ban" | "perm_ban";
+  reason: string;
+  reportId?: number;
+  expiresAt?: Date;
+}) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  const { userWarnings } = await import('../drizzle/schema');
+  
+  const [result] = await db.insert(userWarnings).values({
+    userId: data.userId,
+    moderatorId: data.moderatorId,
+    level: data.level,
+    reason: data.reason,
+    reportId: data.reportId,
+    expiresAt: data.expiresAt,
+    isActive: true,
+  });
+
+  // Create moderation log
+  await createModerationLog({
+    moderatorId: data.moderatorId,
+    action: data.level === "temp_ban" || data.level === "perm_ban" ? "ban_user" : "resolve_report",
+    targetUserId: data.userId,
+    reportId: data.reportId,
+    reason: `${data.level}: ${data.reason}`,
+  });
+
+  return result.insertId;
+}
+
+export async function getUserWarnings(userId: number) {
+  const db = await getDb();
+  if (!db) return [];
+
+  const { userWarnings } = await import('../drizzle/schema');
+
+  return db
+    .select({
+      id: userWarnings.id,
+      userId: userWarnings.userId,
+      moderatorId: userWarnings.moderatorId,
+      moderatorName: users.name,
+      level: userWarnings.level,
+      reason: userWarnings.reason,
+      reportId: userWarnings.reportId,
+      expiresAt: userWarnings.expiresAt,
+      isActive: userWarnings.isActive,
+      createdAt: userWarnings.createdAt,
+    })
+    .from(userWarnings)
+    .leftJoin(users, eq(userWarnings.moderatorId, users.id))
+    .where(eq(userWarnings.userId, userId))
+    .orderBy(desc(userWarnings.createdAt));
+}
+
+export async function getActiveWarningsCount(userId: number) {
+  const db = await getDb();
+  if (!db) return 0;
+
+  const { userWarnings } = await import('../drizzle/schema');
+
+  const result = await db
+    .select({ count: sql<number>`count(*)` })
+    .from(userWarnings)
+    .where(and(
+      eq(userWarnings.userId, userId),
+      eq(userWarnings.isActive, true)
+    ));
+
+  return result[0]?.count || 0;
+}
+
+export async function getNextWarningLevel(userId: number): Promise<"warning_1" | "warning_2" | "temp_ban" | "perm_ban"> {
+  const db = await getDb();
+  if (!db) return "warning_1";
+
+  const { userWarnings } = await import('../drizzle/schema');
+
+  // Get all active warnings for this user
+  const activeWarnings = await db
+    .select({ level: userWarnings.level })
+    .from(userWarnings)
+    .where(and(
+      eq(userWarnings.userId, userId),
+      eq(userWarnings.isActive, true)
+    ))
+    .orderBy(desc(userWarnings.createdAt));
+
+  if (activeWarnings.length === 0) return "warning_1";
+
+  const lastLevel = activeWarnings[0].level;
+
+  // Escalation logic
+  switch (lastLevel) {
+    case "warning_1":
+      return "warning_2";
+    case "warning_2":
+      return "temp_ban";
+    case "temp_ban":
+      return "perm_ban";
+    case "perm_ban":
+      return "perm_ban"; // Already at max
+    default:
+      return "warning_1";
+  }
+}
+
+export async function issueWarningWithEscalation(
+  userId: number,
+  moderatorId: number,
+  reason: string,
+  reportId?: number
+) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  // Get next warning level based on history
+  const level = await getNextWarningLevel(userId);
+
+  // Calculate expiration for temp ban (7 days)
+  let expiresAt: Date | undefined;
+  if (level === "temp_ban") {
+    expiresAt = new Date();
+    expiresAt.setDate(expiresAt.getDate() + 7);
+  }
+
+  // Create the warning
+  const warningId = await createWarning({
+    userId,
+    moderatorId,
+    level,
+    reason,
+    reportId,
+    expiresAt,
+  });
+
+  // If temp_ban or perm_ban, also ban the user
+  if (level === "temp_ban" || level === "perm_ban") {
+    await banUserAsModerator(
+      userId,
+      moderatorId,
+      reason,
+      expiresAt,
+      reportId
+    );
+  }
+
+  return { warningId, level, expiresAt };
+}
+
+export async function deactivateWarning(warningId: number, moderatorId: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  const { userWarnings } = await import('../drizzle/schema');
+
+  await db
+    .update(userWarnings)
+    .set({ isActive: false })
+    .where(eq(userWarnings.id, warningId));
+
+  await createModerationLog({
+    moderatorId,
+    action: "resolve_report",
+    reason: `Warning #${warningId} deactivated`,
   });
 }

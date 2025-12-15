@@ -8,6 +8,7 @@ import { trpc } from "@/lib/trpc";
 import { useState } from "react";
 import { toast } from "sonner";
 import { Shield, AlertTriangle, CheckCircle, XCircle, Ban } from "lucide-react";
+import { ModerationStats } from "@/components/ModerationStats";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   Dialog,
@@ -139,8 +140,11 @@ export default function Moderation() {
           </Dialog>
         </div>
 
-        {/* Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        {/* Stats Dashboard */}
+        <ModerationStats />
+
+        {/* Legacy Stats - Hidden */}
+        <div className="hidden grid-cols-1 md:grid-cols-3 gap-4">
           <Card>
             <CardContent className="pt-6">
               <div className="flex items-center gap-3">

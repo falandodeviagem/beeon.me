@@ -648,21 +648,47 @@
 - [x] Verificar inconsistências de dados no banco
 
 ## 74. Sistema de Moderação de Conteúdo
-- [ ] Backend: Criar tabela de reports no schema
-- [ ] Backend: Criar tabela de moderation_logs no schema
-- [ ] Backend: Helper para criar report (post ou comentário)
-- [ ] Backend: Helper para listar reports pendentes
-- [ ] Backend: Helper para resolver report (aprovar/rejeitar)
-- [ ] Backend: Helper para remover post/comentário
-- [ ] Backend: Helper para banir usuário (temporário/permanente)
-- [ ] Backend: Helper para listar histórico de moderação
-- [ ] Backend: Procedures tRPC para reports
-- [ ] Backend: Procedures tRPC para moderação (admin only)
-- [ ] Frontend: Botão de reportar em posts
-- [ ] Frontend: Botão de reportar em comentários
-- [ ] Frontend: Modal de report com categorias
-- [ ] Frontend: Página de painel de moderação (admin only)
-- [ ] Frontend: Lista de reports pendentes
-- [ ] Frontend: Ações de moderação (remover, banir)
-- [ ] Frontend: Histórico de moderação
-- [ ] Frontend: Filtros por tipo e status
+- [x] Backend: Criar tabela de reports no schema
+- [x] Backend: Criar tabela de moderation_logs no schema
+- [x] Backend: Helper para criar report (post ou comentário)
+- [x] Backend: Helper para listar reports pendentes
+- [x] Backend: Helper para resolver report (aprovar/rejeitar)
+- [x] Backend: Helper para remover post/comentário
+- [x] Backend: Helper para banir usuário (temporário/permanente)
+- [x] Backend: Helper para listar histórico de moderação
+- [x] Backend: Procedures tRPC para reports
+- [x] Backend: Procedures tRPC para moderação (admin only)
+- [x] Frontend: Botão de reportar em posts
+- [x] Frontend: Botão de reportar em comentários
+- [x] Frontend: Modal de report com categorias
+- [x] Frontend: Página de painel de moderação (admin only)
+- [x] Frontend: Lista de reports pendentes
+- [x] Frontend: Ações de moderação (remover, banir)
+- [x] Frontend: Histórico de moderação
+- [x] Frontend: Filtros por tipo e status
+
+## 75. ReportButton nos Comentários
+- [x] Importar ReportButton no CommentItem
+- [x] Adicionar botão de denunciar no dropdown de ações
+- [x] Mostrar apenas para não-autores logados
+- [x] Testar fluxo de denúncia de comentário
+
+## 76. Dashboard de Estatísticas de Moderação
+- [x] Backend: Query para contar reports por dia/semana
+- [x] Backend: Query para contar reports por tipo
+- [x] Backend: Query para calcular tempo médio de resolução
+- [x] Backend: Query para ranking de moderadores ativos
+- [x] Frontend: Componente de gráfico de linha (volume por dia)
+- [x] Frontend: Componente de gráfico de pizza (tipos de denúncia)
+- [x] Frontend: Cards com métricas principais
+- [x] Frontend: Integrar na página de moderação
+
+## 77. Sistema de Avisos (Warnings)
+- [x] Backend: Tabela user_warnings no schema
+- [x] Backend: Helpers para criar/listar avisos
+- [x] Backend: Lógica de escalação (1º aviso, 2º aviso, ban temp, ban perm)
+- [x] Backend: Procedure para emitir aviso
+- [x] Backend: Verificar strikes antes de banir
+- [x] Frontend: Modal de emitir aviso no painel de moderação
+- [x] Frontend: Histórico de avisos do usuário
+- [x] Frontend: Indicador de strikes no perfil (para admins)

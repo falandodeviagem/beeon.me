@@ -1177,6 +1177,74 @@ export const appRouter = router({
         const { getModerationLogs } = await import('./db-moderation');
         return await getModerationLogs(input.limit);
       }),
+
+    // Get moderation statistics (admin only)
+    getStats: protectedProcedure
+      .use(({ ctx, next }) => {
+        if (ctx.user.role !== 'admin') {
+          throw new TRPCError({ code: 'FORBIDDEN', message: 'Admin access required' });
+        }
+        return next({ ctx });
+      })
+      .query(async () => {
+        const { getModerationStats } = await import('./db-moderation');
+        return await getModerationStats();
+      }),
+
+    // Issue warning with automatic escalation (admin only)
+    issueWarning: protectedProcedure
+      .input(z.object({
+        userId: z.number(),
+        reason: z.string().min(1),
+        reportId: z.number().optional(),
+      }))
+      .use(({ ctx, next }) => {
+        if (ctx.user.role !== 'admin') {
+          throw new TRPCError({ code: 'FORBIDDEN', message: 'Admin access required' });
+        }
+        return next({ ctx });
+      })
+      .mutation(async ({ ctx, input }) => {
+        const { issueWarningWithEscalation } = await import('./db-moderation');
+        return await issueWarningWithEscalation(
+          input.userId,
+          ctx.user.id,
+          input.reason,
+          input.reportId
+        );
+      }),
+
+    // Get user warnings (admin only)
+    getUserWarnings: protectedProcedure
+      .input(z.object({ userId: z.number() }))
+      .use(({ ctx, next }) => {
+        if (ctx.user.role !== 'admin') {
+          throw new TRPCError({ code: 'FORBIDDEN', message: 'Admin access required' });
+        }
+        return next({ ctx });
+      })
+      .query(async ({ input }) => {
+        const { getUserWarnings, getActiveWarningsCount, getNextWarningLevel } = await import('./db-moderation');
+        const warnings = await getUserWarnings(input.userId);
+        const activeCount = await getActiveWarningsCount(input.userId);
+        const nextLevel = await getNextWarningLevel(input.userId);
+        return { warnings, activeCount, nextLevel };
+      }),
+
+    // Deactivate warning (admin only)
+    deactivateWarning: protectedProcedure
+      .input(z.object({ warningId: z.number() }))
+      .use(({ ctx, next }) => {
+        if (ctx.user.role !== 'admin') {
+          throw new TRPCError({ code: 'FORBIDDEN', message: 'Admin access required' });
+        }
+        return next({ ctx });
+      })
+      .mutation(async ({ ctx, input }) => {
+        const { deactivateWarning } = await import('./db-moderation');
+        await deactivateWarning(input.warningId, ctx.user.id);
+        return { success: true };
+      }),
   }),
 });
 

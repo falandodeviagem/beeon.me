@@ -11,6 +11,7 @@ import { trpc } from "@/lib/trpc";
 import { Users, Trophy, UserPlus, ArrowRight, Sparkles } from "lucide-react";
 import { Link } from "wouter";
 import { Skeleton } from "@/components/ui/skeleton";
+import { PostSkeletonList } from "@/components/PostSkeleton";
 import { useState, useRef, useEffect } from "react";
 import { useLocation } from "wouter";
 
@@ -219,11 +220,7 @@ export default function Home() {
             </div>
 
             {feedLoading ? (
-              <div className="space-y-4">
-                {[1, 2, 3].map((i) => (
-                  <Skeleton key={i} className="h-64" />
-                ))}
-              </div>
+              <PostSkeletonList count={3} />
             ) : feedPosts && feedPosts.length > 0 ? (
               <div className="space-y-4">
                 {feedPosts.map((post) => (

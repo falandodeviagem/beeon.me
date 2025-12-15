@@ -594,3 +594,23 @@
 - [x] Testar navegação por teclado em todos os componentes
 - [x] Adicionar skip-to-content link
 - [x] Garantir que modais trapem o foco
+
+## 69. Infinite Scroll nos Feeds
+- [x] Backend: Atualizar procedure de getFeedPosts para suportar cursor-based pagination
+- [x] Backend: Retornar hasMore flag indicando se há mais posts
+- [x] Frontend: Hook useInfiniteScroll para detectar scroll no fim da página
+- [x] Frontend: Integrar com trpc.useInfiniteQuery
+- [x] Frontend: Skeleton loader para posts durante carregamento
+- [x] Frontend: Indicador de "carregando mais" no final da lista
+- [x] Frontend: Botão "Carregar mais" como fallback
+- [x] Frontend: Aplicar em Home, CommunityDetail e UserProfile
+
+## 70. Drag & Drop para Upload de Imagens
+- [x] Frontend: Área de drop zone com feedback visual
+- [x] Frontend: Suporte a arrastar e soltar múltiplas imagens
+- [x] Frontend: Preview instantâneo das imagens selecionadas
+- [x] Frontend: Barra de progresso durante upload
+- [x] Frontend: Validação de tipo de arquivo (apenas imagens)
+- [x] Frontend: Validação de tamanho máximo (5MB por imagem)
+- [x] Frontend: Botão para remover imagem individual do preview
+- [x] Frontend: Integrar com ImageUpload component existente

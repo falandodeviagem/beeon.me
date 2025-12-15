@@ -217,11 +217,12 @@ export default function ImageUpload({ onImagesChange, maxImages = 5 }: ImageUplo
           onClick={() => fileInputRef.current?.click()}
           className={`
             border-2 border-dashed rounded-lg p-6 text-center cursor-pointer
-            transition-colors duration-200
+            transition-all duration-200 ease-in-out
             ${isDragging 
-              ? 'border-primary bg-primary/5' 
-              : 'border-border hover:border-primary/50 hover:bg-accent/50'
+              ? 'border-primary bg-primary/10 scale-[1.02] shadow-lg' 
+              : 'border-border hover:border-primary/50 hover:bg-accent/50 hover:shadow-md'
             }
+            ${uploading ? 'pointer-events-none opacity-60' : ''}
           `}
         >
           <input
@@ -234,10 +235,16 @@ export default function ImageUpload({ onImagesChange, maxImages = 5 }: ImageUplo
           />
           
           <div className="flex flex-col items-center gap-2">
-            <Upload className="w-8 h-8 text-muted-foreground" />
+            <div className={`transition-transform duration-200 ${
+              isDragging ? 'scale-110 text-primary' : 'text-muted-foreground'
+            }`}>
+              <Upload className="w-8 h-8" />
+            </div>
             <div>
-              <p className="font-medium text-sm">
-                Arraste imagens ou clique para selecionar
+              <p className={`font-medium text-sm transition-colors ${
+                isDragging ? 'text-primary' : ''
+              }`}>
+                {isDragging ? 'Solte as imagens aqui' : 'Arraste imagens ou clique para selecionar'}
               </p>
               <p className="text-xs text-muted-foreground mt-1">
                 Máximo {maxImages} imagens, até 5MB cada
@@ -267,7 +274,11 @@ export default function ImageUpload({ onImagesChange, maxImages = 5 }: ImageUplo
       {images.length > 0 && (
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
           {images.map((url, index) => (
-            <div key={index} className="relative group aspect-square rounded-lg overflow-hidden bg-secondary">
+            <div 
+              key={index} 
+              className="relative group aspect-square rounded-lg overflow-hidden bg-secondary animate-in fade-in zoom-in duration-300"
+              style={{ animationDelay: `${index * 50}ms` }}
+            >
               <img
                 src={url}
                 alt={`Upload ${index + 1}`}

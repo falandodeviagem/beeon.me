@@ -19,7 +19,8 @@ import {
   messages, InsertMessage,
   hashtags, InsertHashtag,
   postHashtags, InsertPostHashtag,
-  communityPromotions, InsertCommunityPromotion
+  communityPromotions, InsertCommunityPromotion,
+  mentions, InsertMention
 } from "../drizzle/schema";
 import { ENV } from './_core/env';
 
@@ -1611,4 +1612,118 @@ export async function getRecommendedCommunities(userId: number, limit: number = 
   return scoredCommunities
     .sort((a, b) => b.score - a.score)
     .slice(0, limit);
+}
+
+/**
+ * Create a mention
+ */
+export async function createMention(data: InsertMention) {
+  const db = await getDb();
+  await db!.insert(mentions).values(data);
+}
+
+/**
+ * Get mentions for a post
+ */
+export async function getPostMentions(postId: number) {
+  const db = await getDb();
+  return await db!
+    .select()
+    .from(mentions)
+    .where(eq(mentions.postId, postId));
+}
+
+/**
+ * Get mentions for a comment
+ */
+export async function getCommentMentions(commentId: number) {
+  const db = await getDb();
+  return await db!
+    .select()
+    .from(mentions)
+    .where(eq(mentions.commentId, commentId));
+}
+
+/**
+ * Get user mentions (notifications)
+ */
+export async function getUserMentions(userId: number, limit: number = 20) {
+  const db = await getDb();
+  return await db!
+    .select({
+      id: mentions.id,
+      postId: mentions.postId,
+      commentId: mentions.commentId,
+      mentionedBy: mentions.mentionedBy,
+      createdAt: mentions.createdAt,
+      mentionerName: users.name,
+      mentionerAvatar: users.avatarUrl,
+    })
+    .from(mentions)
+    .leftJoin(users, eq(mentions.mentionedBy, users.id))
+    .where(eq(mentions.mentionedUserId, userId))
+    .orderBy(desc(mentions.createdAt))
+    .limit(limit);
+}
+
+/**
+ * Get community statistics for dashboard
+ */
+export async function getCommunityStats(communityId: number, days: number = 30) {
+  const db = await getDb();
+  const startDate = new Date();
+  startDate.setDate(startDate.getDate() - days);
+
+  // New members per day
+  const newMembersData = await db!
+    .select({
+      date: sql<string>`DATE(${communityMembers.joinedAt})`,
+      count: sql<number>`COUNT(*)`,
+    })
+    .from(communityMembers)
+    .where(
+      and(
+        eq(communityMembers.communityId, communityId),
+        gte(communityMembers.joinedAt, startDate)
+      )
+    )
+    .groupBy(sql`DATE(${communityMembers.joinedAt})`)
+    .orderBy(sql`DATE(${communityMembers.joinedAt})`);
+
+  // Posts per week
+  const postsData = await db!
+    .select({
+      week: sql<string>`YEARWEEK(${posts.createdAt})`,
+      count: sql<number>`COUNT(*)`,
+    })
+    .from(posts)
+    .where(
+      and(
+        eq(posts.communityId, communityId),
+        gte(posts.createdAt, startDate)
+      )
+    )
+    .groupBy(sql`YEARWEEK(${posts.createdAt})`)
+    .orderBy(sql`YEARWEEK(${posts.createdAt})`);
+
+  // Average engagement (likes + comments per post)
+  const engagementData = await db!
+    .select({
+      avgLikes: sql<number>`AVG(${posts.likeCount})`,
+      avgComments: sql<number>`AVG(${posts.commentCount})`,
+      totalPosts: sql<number>`COUNT(*)`,
+    })
+    .from(posts)
+    .where(
+      and(
+        eq(posts.communityId, communityId),
+        gte(posts.createdAt, startDate)
+      )
+    );
+
+  return {
+    newMembersPerDay: newMembersData,
+    postsPerWeek: postsData,
+    engagement: engagementData[0] || { avgLikes: 0, avgComments: 0, totalPosts: 0 },
+  };
 }

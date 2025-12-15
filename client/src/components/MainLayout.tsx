@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Home, Users, Trophy, UserPlus, Shield, LogOut, User, Search, Mail, Sun, Moon } from "lucide-react";
 import { SoundToggle } from "@/components/SoundToggle";
+import { GlobalSearch } from "@/components/GlobalSearch";
 import NotificationPanel from "@/components/NotificationPanel";
 import { Link, useLocation } from "wouter";
 import { trpc } from "@/lib/trpc";
@@ -66,6 +67,13 @@ export default function MainLayout({ children }: MainLayoutProps) {
               </span>
             </a>
           </Link>
+
+          {/* Global Search */}
+          {isAuthenticated && (
+            <div className="flex-1 max-w-md mx-4">
+              <GlobalSearch />
+            </div>
+          )}
 
           {/* Navigation */}
           {isAuthenticated && (

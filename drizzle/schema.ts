@@ -432,3 +432,22 @@ export const communityPromotions = mysqlTable("community_promotions", {
 
 export type CommunityPromotion = typeof communityPromotions.$inferSelect;
 export type InsertCommunityPromotion = typeof communityPromotions.$inferInsert;
+
+/**
+ * Mentions - tracks user mentions in posts and comments
+ */
+export const mentions = mysqlTable("mentions", {
+  id: int("id").autoincrement().primaryKey(),
+  postId: int("postId"),
+  commentId: int("commentId"),
+  mentionedUserId: int("mentionedUserId").notNull(),
+  mentionedBy: int("mentionedBy").notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+}, (table) => ({
+  mentionedUserIdx: index("mentioned_user_idx").on(table.mentionedUserId),
+  postIdx: index("post_idx").on(table.postId),
+  commentIdx: index("comment_idx").on(table.commentId),
+}));
+
+export type Mention = typeof mentions.$inferSelect;
+export type InsertMention = typeof mentions.$inferInsert;

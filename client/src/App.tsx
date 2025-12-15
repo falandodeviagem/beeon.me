@@ -19,6 +19,7 @@ import Moderation from "./pages/Moderation";
 import Search from "./pages/Search";
 import HashtagPage from "./pages/HashtagPage";
 import Onboarding from "./pages/Onboarding";
+import CommunityStats from "./pages/CommunityStats";
 
 function Router() {
   return (
@@ -29,6 +30,7 @@ function Router() {
       <Route path="/profile" component={Profile} />
       <Route path="/communities" component={Communities} />
       <Route path="/community/:id" component={CommunityDetail} />
+      <Route path="/community/:id/stats" component={CommunityStats} />
       <Route path="/leaderboard" component={Leaderboard} />
       <Route path="/invites" component={Invites} />
       <Route path="/search" component={Search} />

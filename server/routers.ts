@@ -134,6 +134,20 @@ export const appRouter = router({
         return await db.getRecommendedCommunities(ctx.user.id, limit);
       }),
 
+    getStats: protectedProcedure
+      .input(z.object({
+        communityId: z.number(),
+        days: z.number().min(7).max(90).default(30),
+      }))
+      .query(async ({ ctx, input }) => {
+        // Check if user is community owner
+        const community = await db.getCommunityById(input.communityId);
+        if (!community || community.ownerId !== ctx.user.id) {
+          throw new TRPCError({ code: 'FORBIDDEN', message: 'Only community owner can view stats' });
+        }
+        return await db.getCommunityStats(input.communityId, input.days);
+      }),
+
     create: protectedProcedure
       .input(z.object({
         name: z.string().min(1).max(255),
@@ -628,6 +642,32 @@ export const appRouter = router({
       .input(z.object({ query: z.string().min(1), limit: z.number().default(20) }))
       .query(async ({ input }) => {
         return await db.searchUsers(input.query, input.limit);
+      }),
+
+    global: publicProcedure
+      .input(z.object({ query: z.string().min(1), limit: z.number().default(5) }))
+      .query(async ({ input }) => {
+        const [communities, users, posts, hashtags] = await Promise.all([
+          db.searchCommunities(input.query, { limit: input.limit }),
+          db.searchUsers(input.query, input.limit),
+          db.getFeedPosts([], 50).then(posts => 
+            posts.filter(p => 
+              p.content?.toLowerCase().includes(input.query.toLowerCase())
+            ).slice(0, input.limit)
+          ),
+          db.getTrendingHashtags(20).then(tags => 
+            tags.filter(t => 
+              t.tag.toLowerCase().includes(input.query.toLowerCase())
+            ).slice(0, input.limit)
+          ),
+        ]);
+        
+        return {
+          communities,
+          users,
+          posts,
+          hashtags,
+        };
       }),
   }),
 

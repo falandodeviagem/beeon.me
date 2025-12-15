@@ -414,3 +414,30 @@
 - [x] Remover código manual de loading/update
 - [x] Mensagens dinâmicas baseadas em resposta
 - [x] Demonstrar uso do novo helper
+
+## 51. Sistema de Menções
+- [x] Criar tabela mentions no schema
+- [x] Adicionar helper searchUsers no db.ts
+- [x] Criar procedure searchUsers no routers.ts
+- [ ] Implementar componente MentionInput com autocomplete
+- [ ] Detectar @ e mostrar dropdown de usuários
+- [ ] Salvar menções ao criar post/comentário
+- [ ] Enviar notificações para usuários mencionados
+
+## 52. Busca Global Unificada
+- [x] Criar procedure globalSearch no routers.ts
+- [x] Buscar em comunidades, posts, usuários e hashtags
+- [x] Criar componente GlobalSearch no header
+- [x] Agrupar resultados por categoria
+- [x] Highlight de termos encontrados
+- [ ] Navegação por teclado (arrow keys)
+
+## 53. Dashboard de Estatísticas de Comunidade
+- [x] Instalar chart.js e react-chartjs-2
+- [x] Criar helpers de estatísticas no db.ts
+- [x] Criar procedures getCommunityStats no routers.ts
+- [x] Implementar página CommunityStats
+- [x] Gráfico de novos membros por dia
+- [x] Gráfico de posts por semana
+- [x] Gráfico de engajamento médio
+- [x] Seletor de período (7/30/90 dias)

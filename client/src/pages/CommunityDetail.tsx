@@ -11,11 +11,11 @@ import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { Users, Lock, Heart, MessageCircle, Send, MoreVertical, Flag, Image as ImageIcon } from "lucide-react";
 import ImageUpload from "@/components/ImageUpload";
-import { useRoute } from "wouter";
+import { useRoute, Link } from "wouter";
 import { Skeleton } from "@/components/ui/skeleton";
 import { PromotedCommunitiesWidget } from "@/components/PromotedCommunitiesWidget";
 import { ManagePromotions } from "@/components/ManagePromotions";
-import { Settings } from "lucide-react";
+import { Settings, BarChart3 } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -327,7 +327,16 @@ export default function CommunityDetail() {
 
               <div className="flex gap-2">
                 {isOwner && (
-                  <Dialog>
+                  <>
+                    <Link href={`/community/${communityId}/stats`}>
+                      <a>
+                        <Button variant="outline" size="sm">
+                          <BarChart3 className="w-4 h-4 mr-2" />
+                          Ver Estatísticas
+                        </Button>
+                      </a>
+                    </Link>
+                    <Dialog>
                     <DialogTrigger asChild>
                       <Button variant="outline" size="sm">
                         <Settings className="w-4 h-4 mr-2" />
@@ -344,6 +353,7 @@ export default function CommunityDetail() {
                       <ManagePromotions communityId={communityId} />
                     </DialogContent>
                   </Dialog>
+                  </>
                 )}
                 
                 {isMember ? (

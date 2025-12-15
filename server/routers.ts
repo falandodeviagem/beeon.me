@@ -676,11 +676,18 @@ export const appRouter = router({
       .input(z.object({ 
         limit: z.number().default(10),
         cursor: z.number().optional(),
+        contentType: z.enum(['all', 'text', 'image', 'link']).default('all'),
+        sortBy: z.enum(['recent', 'popular', 'trending']).default('recent'),
+        period: z.enum(['all', 'today', 'week', 'month']).default('all'),
       }))
       .query(async ({ ctx, input }) => {
         const communities = await db.getUserCommunities(ctx.user.id);
         const communityIds = communities.map(c => c.id);
-        const posts = await db.getFeedPosts(communityIds, input.limit + 1, input.cursor);
+        const posts = await db.getFeedPosts(communityIds, input.limit + 1, input.cursor, {
+          contentType: input.contentType,
+          sortBy: input.sortBy,
+          period: input.period,
+        });
         
         let nextCursor: number | undefined = undefined;
         if (posts.length > input.limit) {

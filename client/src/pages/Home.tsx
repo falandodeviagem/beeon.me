@@ -12,12 +12,26 @@ import { Users, Trophy, UserPlus, ArrowRight, Sparkles } from "lucide-react";
 import { Link } from "wouter";
 import { Skeleton } from "@/components/ui/skeleton";
 import { PostSkeletonList } from "@/components/PostSkeleton";
+import { FeedFilters, FeedFilterOptions } from "@/components/FeedFilters";
 import { useState, useRef, useEffect } from "react";
 import { useLocation } from "wouter";
 
 export default function Home() {
   const { user, isAuthenticated } = useAuth();
   const [, setLocation] = useLocation();
+
+  // Load filters from localStorage
+  const [filters, setFilters] = useState<FeedFilterOptions>(() => {
+    const saved = localStorage.getItem('feedFilters');
+    if (saved) {
+      try {
+        return JSON.parse(saved);
+      } catch {
+        return { contentType: 'all', sortBy: 'recent', period: 'all' };
+      }
+    }
+    return { contentType: 'all', sortBy: 'recent', period: 'all' };
+  });
 
   // Redirect new users to onboarding
   useEffect(() => {
@@ -33,7 +47,12 @@ export default function Home() {
     hasNextPage,
     isFetchingNextPage,
   } = trpc.feed.get.useInfiniteQuery(
-    { limit: 10 },
+    { 
+      limit: 10,
+      contentType: filters.contentType,
+      sortBy: filters.sortBy,
+      period: filters.period,
+    },
     {
       enabled: isAuthenticated,
       getNextPageParam: (lastPage) => lastPage.nextCursor,
@@ -214,10 +233,12 @@ export default function Home() {
             <div className="flex items-center justify-between">
               <h2 className="text-2xl font-bold">Seu Feed</h2>
               <Badge variant="secondary" className="gap-1">
-                <Sparkles className="w-3 h-3" />
+                <Sparkles className="w-4 h-4" />
                 Personalizado
               </Badge>
             </div>
+
+            <FeedFilters filters={filters} onChange={setFilters} />
 
             {feedLoading ? (
               <PostSkeletonList count={3} />

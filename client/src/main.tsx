@@ -53,6 +53,20 @@ const trpcClient = trpc.createClient({
   ],
 });
 
+// Register Service Worker for offline support
+if ('serviceWorker' in navigator && import.meta.env.PROD) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker
+      .register('/service-worker.js')
+      .then((registration) => {
+        console.log('[SW] Registered:', registration);
+      })
+      .catch((error) => {
+        console.error('[SW] Registration failed:', error);
+      });
+  });
+}
+
 createRoot(document.getElementById("root")!).render(
   <trpc.Provider client={trpcClient} queryClient={queryClient}>
     <QueryClientProvider client={queryClient}>

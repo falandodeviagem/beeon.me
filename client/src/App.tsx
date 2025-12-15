@@ -9,6 +9,7 @@ import { Route, Switch } from "wouter";
 import ErrorBoundary from "./components/ErrorBoundary";
 import { ThemeProvider } from "./contexts/ThemeContext";
 import { SkipToContent } from "./components/SkipToContent";
+import { OfflineIndicator } from "./components/OfflineIndicator";
 import Home from "./pages/Home";
 import Login from "./pages/Login";
 import Profile from "./pages/Profile";
@@ -62,6 +63,7 @@ function App() {
   return (
     <ErrorBoundary>
       <SkipToContent />
+      <OfflineIndicator />
       <ThemeProvider defaultTheme="light" switchable>
         <TooltipProvider>
           <Toaster />

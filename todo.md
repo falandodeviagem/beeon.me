@@ -614,3 +614,25 @@
 - [x] Frontend: Validação de tamanho máximo (5MB por imagem)
 - [x] Frontend: Botão para remover imagem individual do preview
 - [x] Frontend: Integrar com ImageUpload component existente
+
+## 71. Modo Offline com Service Worker
+- [x] Criar service-worker.js com estratégia de cache
+- [x] Registrar Service Worker no main.tsx
+- [x] Cache de assets estáticos (JS, CSS, fonts)
+- [x] Cache de posts do feed (Cache First, fallback Network)
+- [x] Cache de imagens (Cache First, fallback Network)
+- [x] Indicador visual de status offline/online
+- [x] Sincronização automática ao retornar online
+- [x] Background sync para ações pendentes (likes, comentários)
+- [x] Notificação ao usuário quando offline
+
+## 72. Filtros de Feed
+- [x] Backend: Atualizar procedure getFeedPosts para suportar filtros
+- [x] Backend: Filtro por tipo de conteúdo (texto, imagem, link)
+- [x] Backend: Ordenação por recentes, populares (likes), tendências
+- [x] Backend: Filtro por período (hoje, semana, mês)
+- [x] Frontend: Componente FeedFilters com dropdowns
+- [x] Frontend: Persistir filtros selecionados no localStorage
+- [x] Frontend: Badge mostrando filtros ativos
+- [x] Frontend: Botão "Limpar filtros"
+- [x] Frontend: Integrar com useInfiniteQuery

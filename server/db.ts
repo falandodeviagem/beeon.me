@@ -1,4 +1,4 @@
-import { eq, and, desc, sql, inArray, notInArray, isNull, like, or, lt, gte } from "drizzle-orm";
+import { eq, and, desc, sql, inArray, notInArray, isNull, isNotNull, like, or, lt, gte } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
 import { 
   InsertUser, users, 
@@ -380,7 +380,16 @@ export async function getCommunityPosts(communityId: number, limit: number = 50)
     .limit(limit);
 }
 
-export async function getFeedPosts(communityIds: number[], limit: number = 50, cursor?: number) {
+export async function getFeedPosts(
+  communityIds: number[], 
+  limit: number = 50, 
+  cursor?: number,
+  filters?: {
+    contentType?: 'all' | 'text' | 'image' | 'link';
+    sortBy?: 'recent' | 'popular' | 'trending';
+    period?: 'all' | 'today' | 'week' | 'month';
+  }
+) {
   const db = await getDb();
   if (!db) return [];
 
@@ -390,6 +399,34 @@ export async function getFeedPosts(communityIds: number[], limit: number = 50, c
   
   if (cursor) {
     conditions.push(lt(posts.id, cursor));
+  }
+
+  // Content type filter
+  if (filters?.contentType && filters.contentType !== 'all') {
+    if (filters.contentType === 'text') {
+      conditions.push(isNull(posts.imageUrl));
+    } else if (filters.contentType === 'image') {
+      conditions.push(isNotNull(posts.imageUrl));
+    }
+    // 'link' would require checking content for URLs
+  }
+
+  // Period filter
+  if (filters?.period && filters.period !== 'all') {
+    const now = Date.now();
+    let periodStart: number;
+    
+    if (filters.period === 'today') {
+      periodStart = now - 24 * 60 * 60 * 1000;
+    } else if (filters.period === 'week') {
+      periodStart = now - 7 * 24 * 60 * 60 * 1000;
+    } else if (filters.period === 'month') {
+      periodStart = now - 30 * 24 * 60 * 60 * 1000;
+    } else {
+      periodStart = 0;
+    }
+    
+    conditions.push(sql`${posts.createdAt} >= ${periodStart}`);
   }
 
   const result = await db.select({
@@ -409,7 +446,13 @@ export async function getFeedPosts(communityIds: number[], limit: number = 50, c
     .innerJoin(users, eq(posts.authorId, users.id))
     .innerJoin(communities, eq(posts.communityId, communities.id))
     .where(and(...conditions))
-    .orderBy(desc(posts.id))
+    .orderBy(
+      filters?.sortBy === 'popular' 
+        ? desc(posts.likeCount)
+        : filters?.sortBy === 'trending'
+        ? desc(sql`${posts.likeCount} + ${posts.commentCount}`)
+        : desc(posts.id)
+    )
     .limit(limit);
 
   return result;

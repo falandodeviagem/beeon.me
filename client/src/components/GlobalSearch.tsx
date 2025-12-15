@@ -14,6 +14,7 @@ export function GlobalSearch() {
   const [selectedIndex, setSelectedIndex] = useState(0);
   const containerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const itemRefs = useRef<Map<string, HTMLAnchorElement>>(new Map());
 
   const { data: results, isLoading } = trpc.search.global.useQuery(
     { query: debouncedQuery, limit: 5 },
@@ -65,6 +66,23 @@ export function GlobalSearch() {
     setSelectedIndex(0);
   }, [debouncedQuery]);
 
+  // Scroll selected item into view
+  useEffect(() => {
+    if (selectedIndex >= 0 && allResults.length > 0) {
+      const selected = allResults[selectedIndex];
+      if (selected) {
+        const key = `${selected.type}-${selected.id}`;
+        const element = itemRefs.current.get(key);
+        if (element) {
+          element.scrollIntoView({
+            behavior: 'smooth',
+            block: 'nearest',
+          });
+        }
+      }
+    }
+  }, [selectedIndex, allResults]);
+
   // Handle keyboard navigation
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (!isOpen || allResults.length === 0) return;
@@ -92,6 +110,16 @@ export function GlobalSearch() {
   const isItemSelected = (type: string, id: number) => {
     const item = allResults[selectedIndex];
     return item && item.type === type && item.id === id;
+  };
+
+  // Helper to set ref for item
+  const setItemRef = (type: string, id: number) => (el: HTMLAnchorElement | null) => {
+    const key = `${type}-${id}`;
+    if (el) {
+      itemRefs.current.set(key, el);
+    } else {
+      itemRefs.current.delete(key);
+    }
   };
 
   return (
@@ -147,9 +175,12 @@ export function GlobalSearch() {
                         href={`/community/${community.id}`}
                         onClick={() => handleClear()}
                       >
-                        <a className={`flex items-center gap-3 p-2 rounded-md hover:bg-accent transition-colors ${
-                          isItemSelected('community', community.id) ? 'bg-accent' : ''
-                        }`}>
+                        <a 
+                          ref={setItemRef('community', community.id)}
+                          className={`flex items-center gap-3 p-2 rounded-md hover:bg-accent transition-colors ${
+                            isItemSelected('community', community.id) ? 'bg-accent' : ''
+                          }`}
+                        >
                           <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center text-white font-bold">
                             {community.name[0].toUpperCase()}
                           </div>
@@ -185,9 +216,12 @@ export function GlobalSearch() {
                         href={`/profile/${user.id}`}
                         onClick={() => handleClear()}
                       >
-                        <a className={`flex items-center gap-3 p-2 rounded-md hover:bg-accent transition-colors ${
-                          isItemSelected('user', user.id) ? 'bg-accent' : ''
-                        }`}>
+                        <a 
+                          ref={setItemRef('user', user.id)}
+                          className={`flex items-center gap-3 p-2 rounded-md hover:bg-accent transition-colors ${
+                            isItemSelected('user', user.id) ? 'bg-accent' : ''
+                          }`}
+                        >
                           <Avatar className="h-10 w-10">
                             <AvatarImage src={user.avatarUrl || undefined} />
                             <AvatarFallback>
@@ -221,9 +255,12 @@ export function GlobalSearch() {
                         href={`/community/${post.communityId}`}
                         onClick={() => handleClear()}
                       >
-                        <a className={`block p-2 rounded-md hover:bg-accent transition-colors ${
-                          isItemSelected('post', post.id) ? 'bg-accent' : ''
-                        }`}>
+                        <a 
+                          ref={setItemRef('post', post.id)}
+                          className={`block p-2 rounded-md hover:bg-accent transition-colors ${
+                            isItemSelected('post', post.id) ? 'bg-accent' : ''
+                          }`}
+                        >
                           <div className="text-sm line-clamp-2">{post.content}</div>
                           <div className="text-xs text-muted-foreground mt-1">
                             {post.likeCount} curtidas • {post.commentCount} comentários

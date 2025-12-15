@@ -126,6 +126,14 @@ export async function getUserByInviteCode(inviteCode: string) {
   return result.length > 0 ? result[0] : undefined;
 }
 
+export async function getUserByName(name: string) {
+  const db = await getDb();
+  if (!db) return undefined;
+
+  const result = await db.select().from(users).where(eq(users.name, name)).limit(1);
+  return result.length > 0 ? result[0] : undefined;
+}
+
 export async function updateUserProfile(userId: number, data: { name?: string; bio?: string; avatarUrl?: string }) {
   const db = await getDb();
   if (!db) throw new Error("Database not available");

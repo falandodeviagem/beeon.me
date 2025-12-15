@@ -460,3 +460,17 @@
 - [x] Enter para navegar ao item selecionado
 - [x] Escape para fechar busca
 - [ ] Scroll automático para item selecionado
+
+## 56. Salvar Menções e Notificações
+- [x] Criar função para extrair @usernames do texto
+- [x] Adicionar procedure saveMentions no routers.ts
+- [x] Buscar IDs dos usuários mencionados
+- [x] Salvar menções na tabela mentions
+- [x] Enviar notificações para usuários mencionados
+- [x] Integrar ao criar post
+
+## 57. Scroll Automático na Busca Global
+- [x] Adicionar refs para items da lista
+- [x] Implementar scrollIntoView() quando selectedIndex muda
+- [x] Configurar scroll behavior smooth
+- [x] Testar com listas longas de resultados

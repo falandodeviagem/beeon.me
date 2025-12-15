@@ -389,6 +389,35 @@ export const appRouter = router({
         // Extract and link hashtags automatically
         await db.linkHashtagsToPost(postId, input.content);
 
+        // Extract and save mentions
+        const mentionRegex = /@(\w+)/g;
+        const matches = input.content.matchAll(mentionRegex);
+        const usernames = Array.from(matches, m => m[1]);
+        
+        if (usernames.length > 0) {
+          // Find users by name and save mentions
+          for (const username of usernames) {
+            const mentionedUser = await db.getUserByName(username);
+            if (mentionedUser) {
+              await db.createMention({
+                postId,
+                mentionedUserId: mentionedUser.id,
+                mentionedBy: ctx.user.id,
+              });
+              
+              // Create notification for mentioned user
+              await db.createNotification({
+                userId: mentionedUser.id,
+                type: 'mention',
+                title: 'Nova menção',
+                message: `${ctx.user.name} mencionou você em um post`,
+                relatedId: postId,
+                relatedType: 'post',
+              });
+            }
+          }
+        }
+
         await db.recordGamificationAction({
           userId: ctx.user.id,
           actionType: 'create_post',

@@ -540,11 +540,26 @@ export async function getCommentReplies(parentId: number) {
     .orderBy(desc(comments.createdAt));
 }
 
+export async function getCommentById(id: number) {
+  const db = await getDb();
+  if (!db) return null;
+
+  const result = await db.select().from(comments)
+    .where(eq(comments.id, id))
+    .limit(1);
+  
+  return result[0] || null;
+}
+
 export async function updateComment(id: number, content: string) {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
 
-  await db.update(comments).set({ content }).where(eq(comments.id, id));
+  await db.update(comments).set({ 
+    content,
+    isEdited: true,
+    editedAt: new Date()
+  }).where(eq(comments.id, id));
 }
 
 export async function deleteComment(id: number, postId: number) {

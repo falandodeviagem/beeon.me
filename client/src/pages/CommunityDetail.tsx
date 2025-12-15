@@ -15,6 +15,7 @@ import { MentionInput } from "@/components/MentionInput";
 import { MentionText } from "@/components/MentionText";
 import { RichTextEditor } from "@/components/RichTextEditor";
 import { RichTextDisplay } from "@/components/RichTextDisplay";
+import { PostContent } from "@/components/PostContent";
 import { useRoute, Link } from "wouter";
 import { Skeleton } from "@/components/ui/skeleton";
 import { PromotedCommunitiesWidget } from "@/components/PromotedCommunitiesWidget";
@@ -451,7 +452,7 @@ export default function CommunityDetail() {
                     </DropdownMenu>
                   </div>
 
-                  <RichTextDisplay content={post.content} className="text-foreground" />
+                  <PostContent content={post.content} className="text-foreground" />
 
                   <Separator />
 

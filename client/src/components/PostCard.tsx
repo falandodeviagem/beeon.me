@@ -17,6 +17,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { useAuth } from "@/_core/hooks/useAuth";
 import HashtagText from "@/components/HashtagText";
+import { PostContent } from "@/components/PostContent";
 
 interface PostCardProps {
   post: {
@@ -127,7 +128,7 @@ export default function PostCard({ post }: PostCardProps) {
       </CardHeader>
 
       <CardContent className="pb-3">
-        <HashtagText text={post.content} className="whitespace-pre-wrap text-foreground block" />
+        <PostContent content={post.content} className="text-foreground" />
         {post.imageUrl && (
           <img
             src={post.imageUrl}

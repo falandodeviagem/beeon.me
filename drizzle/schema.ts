@@ -171,6 +171,10 @@ export const comments = mysqlTable("comments", {
   // Stats
   likeCount: int("likeCount").default(0).notNull(),
   
+  // Edit tracking
+  isEdited: boolean("isEdited").default(false).notNull(),
+  editedAt: timestamp("editedAt"),
+  
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
 }, (table) => ({

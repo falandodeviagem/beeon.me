@@ -602,6 +602,15 @@ export const appRouter = router({
         content: z.string(),
       }))
       .mutation(async ({ ctx, input }) => {
+        // Verify comment ownership
+        const comment = await db.getCommentById(input.id);
+        if (!comment) {
+          throw new TRPCError({ code: 'NOT_FOUND', message: 'Comment not found' });
+        }
+        if (comment.authorId !== ctx.user.id) {
+          throw new TRPCError({ code: 'FORBIDDEN', message: 'You can only edit your own comments' });
+        }
+        
         await db.updateComment(input.id, input.content);
         return { success: true };
       }),
@@ -981,6 +990,15 @@ export const appRouter = router({
       .query(async ({ input }) => {
         const { getPostReactionUsers } = await import('./db-reactions-users');
         return await getPostReactionUsers(input.postId, input.reactionType || '');
+      }),
+  }),
+
+  linkPreview: router({
+    fetch: publicProcedure
+      .input(z.object({ url: z.string().url() }))
+      .query(async ({ input }) => {
+        const { fetchLinkPreview } = await import('./link-preview');
+        return await fetchLinkPreview(input.url);
       }),
   }),
 });

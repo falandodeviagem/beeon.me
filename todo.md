@@ -520,3 +520,22 @@
 - [x] Agrupar usuários por tipo de reação
 - [x] Exibir avatares e nomes no tooltip
 - [x] Limitar a 10 usuários por tipo com contador "+X mais"
+
+## 63. Edição de Comentários
+- [x] Backend: Adicionar campos isEdited/editedAt ao schema de comments
+- [x] Backend: Procedure para editar comentário (verificar se é autor)
+- [x] Backend: Atualizar helper updateComment no db.ts
+- [x] Frontend: Botão de editar no comentário (apenas para autor)
+- [x] Frontend: Modal de edição com MentionInput
+- [x] Frontend: Indicador visual "(editado)" com tooltip de data
+- [x] Frontend: Atualizar lista após edição bem-sucedida
+
+## 64. Preview de Links em Posts
+- [x] Backend: Criar procedure fetchLinkPreview
+- [x] Backend: Buscar metadados Open Graph (og:title, og:description, og:image)
+- [x] Backend: Fallback para meta tags padrão se OG não existir
+- [x] Frontend: Detectar URLs no conteúdo do post
+- [x] Frontend: Componente LinkPreviewCard
+- [x] Frontend: Exibir card com imagem, título e descrição
+- [x] Frontend: Link clicável para abrir em nova aba
+- [x] Frontend: Loading state durante fetch de preview

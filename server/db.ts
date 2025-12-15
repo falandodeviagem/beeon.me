@@ -344,7 +344,29 @@ export async function getPostById(id: number) {
   const db = await getDb();
   if (!db) return undefined;
 
-  const result = await db.select().from(posts).where(eq(posts.id, id)).limit(1);
+  const result = await db
+    .select({
+      id: posts.id,
+      content: posts.content,
+      imageUrl: posts.imageUrl,
+      authorId: posts.authorId,
+      authorName: users.name,
+      authorAvatar: users.avatarUrl,
+      communityId: posts.communityId,
+      communityName: communities.name,
+      likeCount: posts.likeCount,
+      commentCount: posts.commentCount,
+      shareCount: posts.shareCount,
+      isEdited: posts.isEdited,
+      editedAt: posts.editedAt,
+      createdAt: posts.createdAt,
+    })
+    .from(posts)
+    .leftJoin(users, eq(posts.authorId, users.id))
+    .leftJoin(communities, eq(posts.communityId, communities.id))
+    .where(eq(posts.id, id))
+    .limit(1);
+    
   return result.length > 0 ? result[0] : undefined;
 }
 
@@ -526,7 +548,22 @@ export async function getPostComments(postId: number) {
   const db = await getDb();
   if (!db) return [];
 
-  return await db.select().from(comments)
+  return await db
+    .select({
+      id: comments.id,
+      content: comments.content,
+      postId: comments.postId,
+      authorId: comments.authorId,
+      authorName: users.name,
+      authorAvatar: users.avatarUrl,
+      parentId: comments.parentId,
+      likeCount: comments.likeCount,
+      isEdited: comments.isEdited,
+      editedAt: comments.editedAt,
+      createdAt: comments.createdAt,
+    })
+    .from(comments)
+    .leftJoin(users, eq(comments.authorId, users.id))
     .where(and(eq(comments.postId, postId), isNull(comments.parentId)))
     .orderBy(desc(comments.createdAt));
 }

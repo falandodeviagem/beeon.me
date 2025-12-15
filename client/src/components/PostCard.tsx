@@ -2,7 +2,8 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { MessageCircle, Users, Share2, Check, Edit2 } from "lucide-react";
+import { MessageCircle, Users, Check, Edit2 } from "lucide-react";
+import { SocialShareButtons } from "@/components/SocialShareButtons";
 import ReactionPicker from "@/components/ReactionPicker";
 import ReactionCounts from "@/components/ReactionCounts";
 import { trpc } from "@/lib/trpc";
@@ -42,16 +43,12 @@ interface PostCardProps {
 
 export default function PostCard({ post }: PostCardProps) {
   const { user } = useAuth();
-  const [showShareDialog, setShowShareDialog] = useState(false);
+
   const [showEditDialog, setShowEditDialog] = useState(false);
   const [editContent, setEditContent] = useState(post.content);
   const [copied, setCopied] = useState(false);
   const { data: currentReaction } = trpc.post.getUserReaction.useQuery({ postId: post.id });
-  const shareMutation = trpc.post.share.useMutation({
-    onSuccess: () => {
-      toast.success("Post compartilhado!");
-    },
-  });
+
   
   const editMutation = trpc.post.edit.useMutation({
     onSuccess: () => {
@@ -153,18 +150,12 @@ export default function PostCard({ post }: PostCardProps) {
               </Button>
             </Link>
             
-            <Button 
-              variant="ghost" 
-              size="sm" 
-              className="gap-2"
-              onClick={() => {
-                setShowShareDialog(true);
-                shareMutation.mutate({ postId: post.id });
-              }}
-            >
-              <Share2 className="w-4 h-4" />
-              {(post.shareCount || 0) > 0 && <span>{post.shareCount}</span>}
-            </Button>
+            <SocialShareButtons 
+              postId={post.id}
+              variant="ghost"
+              size="sm"
+              showLabel={false}
+            />
             
             {isAuthor && (
               <Button 
@@ -180,38 +171,7 @@ export default function PostCard({ post }: PostCardProps) {
         </div>
       </CardFooter>
       
-      <Dialog open={showShareDialog} onOpenChange={setShowShareDialog}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Compartilhar Post</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4">
-            <p className="text-sm text-muted-foreground">
-              Copie o link abaixo para compartilhar este post:
-            </p>
-            <div className="flex gap-2">
-              <Input
-                readOnly
-                value={`${window.location.origin}/community/${post.communityId}?postId=${post.id}`}
-                onClick={(e) => e.currentTarget.select()}
-              />
-              <Button
-                onClick={() => {
-                  navigator.clipboard.writeText(
-                    `${window.location.origin}/community/${post.communityId}?postId=${post.id}`
-                  );
-                  setCopied(true);
-                  setTimeout(() => setCopied(false), 2000);
-                  toast.success("Link copiado!");
-                }}
-                className="gap-2"
-              >
-                {copied ? <Check className="w-4 h-4" /> : "Copiar"}
-              </Button>
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
+
       
       <Dialog open={showEditDialog} onOpenChange={setShowEditDialog}>
         <DialogContent>

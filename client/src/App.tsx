@@ -18,6 +18,7 @@ import Invites from "./pages/Invites";
 import Moderation from "./pages/Moderation";
 import Search from "./pages/Search";
 import AdvancedSearch from "./pages/AdvancedSearch";
+import PostView from "./pages/PostView";
 import HashtagPage from "./pages/HashtagPage";
 import Onboarding from "./pages/Onboarding";
 import CommunityStats from "./pages/CommunityStats";
@@ -38,6 +39,7 @@ function Router() {
       <Route path="/invites" component={Invites} />
       <Route path="/search" component={Search} />
       <Route path="/search/advanced" component={AdvancedSearch} />
+      <Route path="/post/:id" component={PostView} />
       <Route path="/hashtag/:tag" component={HashtagPage} />
       <Route path="/user/:userId" component={UserProfile} />
       <Route path="/user/:userId/followers" component={Followers} />

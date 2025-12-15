@@ -568,3 +568,17 @@
 - [x] Frontend: Histórico de buscas recentes (localStorage)
 - [x] Frontend: Sugestões de hashtags populares
 - [x] Frontend: Sugestões de usuários ao buscar por autor
+
+## 67. Sistema de Compartilhamento Social
+- [x] Backend: Criar rota pública para visualizar post individual (SEO-friendly)
+- [x] Backend: Gerar meta tags Open Graph dinamicamente por post
+- [x] Backend: Incluir og:title, og:description, og:image, og:url
+- [x] Backend: Procedure para buscar post por ID (público)
+- [x] Frontend: Componente SocialShareButtons
+- [x] Frontend: Botão de compartilhar no WhatsApp
+- [x] Frontend: Botão de compartilhar no Twitter
+- [x] Frontend: Botão de compartilhar no LinkedIn
+- [x] Frontend: Gerar URLs de compartilhamento com texto personalizado
+- [x] Frontend: Integrar no PostCard (substituir botão de share genérico)
+- [x] Frontend: Modal de compartilhamento com preview
+- [x] Frontend: Copiar link com toast de confirmação

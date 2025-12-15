@@ -370,6 +370,41 @@ export const appRouter = router({
         return post;
       }),
 
+    getShareUrls: publicProcedure
+      .input(z.object({ postId: z.number() }))
+      .query(async ({ input }) => {
+        const post = await db.getPostById(input.postId);
+        if (!post) throw new TRPCError({ code: 'NOT_FOUND' });
+
+        const { 
+          generateWhatsAppShareUrl, 
+          generateTwitterShareUrl, 
+          generateLinkedInShareUrl,
+          generateFacebookShareUrl,
+          generateTelegramShareUrl,
+          extractHashtagsFromContent 
+        } = await import('./social-share');
+
+        const baseUrl = process.env.VITE_APP_URL || 'https://beeonme.manus.space';
+        const postUrl = `${baseUrl}/post/${input.postId}`;
+        
+        const shareData = {
+          url: postUrl,
+          title: post.content.substring(0, 100) + (post.content.length > 100 ? '...' : ''),
+          description: `Post de ${post.authorName} na comunidade ${post.communityName}`,
+          hashtags: extractHashtagsFromContent(post.content),
+        };
+
+        return {
+          whatsapp: generateWhatsAppShareUrl(shareData),
+          twitter: generateTwitterShareUrl(shareData),
+          linkedin: generateLinkedInShareUrl(shareData),
+          facebook: generateFacebookShareUrl(shareData),
+          telegram: generateTelegramShareUrl(shareData),
+          directUrl: postUrl,
+        };
+      }),
+
     create: protectedProcedure
       .input(z.object({
         communityId: z.number(),

@@ -340,3 +340,13 @@
 - [x] Implementar botão "Entrar Rápido" em cada card
 - [x] Adicionar toast de feedback ao entrar em comunidade
 - [x] Atualizar lista após join bem-sucedido
+
+## 41. Sistema de Notificações Toast
+- [x] Criar componente Toast UI com shadcn/ui
+- [x] Criar componente Toaster para renderizar toasts
+- [x] Implementar hook useToast com context
+- [x] Adicionar variantes (success, error, info, warning)
+- [x] Configurar auto-dismiss (3-5s)
+- [x] Adicionar animações de entrada/saída
+- [x] Integrar em RecommendedCommunities (substituir alert)
+- [x] Integrar em outros pontos de feedback da aplicação

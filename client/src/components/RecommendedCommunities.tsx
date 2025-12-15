@@ -7,12 +7,14 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useState } from "react";
 import { motion } from "framer-motion";
+import { useToast } from "@/hooks/use-toast";
 
 export function RecommendedCommunities() {
   const [expanded, setExpanded] = useState(false);
   const [, setLocation] = useLocation();
   const utils = trpc.useUtils();
   const [joiningId, setJoiningId] = useState<number | null>(null);
+  const { toast } = useToast();
   
   const { data: recommendations, isLoading } = trpc.community.getRecommended.useQuery({
     limit: expanded ? 12 : 6,
@@ -21,13 +23,22 @@ export function RecommendedCommunities() {
   const joinMutation = trpc.community.join.useMutation({
     onSuccess: (_, variables) => {
       setJoiningId(null);
+      toast({
+        title: "Sucesso!",
+        description: "Você entrou na comunidade",
+        variant: "success",
+      });
       // Invalidate queries to update UI
       utils.community.getRecommended.invalidate();
       utils.community.getMyCommunities.invalidate();
     },
     onError: (error) => {
       setJoiningId(null);
-      alert(error.message || "Não foi possível entrar na comunidade");
+      toast({
+        title: "Erro",
+        description: error.message || "Não foi possível entrar na comunidade",
+        variant: "destructive",
+      });
     },
   });
 

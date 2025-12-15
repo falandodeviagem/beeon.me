@@ -744,3 +744,19 @@
 - [x] Frontend: Botões de editar/deletar
 - [x] Frontend: Integrar seletor de templates no modal de apelação
 - [x] Frontend: Integrar seletor de templates no modal de denúncia
+
+## 82. Painel de Insights de Usuários (LGPD Compliant) - CONCLUÍDO
+- [x] Backend: Query de métricas de engajamento por usuário
+- [x] Backend: Query de comunidades e categorias de interesse
+- [x] Backend: Query de horários de atividade
+- [x] Backend: Query de histórico de moderação
+- [x] Backend: Query de badges e gamificação
+- [x] Backend: Procedure tRPC getUserInsights
+- [x] Frontend: Página /moderation/user-insights
+- [x] Frontend: Busca de usuário por nome/ID
+- [x] Frontend: Cards de métricas de engajamento
+- [x] Frontend: Gráfico de atividade por horário
+- [x] Frontend: Lista de comunidades e interesses
+- [x] Frontend: Histórico de moderação do usuário
+- [x] Frontend: Seção de gamificação (badges, nível, pontos)
+- [x] Frontend: Integrar link no painel de moderação

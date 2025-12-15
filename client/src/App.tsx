@@ -29,6 +29,7 @@ import BanAppeal from "./pages/BanAppeal";
 import AuditLogs from "./pages/AuditLogs";
 import ModerationAnalytics from "./pages/ModerationAnalytics";
 import ResponseTemplates from "./pages/ResponseTemplates";
+import UserInsights from "./pages/UserInsights";
 
 function Router() {
   return (
@@ -56,6 +57,7 @@ function Router() {
       <Route path="/moderation/audit-logs" component={AuditLogs} />
       <Route path="/moderation/analytics" component={ModerationAnalytics} />
       <Route path="/moderation/templates" component={ResponseTemplates} />
+      <Route path="/moderation/user-insights" component={UserInsights} />
       <Route path="/404" component={NotFound} />
       <Route component={NotFound} />
     </Switch>

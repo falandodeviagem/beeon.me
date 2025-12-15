@@ -1007,3 +1007,252 @@ export async function incrementTemplateUseCount(id: number) {
     .set({ useCount: sql`${responseTemplates.useCount} + 1` })
     .where(eq(responseTemplates.id, id));
 }
+
+
+// USER INSIGHTS HELPERS (LGPD Compliant - behavioral data only)
+
+export async function getUserInsights(userId: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  const { 
+    users, posts, comments, postReactions, communityMembers, communities,
+    userBadges, badges, gamificationActions, userWarnings, userFollows
+  } = await import('../drizzle/schema');
+
+  // Basic user info (public data)
+  const [user] = await db
+    .select({
+      id: users.id,
+      name: users.name,
+      avatar: users.avatarUrl,
+      bio: users.bio,
+      points: users.points,
+      level: users.level,
+      role: users.role,
+      isBanned: users.isBanned,
+      banReason: users.banReason,
+      createdAt: users.createdAt,
+      lastActiveAt: users.lastSignedIn,
+    })
+    .from(users)
+    .where(eq(users.id, userId))
+    .limit(1);
+
+  if (!user) return null;
+
+  // Engagement metrics
+  const [postCount] = await db
+    .select({ count: sql<number>`count(*)` })
+    .from(posts)
+    .where(eq(posts.authorId, userId));
+
+  const [commentCount] = await db
+    .select({ count: sql<number>`count(*)` })
+    .from(comments)
+    .where(eq(comments.authorId, userId));
+
+  const [reactionCount] = await db
+    .select({ count: sql<number>`count(*)` })
+    .from(postReactions)
+    .where(eq(postReactions.userId, userId));
+
+  // Reactions received on user's posts
+  const reactionsReceived = await db.execute(
+    sql`SELECT COUNT(*) as count FROM post_reactions pr 
+        JOIN posts p ON pr.postId = p.id 
+        WHERE p.authorId = ${userId}`
+  ) as any;
+  const reactionsReceivedCount = reactionsReceived[0]?.[0]?.count || 0;
+
+  // Followers/Following count
+  const [followersCount] = await db
+    .select({ count: sql<number>`count(*)` })
+    .from(userFollows)
+    .where(eq(userFollows.followingId, userId));
+
+  const [followingCount] = await db
+    .select({ count: sql<number>`count(*)` })
+    .from(userFollows)
+    .where(eq(userFollows.followerId, userId));
+
+  // Communities and categories of interest
+  const userCommunities = await db
+    .select({
+      communityId: communityMembers.communityId,
+      communityName: communities.name,
+      category: communities.category,
+      joinedAt: communityMembers.joinedAt,
+    })
+    .from(communityMembers)
+    .innerJoin(communities, eq(communityMembers.communityId, communities.id))
+    .where(eq(communityMembers.userId, userId))
+    .orderBy(desc(communityMembers.joinedAt));
+
+  // Category interests (aggregated from communities)
+  const categoryInterests = userCommunities.reduce((acc: Record<string, number>, c) => {
+    if (c.category) {
+      acc[c.category] = (acc[c.category] || 0) + 1;
+    }
+    return acc;
+  }, {});
+
+  // Badges earned
+  const userBadgesList = await db
+    .select({
+      badgeId: userBadges.badgeId,
+      badgeName: badges.name,
+      badgeDescription: badges.description,
+      badgeIcon: badges.iconUrl,
+      earnedAt: userBadges.earnedAt,
+    })
+    .from(userBadges)
+    .innerJoin(badges, eq(userBadges.badgeId, badges.id))
+    .where(eq(userBadges.userId, userId))
+    .orderBy(desc(userBadges.earnedAt));
+
+  // Activity by hour (last 30 days)
+  const activityByHour = await db.execute(
+    sql`SELECT HOUR(createdAt) as hour, COUNT(*) as count 
+        FROM gamification_actions 
+        WHERE userId = ${userId} 
+        AND createdAt >= DATE_SUB(NOW(), INTERVAL 30 DAY)
+        GROUP BY HOUR(createdAt)
+        ORDER BY hour`
+  ) as any;
+  const activityByHourData = activityByHour[0] || [];
+
+  // Activity by day of week (last 30 days)
+  const activityByDay = await db.execute(
+    sql`SELECT DAYOFWEEK(createdAt) as dayOfWeek, COUNT(*) as count 
+        FROM gamification_actions 
+        WHERE userId = ${userId} 
+        AND createdAt >= DATE_SUB(NOW(), INTERVAL 30 DAY)
+        GROUP BY DAYOFWEEK(createdAt)
+        ORDER BY dayOfWeek`
+  ) as any;
+  const activityByDayData = activityByDay[0] || [];
+
+  // Recent activity (last 10 actions)
+  const recentActivity = await db
+    .select({
+      id: gamificationActions.id,
+      action: gamificationActions.actionType,
+      points: gamificationActions.points,
+      createdAt: gamificationActions.createdAt,
+    })
+    .from(gamificationActions)
+    .where(eq(gamificationActions.userId, userId))
+    .orderBy(desc(gamificationActions.createdAt))
+    .limit(10);
+
+  // Moderation history (warnings)
+  const warnings = await db
+    .select({
+      id: userWarnings.id,
+      reason: userWarnings.reason,
+      severity: userWarnings.level,
+      issuedBy: userWarnings.moderatorId,
+      issuerName: users.name,
+      expiresAt: userWarnings.expiresAt,
+      isActive: userWarnings.isActive,
+      createdAt: userWarnings.createdAt,
+    })
+    .from(userWarnings)
+    .leftJoin(users, eq(userWarnings.moderatorId, users.id))
+    .where(eq(userWarnings.userId, userId))
+    .orderBy(desc(userWarnings.createdAt));
+
+  // Reports made by this user
+  const [reportsMade] = await db
+    .select({ count: sql<number>`count(*)` })
+    .from(reports)
+    .where(eq(reports.reporterId, userId));
+
+  // Reports against this user
+  const reportsAgainst = await db.execute(
+    sql`SELECT COUNT(*) as count FROM reports r
+        JOIN posts p ON r.targetId = p.id AND r.reportType = 'post'
+        WHERE p.authorId = ${userId}
+        UNION ALL
+        SELECT COUNT(*) as count FROM reports r
+        JOIN comments c ON r.targetId = c.id AND r.reportType = 'comment'
+        WHERE c.authorId = ${userId}
+        UNION ALL
+        SELECT COUNT(*) as count FROM reports r
+        WHERE r.targetId = ${userId} AND r.reportType = 'user'`
+  ) as any;
+  const totalReportsAgainst = (reportsAgainst[0] || []).reduce((sum: number, r: any) => sum + (r.count || 0), 0);
+
+  // Calculate engagement score (0-100)
+  const engagementScore = Math.min(100, Math.round(
+    (postCount?.count || 0) * 5 +
+    (commentCount?.count || 0) * 2 +
+    (reactionCount?.count || 0) * 1 +
+    (reactionsReceivedCount) * 3 +
+    (followersCount?.count || 0) * 4
+  ) / 10);
+
+  // Days since registration
+  const daysSinceRegistration = Math.floor(
+    (Date.now() - new Date(user.createdAt).getTime()) / (1000 * 60 * 60 * 24)
+  );
+
+  return {
+    user: {
+      ...user,
+      daysSinceRegistration,
+    },
+    engagement: {
+      score: engagementScore,
+      posts: postCount?.count || 0,
+      comments: commentCount?.count || 0,
+      reactions: reactionCount?.count || 0,
+      reactionsReceived: reactionsReceivedCount,
+      followers: followersCount?.count || 0,
+      following: followingCount?.count || 0,
+    },
+    communities: userCommunities,
+    categoryInterests: Object.entries(categoryInterests)
+      .map(([category, count]) => ({ category, count }))
+      .sort((a, b) => (b.count as number) - (a.count as number)),
+    badges: userBadgesList,
+    activity: {
+      byHour: activityByHourData,
+      byDay: activityByDayData,
+      recent: recentActivity,
+    },
+    moderation: {
+      warnings,
+      activeWarnings: warnings.filter(w => w.isActive).length,
+      reportsMade: reportsMade?.count || 0,
+      reportsAgainst: totalReportsAgainst,
+    },
+  };
+}
+
+export async function searchUsersForInsights(query: string, limit: number = 20) {
+  const db = await getDb();
+  if (!db) return [];
+
+  const { users } = await import('../drizzle/schema');
+  const { like, or } = await import('drizzle-orm');
+
+  return db
+    .select({
+      id: users.id,
+      name: users.name,
+      avatar: users.avatarUrl,
+      points: users.points,
+      level: users.level,
+      isBanned: users.isBanned,
+      createdAt: users.createdAt,
+    })
+    .from(users)
+    .where(or(
+      like(users.name, `%${query}%`),
+      eq(users.id, parseInt(query) || 0)
+    ))
+    .orderBy(desc(users.points))
+    .limit(limit);
+}

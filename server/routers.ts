@@ -1425,6 +1425,27 @@ export const appRouter = router({
         await incrementTemplateUseCount(input.id);
         return { success: true };
       }),
+
+    // ============ USER INSIGHTS ============
+
+    // Get user insights (admin only)
+    getUserInsights: adminProcedure
+      .input(z.object({ userId: z.number() }))
+      .query(async ({ input }) => {
+        const { getUserInsights } = await import('./db-moderation');
+        return await getUserInsights(input.userId);
+      }),
+
+    // Search users for insights (admin only)
+    searchUsersForInsights: adminProcedure
+      .input(z.object({
+        query: z.string().min(1),
+        limit: z.number().optional(),
+      }))
+      .query(async ({ input }) => {
+        const { searchUsersForInsights } = await import('./db-moderation');
+        return await searchUsersForInsights(input.query, input.limit);
+      }),
   }),
 });
 

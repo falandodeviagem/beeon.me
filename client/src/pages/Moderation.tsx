@@ -7,7 +7,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { trpc } from "@/lib/trpc";
 import { useState } from "react";
 import { toast } from "sonner";
-import { Shield, AlertTriangle, CheckCircle, XCircle, Ban, FileText, MessageSquareWarning, BarChart3, MessageSquare } from "lucide-react";
+import { Shield, AlertTriangle, CheckCircle, XCircle, Ban, FileText, MessageSquareWarning, BarChart3, MessageSquare, Users } from "lucide-react";
 import { Link } from "wouter";
 import { ModerationStats } from "@/components/ModerationStats";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -114,6 +114,12 @@ export default function Moderation() {
               <Button variant="outline" className="gap-2">
                 <MessageSquare className="w-4 h-4" />
                 Templates
+              </Button>
+            </Link>
+            <Link href="/moderation/user-insights">
+              <Button variant="outline" className="gap-2">
+                <Users className="w-4 h-4" />
+                Insights
               </Button>
             </Link>
             <Dialog>

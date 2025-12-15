@@ -8,20 +8,23 @@ describe('Notificações em Tempo Real', () => {
 
   beforeAll(async () => {
     // Create test users
-    const user1Id = await db.createUser({
-      openId: `test-notif-user1-${Date.now()}`,
+    const openId1 = `test-notif-user1-${Date.now()}`;
+    const openId2 = `test-notif-user2-${Date.now()}`;
+    
+    const user1Id = await db.upsertUser({
+      openId: openId1,
       name: 'Test User 1',
       email: `testuser1-${Date.now()}@test.com`,
     });
 
-    const user2Id = await db.createUser({
-      openId: `test-notif-user2-${Date.now()}`,
+    const user2Id = await db.upsertUser({
+      openId: openId2,
       name: 'Test User 2',
       email: `testuser2-${Date.now()}@test.com`,
     });
 
-    testUser1 = await db.getUserByOpenId(`test-notif-user1-${Date.now()}`);
-    testUser2 = await db.getUserByOpenId(`test-notif-user2-${Date.now()}`);
+    testUser1 = await db.getUserById(user1Id);
+    testUser2 = await db.getUserById(user2Id);
   });
 
   it('deve criar notificação quando usuário recebe like', async () => {

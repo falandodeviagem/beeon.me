@@ -36,6 +36,13 @@ describe("Follow System", () => {
     const { ctx } = createAuthContext(1);
     const caller = appRouter.createCaller(ctx);
 
+    // Cleanup: unfollow first in case previous test left data
+    try {
+      await caller.follow.unfollow({ userId: 2 });
+    } catch (e) {
+      // Ignore if not following
+    }
+
     const result = await caller.follow.follow({ userId: 2 });
     expect(result).toEqual({ success: true });
   });
@@ -50,6 +57,13 @@ describe("Follow System", () => {
   it("should unfollow a user", async () => {
     const { ctx } = createAuthContext(1);
     const caller = appRouter.createCaller(ctx);
+
+    // Cleanup: unfollow first in case already following
+    try {
+      await caller.follow.unfollow({ userId: 2 });
+    } catch (e) {
+      // Ignore if not following
+    }
 
     // First follow
     await caller.follow.follow({ userId: 2 });

@@ -41,8 +41,8 @@ describe('Reactions System', () => {
     });
 
     // Join community
-    await db.joinCommunity(communityId, testUserId);
-    await db.joinCommunity(communityId, testUser2Id);
+    await db.addCommunityMember({ communityId, userId: testUserId, role: 'member' });
+    await db.addCommunityMember({ communityId, userId: testUser2Id, role: 'member' });
 
     // Create test post
     postId = await db.createPost({

@@ -34,7 +34,17 @@ describe("Gamification System", () => {
     const ctx = createAuthContext();
     const caller = appRouter.createCaller(ctx);
 
-    const profile = await caller.user.getProfile({ userId: ctx.user!.id });
+    // Ensure user exists in database first
+    const db = await import("./db");
+    const userId = await db.upsertUser({
+      openId: ctx.user!.openId,
+      email: ctx.user!.email,
+      name: ctx.user!.name,
+      avatarUrl: null,
+      loginMethod: ctx.user!.loginMethod,
+    });
+
+    const profile = await caller.user.getProfile({ userId });
 
     expect(profile).toBeDefined();
     expect(typeof profile.points).toBe("number");

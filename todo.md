@@ -636,3 +636,13 @@
 - [x] Frontend: Badge mostrando filtros ativos
 - [x] Frontend: Botão "Limpar filtros"
 - [x] Frontend: Integrar com useInfiniteQuery
+
+## 73. Correção de Bugs
+- [x] Executar todos os testes e identificar os 3 testes falhando
+- [x] Corrigir testes de follow system (dados duplicados)
+- [x] Corrigir teste de gamification (user not found)
+- [x] Verificar erros de TypeScript no build
+- [x] Revisar componentes com possíveis bugs de UI
+- [x] Validar lógica de procedures tRPC
+- [x] Testar fluxos críticos (login, criar post, comentar, reagir)
+- [x] Verificar inconsistências de dados no banco

@@ -9,13 +9,14 @@ describe('Busca Avançada', () => {
 
   beforeAll(async () => {
     // Create test user
-    const userId = await db.createUser({
-      openId: `test-search-user-${Date.now()}`,
+    const openId = `test-search-user-${Date.now()}`;
+    const userId = await db.upsertUser({
+      openId,
       name: 'Search Test User',
       email: `searchtest-${Date.now()}@test.com`,
     });
 
-    testUser = await db.getUserByOpenId(`test-search-user-${Date.now()}`);
+    testUser = await db.getUserById(userId);
 
     const caller = appRouter.createCaller({ user: testUser });
 

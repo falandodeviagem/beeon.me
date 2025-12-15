@@ -41,7 +41,7 @@ describe('Comment Mentions', () => {
     });
 
     // Join community
-    await db.joinCommunity(communityId, testUserId);
+    await db.addCommunityMember({ communityId, userId: testUserId, role: 'member' });
 
     // Create test post
     postId = await db.createPost({

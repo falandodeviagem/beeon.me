@@ -13,6 +13,7 @@ import { Home, Users, Trophy, UserPlus, Shield, LogOut, User, Search, Mail, Sun,
 import { SoundToggle } from "@/components/SoundToggle";
 import { GlobalSearch } from "@/components/GlobalSearch";
 import NotificationPanel from "@/components/NotificationPanel";
+import { NotificationBell } from "@/components/NotificationBell";
 import { Link, useLocation } from "wouter";
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
@@ -114,6 +115,10 @@ export default function MainLayout({ children }: MainLayoutProps) {
             
             {/* Sound toggle */}
             <SoundToggle />
+            
+            {/* Notification Bell */}
+            {isAuthenticated && <NotificationBell />}
+            
             {isAuthenticated && user ? (
               <>
                 <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-full bg-secondary/20">

@@ -707,6 +707,29 @@ export const appRouter = router({
           hashtags,
         };
       }),
+
+    posts: publicProcedure
+      .input(z.object({
+        query: z.string().optional(),
+        communityId: z.number().optional(),
+        authorId: z.number().optional(),
+        hashtags: z.array(z.string()).optional(),
+        startDate: z.date().optional(),
+        endDate: z.date().optional(),
+        sortBy: z.enum(['relevance', 'date', 'likes']).optional(),
+        limit: z.number().optional(),
+      }))
+      .query(async ({ input }) => {
+        const { searchPosts } = await import('./db-search');
+        return await searchPosts(input);
+      }),
+
+    suggestions: publicProcedure
+      .input(z.object({ query: z.string() }))
+      .query(async ({ input }) => {
+        const { getSearchSuggestions } = await import('./db-search');
+        return await getSearchSuggestions(input.query);
+      }),
   }),
 
   moderation: router({

@@ -539,3 +539,32 @@
 - [x] Frontend: Exibir card com imagem, título e descrição
 - [x] Frontend: Link clicável para abrir em nova aba
 - [x] Frontend: Loading state durante fetch de preview
+
+## 65. Notificações em Tempo Real
+- [x] Backend: Procedure para marcar notificações como lidas
+- [x] Backend: Procedure para buscar notificações não lidas com contador
+- [x] Backend: Polling ou WebSocket para atualização em tempo real
+- [x] Frontend: Hook useNotifications para gerenciar estado
+- [x] Frontend: Badge de contador na navbar (ícone de sino)
+- [x] Frontend: Dropdown com lista de notificações
+- [x] Frontend: Marcar como lida ao clicar
+- [x] Frontend: Link para página de notificações completa
+- [x] Frontend: Push notifications do navegador (Web Push API)
+- [x] Frontend: Solicitar permissão ao usuário
+- [x] Frontend: Exibir notificação quando nova notificação chegar
+
+## 66. Busca Avançada
+- [x] Backend: Procedure de busca com múltiplos filtros
+- [x] Backend: Filtro por comunidade
+- [x] Backend: Filtro por hashtags
+- [x] Backend: Filtro por autor
+- [x] Backend: Filtro por período (data início/fim)
+- [x] Backend: Ordenação por relevância/data
+- [x] Frontend: Página de busca dedicada
+- [x] Frontend: Campo de busca com autocomplete
+- [x] Frontend: Filtros visuais (dropdowns, date pickers)
+- [x] Frontend: Exibir resultados com PostCard
+- [x] Frontend: Estado vazio quando sem resultados
+- [x] Frontend: Histórico de buscas recentes (localStorage)
+- [x] Frontend: Sugestões de hashtags populares
+- [x] Frontend: Sugestões de usuários ao buscar por autor

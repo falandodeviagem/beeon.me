@@ -22,7 +22,8 @@ import {
   communityPromotions, InsertCommunityPromotion,
   mentions, InsertMention,
   userHashtagFollows, InsertUserHashtagFollow,
-  payments, InsertPayment
+  payments, InsertPayment,
+  subscriptionPlans, InsertSubscriptionPlan
 } from "../drizzle/schema";
 import { ENV } from './_core/env';
 
@@ -2186,6 +2187,179 @@ export async function getCommunityPayments(communityId: number, limit: number = 
     .limit(limit);
 
   return result;
+}
+
+// SUBSCRIPTION PLAN OPERATIONS
+
+/**
+ * Create a subscription plan
+ */
+export async function createSubscriptionPlan(plan: {
+  communityId: number;
+  name: string;
+  description?: string;
+  interval: 'monthly' | 'yearly' | 'lifetime';
+  price: number;
+  originalPrice?: number;
+  features?: string[];
+  stripePriceId?: string;
+  isDefault?: boolean;
+  sortOrder?: number;
+}) {
+  const db = await getDb();
+  if (!db) return null;
+
+  const result = await db.insert(subscriptionPlans).values({
+    communityId: plan.communityId,
+    name: plan.name,
+    description: plan.description,
+    interval: plan.interval,
+    price: plan.price,
+    originalPrice: plan.originalPrice,
+    features: plan.features ? JSON.stringify(plan.features) : null,
+    stripePriceId: plan.stripePriceId,
+    isDefault: plan.isDefault || false,
+    sortOrder: plan.sortOrder || 0,
+  });
+
+  return result[0].insertId;
+}
+
+/**
+ * Get subscription plans for a community
+ */
+export async function getCommunityPlans(communityId: number, activeOnly: boolean = true) {
+  const db = await getDb();
+  if (!db) return [];
+
+  const conditions = [eq(subscriptionPlans.communityId, communityId)];
+  if (activeOnly) {
+    conditions.push(eq(subscriptionPlans.isActive, true));
+  }
+
+  const result = await db
+    .select()
+    .from(subscriptionPlans)
+    .where(and(...conditions))
+    .orderBy(subscriptionPlans.sortOrder, subscriptionPlans.price);
+
+  return result.map(plan => ({
+    ...plan,
+    features: plan.features ? JSON.parse(plan.features) : [],
+  }));
+}
+
+/**
+ * Get a subscription plan by ID
+ */
+export async function getSubscriptionPlanById(planId: number) {
+  const db = await getDb();
+  if (!db) return null;
+
+  const result = await db
+    .select()
+    .from(subscriptionPlans)
+    .where(eq(subscriptionPlans.id, planId))
+    .limit(1);
+
+  if (!result[0]) return null;
+
+  return {
+    ...result[0],
+    features: result[0].features ? JSON.parse(result[0].features) : [],
+  };
+}
+
+/**
+ * Update a subscription plan
+ */
+export async function updateSubscriptionPlan(planId: number, data: {
+  name?: string;
+  description?: string;
+  price?: number;
+  originalPrice?: number;
+  features?: string[];
+  stripePriceId?: string;
+  isActive?: boolean;
+  isDefault?: boolean;
+  sortOrder?: number;
+}) {
+  const db = await getDb();
+  if (!db) return false;
+
+  const updateData: any = { ...data };
+  if (data.features) {
+    updateData.features = JSON.stringify(data.features);
+  }
+
+  await db
+    .update(subscriptionPlans)
+    .set(updateData)
+    .where(eq(subscriptionPlans.id, planId));
+
+  return true;
+}
+
+/**
+ * Delete a subscription plan
+ */
+export async function deleteSubscriptionPlan(planId: number) {
+  const db = await getDb();
+  if (!db) return false;
+
+  await db
+    .delete(subscriptionPlans)
+    .where(eq(subscriptionPlans.id, planId));
+
+  return true;
+}
+
+/**
+ * Create default plans for a community
+ */
+export async function createDefaultPlans(communityId: number, basePrice: number) {
+  const db = await getDb();
+  if (!db) return false;
+
+  // Monthly plan
+  await createSubscriptionPlan({
+    communityId,
+    name: 'Mensal',
+    description: 'Acesso mensal à comunidade',
+    interval: 'monthly',
+    price: basePrice,
+    features: ['Acesso completo ao conteúdo', 'Participação em discussões', 'Suporte da comunidade'],
+    isDefault: true,
+    sortOrder: 1,
+  });
+
+  // Yearly plan (2 months free)
+  const yearlyPrice = basePrice * 10; // 10 months instead of 12
+  await createSubscriptionPlan({
+    communityId,
+    name: 'Anual',
+    description: 'Economize 2 meses com o plano anual',
+    interval: 'yearly',
+    price: yearlyPrice,
+    originalPrice: basePrice * 12,
+    features: ['Tudo do plano mensal', '2 meses grátis', 'Acesso prioritário a novidades'],
+    sortOrder: 2,
+  });
+
+  // Lifetime plan (24 months price)
+  const lifetimePrice = basePrice * 24;
+  await createSubscriptionPlan({
+    communityId,
+    name: 'Vitalício',
+    description: 'Pague uma vez, acesse para sempre',
+    interval: 'lifetime',
+    price: lifetimePrice,
+    originalPrice: basePrice * 36,
+    features: ['Tudo do plano anual', 'Acesso vitalicio', 'Badge exclusivo de fundador'],
+    sortOrder: 3,
+  });
+
+  return true;
 }
 
 // MODERATION OPERATIONS

@@ -20,7 +20,7 @@ import { useRoute, Link } from "wouter";
 import { Skeleton } from "@/components/ui/skeleton";
 import { PromotedCommunitiesWidget } from "@/components/PromotedCommunitiesWidget";
 import { ManagePromotions } from "@/components/ManagePromotions";
-import { Settings, BarChart3, DollarSign } from "lucide-react";
+import { Settings, BarChart3, DollarSign, Sparkles } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -35,6 +35,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { PlanSelector } from "@/components/PlanSelector";
 
 export default function CommunityDetail() {
   const { user, isAuthenticated } = useAuth();
@@ -45,6 +46,8 @@ export default function CommunityDetail() {
   const [postContent, setPostContent] = useState("");
   const [postImages, setPostImages] = useState<string[]>([]);
   const [commentContent, setCommentContent] = useState<Record<number, string>>({});
+  const [showPlanSelector, setShowPlanSelector] = useState(false);
+  const [selectedPlanId, setSelectedPlanId] = useState<number | null>(null);
 
   const { data: community, isLoading: communityLoading } = trpc.community.getById.useQuery(
     { id: communityId },
@@ -54,6 +57,11 @@ export default function CommunityDetail() {
   const { data: isMember } = trpc.community.isMember.useQuery(
     { communityId },
     { enabled: communityId > 0 && isAuthenticated }
+  );
+
+  const { data: plans } = trpc.community.getPlans.useQuery(
+    { communityId },
+    { enabled: communityId > 0 && community?.isPaid }
   );
 
   const { data: posts, isLoading: postsLoading } = trpc.post.list.useQuery(
@@ -192,14 +200,33 @@ export default function CommunityDetail() {
 
   const handleJoin = () => {
     if (community.isPaid) {
-      createCheckoutMutation.mutate({
-        communityId,
-        successUrl: `${window.location.origin}/community/${communityId}?success=true`,
-        cancelUrl: `${window.location.origin}/community/${communityId}`,
-      });
+      // If there are multiple plans, show plan selector
+      if (plans && plans.length > 1) {
+        setShowPlanSelector(true);
+        // Auto-select default plan
+        const defaultPlan = plans.find(p => p.isDefault) || plans[0];
+        setSelectedPlanId(defaultPlan.id);
+      } else {
+        // Single plan or no plans, go directly to checkout
+        createCheckoutMutation.mutate({
+          communityId,
+          successUrl: `${window.location.origin}/community/${communityId}?success=true`,
+          cancelUrl: `${window.location.origin}/community/${communityId}`,
+        });
+      }
     } else {
       joinMutation.mutate({ communityId });
     }
+  };
+
+  const handlePlanConfirm = () => {
+    if (!selectedPlanId) return;
+    createCheckoutMutation.mutate({
+      communityId,
+      planId: selectedPlanId,
+      successUrl: `${window.location.origin}/community/${communityId}?success=true`,
+      cancelUrl: `${window.location.origin}/community/${communityId}`,
+    });
   };
 
 
@@ -342,14 +369,24 @@ export default function CommunityDetail() {
                       </a>
                     </Link>
                     {community.isPaid && (
-                      <Link href={`/community/${communityId}/revenue`}>
-                        <a>
-                          <Button variant="outline" size="sm">
-                            <DollarSign className="w-4 h-4 mr-2" />
-                            Receitas
-                          </Button>
-                        </a>
-                      </Link>
+                      <>
+                        <Link href={`/community/${communityId}/revenue`}>
+                          <a>
+                            <Button variant="outline" size="sm" className="gap-2">
+                              <DollarSign className="w-4 h-4" />
+                              Receitas
+                            </Button>
+                          </a>
+                        </Link>
+                        <Link href={`/community/${communityId}/plans`}>
+                          <a>
+                            <Button variant="outline" size="sm" className="gap-2">
+                              <Sparkles className="w-4 h-4" />
+                              Planos
+                            </Button>
+                          </a>
+                        </Link>
+                      </>
                     )}
                     <Dialog>
                     <DialogTrigger asChild>
@@ -522,6 +559,27 @@ export default function CommunityDetail() {
           </div>
         </div>
       </div>
+
+      {/* Plan Selector Modal */}
+      <Dialog open={showPlanSelector} onOpenChange={setShowPlanSelector}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Escolha seu plano de assinatura</DialogTitle>
+            <DialogDescription>
+              Selecione o plano ideal para você e comece a participar da comunidade
+            </DialogDescription>
+          </DialogHeader>
+          {plans && plans.length > 0 && (
+            <PlanSelector
+              plans={plans}
+              selectedPlanId={selectedPlanId}
+              onSelect={setSelectedPlanId}
+              onConfirm={handlePlanConfirm}
+              isLoading={createCheckoutMutation.isPending}
+            />
+          )}
+        </DialogContent>
+      </Dialog>
     </MainLayout>
   );
 }

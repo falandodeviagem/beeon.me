@@ -623,6 +623,10 @@ export const payments = mysqlTable("payments", {
   // Which community
   communityId: int("communityId").notNull(),
   
+  // Which plan (optional, for plan-based subscriptions)
+  planId: int("planId"),
+  planInterval: varchar("planInterval", { length: 20 }), // monthly, yearly, lifetime
+  
   // Payment details
   amount: int("amount").notNull(), // in cents
   currency: varchar("currency", { length: 3 }).default("BRL").notNull(),
@@ -648,3 +652,43 @@ export const payments = mysqlTable("payments", {
 
 export type Payment = typeof payments.$inferSelect;
 export type InsertPayment = typeof payments.$inferInsert;
+
+
+/**
+ * Subscription Plans - different pricing tiers for paid communities
+ */
+export const subscriptionPlans = mysqlTable("subscription_plans", {
+  id: int("id").autoincrement().primaryKey(),
+  
+  // Which community
+  communityId: int("communityId").notNull(),
+  
+  // Plan details
+  name: varchar("name", { length: 100 }).notNull(), // e.g., "Mensal", "Anual", "Vitalício"
+  description: text("description"),
+  
+  // Pricing
+  interval: mysqlEnum("interval", ["monthly", "yearly", "lifetime"]).notNull(),
+  price: int("price").notNull(), // in cents
+  originalPrice: int("originalPrice"), // for showing discount
+  
+  // Features (JSON array of strings)
+  features: text("features"), // JSON stringified array
+  
+  // Stripe
+  stripePriceId: varchar("stripePriceId", { length: 255 }),
+  
+  // Status
+  isActive: boolean("isActive").default(true).notNull(),
+  isDefault: boolean("isDefault").default(false).notNull(),
+  sortOrder: int("sortOrder").default(0).notNull(),
+  
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+}, (table) => ({
+  communityIdx: index("plan_community_idx").on(table.communityId),
+  activeIdx: index("plan_active_idx").on(table.isActive),
+}));
+
+export type SubscriptionPlan = typeof subscriptionPlans.$inferSelect;
+export type InsertSubscriptionPlan = typeof subscriptionPlans.$inferInsert;

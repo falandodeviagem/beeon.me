@@ -141,6 +141,13 @@
       "when": 1765802160538,
       "tag": "0019_slim_miss_america",
       "breakpoints": true
+    },
+    {
+      "idx": 20,
+      "version": "5",
+      "when": 1765803753339,
+      "tag": "0020_acoustic_zuras",
+      "breakpoints": true
     }
   ]
 }

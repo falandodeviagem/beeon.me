@@ -19,22 +19,41 @@ export async function createCommunityCheckoutSession(params: {
   userId: number;
   successUrl: string;
   cancelUrl: string;
+  planId?: number;
+  interval?: 'monthly' | 'yearly' | 'lifetime';
+  planName?: string;
 }): Promise<{ sessionId: string; url: string }> {
-  const session = await stripe.checkout.sessions.create({
-    mode: "subscription",
-    payment_method_types: ["card"],
+  const interval = params.interval || 'monthly';
+  const planName = params.planName || 'Assinatura Mensal';
+
+  // Lifetime is a one-time payment, not subscription
+  const isLifetime = interval === 'lifetime';
+
+  const getIntervalDescription = () => {
+    switch (interval) {
+      case 'yearly': return 'Acesso anual';
+      case 'lifetime': return 'Acesso vitalício';
+      default: return 'Acesso mensal';
+    }
+  };
+
+  const sessionConfig: Stripe.Checkout.SessionCreateParams = {
+    mode: isLifetime ? 'payment' : 'subscription',
+    payment_method_types: ['card'],
     line_items: [
       {
         price_data: {
-          currency: "brl",
+          currency: 'brl',
           product_data: {
-            name: `Assinatura: ${params.communityName}`,
-            description: `Acesso mensal à comunidade ${params.communityName}`,
-          },
-          recurring: {
-            interval: "month",
+            name: `${planName}: ${params.communityName}`,
+            description: `${getIntervalDescription()} à comunidade ${params.communityName}`,
           },
           unit_amount: params.price,
+          ...(isLifetime ? {} : {
+            recurring: {
+              interval: interval === 'yearly' ? 'year' : 'month',
+            },
+          }),
         },
         quantity: 1,
       },
@@ -42,13 +61,17 @@ export async function createCommunityCheckoutSession(params: {
     metadata: {
       communityId: params.communityId.toString(),
       userId: params.userId.toString(),
+      planId: params.planId?.toString() || '',
+      interval,
     },
     success_url: params.successUrl,
     cancel_url: params.cancelUrl,
-  });
+  };
+
+  const session = await stripe.checkout.sessions.create(sessionConfig);
 
   if (!session.url) {
-    throw new Error("Failed to create checkout session");
+    throw new Error('Failed to create checkout session');
   }
 
   return {

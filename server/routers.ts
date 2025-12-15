@@ -266,6 +266,7 @@ export const appRouter = router({
         communityId: z.number(),
         successUrl: z.string(),
         cancelUrl: z.string(),
+        planId: z.number().optional(),
       }))
       .mutation(async ({ ctx, input }) => {
         const community = await db.getCommunityById(input.communityId);
@@ -275,13 +276,30 @@ export const appRouter = router({
         const isMember = await db.isCommunityMember(input.communityId, ctx.user.id);
         if (isMember) throw new TRPCError({ code: 'BAD_REQUEST', message: 'Already a member' });
 
+        // Get plan details if planId provided
+        let price = community.price;
+        let interval: 'monthly' | 'yearly' | 'lifetime' = 'monthly';
+        let planName = 'Assinatura Mensal';
+
+        if (input.planId) {
+          const plan = await db.getSubscriptionPlanById(input.planId);
+          if (plan && plan.communityId === input.communityId) {
+            price = plan.price;
+            interval = plan.interval;
+            planName = plan.name;
+          }
+        }
+
         const session = await createCommunityCheckoutSession({
           communityId: input.communityId,
           communityName: community.name,
-          price: community.price,
+          price,
           userId: ctx.user.id,
           successUrl: input.successUrl,
           cancelUrl: input.cancelUrl,
+          planId: input.planId,
+          interval,
+          planName,
         });
 
         return { checkoutUrl: session.url };
@@ -397,6 +415,104 @@ export const appRouter = router({
         }
 
         return await db.getCommunityPayments(input.communityId, input.limit);
+      }),
+
+    // Subscription Plans
+    getPlans: publicProcedure
+      .input(z.object({ communityId: z.number() }))
+      .query(async ({ input }) => {
+        return await db.getCommunityPlans(input.communityId, true);
+      }),
+
+    getAllPlans: protectedProcedure
+      .input(z.object({ communityId: z.number() }))
+      .query(async ({ ctx, input }) => {
+        const community = await db.getCommunityById(input.communityId);
+        if (!community) throw new TRPCError({ code: 'NOT_FOUND' });
+        if (community.ownerId !== ctx.user.id && ctx.user.role !== 'admin') {
+          throw new TRPCError({ code: 'FORBIDDEN' });
+        }
+        return await db.getCommunityPlans(input.communityId, false);
+      }),
+
+    createPlan: protectedProcedure
+      .input(z.object({
+        communityId: z.number(),
+        name: z.string().min(1).max(100),
+        description: z.string().optional(),
+        interval: z.enum(['monthly', 'yearly', 'lifetime']),
+        price: z.number().min(100), // minimum R$ 1.00
+        originalPrice: z.number().optional(),
+        features: z.array(z.string()).optional(),
+        isDefault: z.boolean().optional(),
+        sortOrder: z.number().optional(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const community = await db.getCommunityById(input.communityId);
+        if (!community) throw new TRPCError({ code: 'NOT_FOUND' });
+        if (community.ownerId !== ctx.user.id) {
+          throw new TRPCError({ code: 'FORBIDDEN', message: 'Only community owner can create plans' });
+        }
+
+        const planId = await db.createSubscriptionPlan(input);
+        return { planId };
+      }),
+
+    updatePlan: protectedProcedure
+      .input(z.object({
+        planId: z.number(),
+        name: z.string().min(1).max(100).optional(),
+        description: z.string().optional(),
+        price: z.number().min(100).optional(),
+        originalPrice: z.number().optional(),
+        features: z.array(z.string()).optional(),
+        isActive: z.boolean().optional(),
+        isDefault: z.boolean().optional(),
+        sortOrder: z.number().optional(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const plan = await db.getSubscriptionPlanById(input.planId);
+        if (!plan) throw new TRPCError({ code: 'NOT_FOUND' });
+
+        const community = await db.getCommunityById(plan.communityId);
+        if (!community || community.ownerId !== ctx.user.id) {
+          throw new TRPCError({ code: 'FORBIDDEN' });
+        }
+
+        const { planId, ...updateData } = input;
+        await db.updateSubscriptionPlan(planId, updateData);
+        return { success: true };
+      }),
+
+    deletePlan: protectedProcedure
+      .input(z.object({ planId: z.number() }))
+      .mutation(async ({ ctx, input }) => {
+        const plan = await db.getSubscriptionPlanById(input.planId);
+        if (!plan) throw new TRPCError({ code: 'NOT_FOUND' });
+
+        const community = await db.getCommunityById(plan.communityId);
+        if (!community || community.ownerId !== ctx.user.id) {
+          throw new TRPCError({ code: 'FORBIDDEN' });
+        }
+
+        await db.deleteSubscriptionPlan(input.planId);
+        return { success: true };
+      }),
+
+    createDefaultPlans: protectedProcedure
+      .input(z.object({ communityId: z.number() }))
+      .mutation(async ({ ctx, input }) => {
+        const community = await db.getCommunityById(input.communityId);
+        if (!community) throw new TRPCError({ code: 'NOT_FOUND' });
+        if (community.ownerId !== ctx.user.id) {
+          throw new TRPCError({ code: 'FORBIDDEN' });
+        }
+        if (!community.isPaid || !community.price) {
+          throw new TRPCError({ code: 'BAD_REQUEST', message: 'Community must be paid' });
+        }
+
+        await db.createDefaultPlans(input.communityId, community.price);
+        return { success: true };
       }),
   }),
 

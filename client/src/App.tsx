@@ -32,6 +32,7 @@ import ResponseTemplates from "./pages/ResponseTemplates";
 import UserInsights from "./pages/UserInsights";
 import CommunityRevenue from "./pages/CommunityRevenue";
 import PaymentHistory from "./pages/PaymentHistory";
+import ManagePlans from "./pages/ManagePlans";
 
 function Router() {
   return (
@@ -45,6 +46,7 @@ function Router() {
       <Route path="/community/:id" component={CommunityDetail} />
       <Route path="/community/:id/stats" component={CommunityStats} />
       <Route path="/community/:id/revenue" component={CommunityRevenue} />
+      <Route path="/community/:id/plans" component={ManagePlans} />
       <Route path="/notifications" component={Notifications} />
       <Route path="/leaderboard" component={Leaderboard} />
       <Route path="/invites" component={Invites} />

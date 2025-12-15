@@ -840,3 +840,16 @@
 - [x] Frontend: Página de histórico de pagamentos
 - [x] Frontend: Tabela com data, comunidade, valor, status
 - [x] Frontend: Link para fatura do Stripe
+
+## 95. Planos de Assinatura
+- [x] Backend: Criar tabela subscription_plans (communityId, name, interval, price, features, isActive)
+- [ ] Backend: Atualizar tabela payments para incluir planId
+- [ ] Backend: Helper para criar/listar/atualizar planos
+- [x] Backend: Atualizar checkout para aceitar planId
+- [ ] Backend: Procedures tRPC para gerenciar planos
+- [ ] Frontend: Modal de seleção de plano no checkout
+- [ ] Frontend: Cards comparativos (mensal, anual, vitalício)
+- [ ] Frontend: Destaque para economia em planos mais longos
+- [x] Frontend: Página de gerenciamento de planos para donos
+- [ ] Frontend: Formulário para criar/editar planos
+- [ ] Frontend: Toggle para ativar/desativar planos

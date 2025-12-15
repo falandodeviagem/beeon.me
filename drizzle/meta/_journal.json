@@ -127,6 +127,13 @@
       "when": 1765795577138,
       "tag": "0017_daffy_marten_broadcloak",
       "breakpoints": true
+    },
+    {
+      "idx": 18,
+      "version": "5",
+      "when": 1765801295664,
+      "tag": "0018_awesome_tenebrous",
+      "breakpoints": true
     }
   ]
 }

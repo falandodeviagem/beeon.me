@@ -1,18 +1,69 @@
 import { useParams, Link } from "wouter";
 import { trpc } from "@/lib/trpc";
+import { useAuth } from "@/_core/hooks/useAuth";
 import MainLayout from "@/components/MainLayout";
 import PostCard from "@/components/PostCard";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Hash, Loader2, TrendingUp, ArrowLeft } from "lucide-react";
+import { Hash, Loader2, TrendingUp, ArrowLeft, UserPlus, UserMinus, Users } from "lucide-react";
+import { toast } from "sonner";
 
 export default function HashtagPage() {
   const params = useParams();
   const tag = params.tag || "";
+  const { isAuthenticated } = useAuth();
+  const utils = trpc.useUtils();
 
   const { data: posts, isLoading } = trpc.hashtags.byTag.useQuery({ tag, limit: 50 });
   const { data: trendingHashtags } = trpc.hashtags.trending.useQuery({ limit: 10 });
+  const { data: hashtagInfo } = trpc.hashtags.getByTag.useQuery({ tag });
+  
+  const { data: isFollowing } = trpc.hashtags.isFollowing.useQuery(
+    { hashtagId: hashtagInfo?.id || 0 },
+    { enabled: isAuthenticated && !!hashtagInfo?.id }
+  );
+  
+  const { data: followersCount } = trpc.hashtags.followersCount.useQuery(
+    { hashtagId: hashtagInfo?.id || 0 },
+    { enabled: !!hashtagInfo?.id }
+  );
+
+  const followMutation = trpc.hashtags.follow.useMutation({
+    onSuccess: () => {
+      utils.hashtags.isFollowing.invalidate({ hashtagId: hashtagInfo?.id || 0 });
+      utils.hashtags.followersCount.invalidate({ hashtagId: hashtagInfo?.id || 0 });
+      utils.hashtags.myFollowed.invalidate();
+      toast.success(`Você está seguindo #${tag}`);
+    },
+    onError: () => {
+      toast.error("Erro ao seguir hashtag");
+    },
+  });
+
+  const unfollowMutation = trpc.hashtags.unfollow.useMutation({
+    onSuccess: () => {
+      utils.hashtags.isFollowing.invalidate({ hashtagId: hashtagInfo?.id || 0 });
+      utils.hashtags.followersCount.invalidate({ hashtagId: hashtagInfo?.id || 0 });
+      utils.hashtags.myFollowed.invalidate();
+      toast.success(`Você deixou de seguir #${tag}`);
+    },
+    onError: () => {
+      toast.error("Erro ao deixar de seguir hashtag");
+    },
+  });
+
+  const handleFollowToggle = () => {
+    if (!hashtagInfo?.id) return;
+    
+    if (isFollowing) {
+      unfollowMutation.mutate({ hashtagId: hashtagInfo.id });
+    } else {
+      followMutation.mutate({ hashtagId: hashtagInfo.id });
+    }
+  };
+
+  const isToggling = followMutation.isPending || unfollowMutation.isPending;
 
   return (
     <MainLayout>
@@ -34,10 +85,39 @@ export default function HashtagPage() {
                   </div>
                   <div className="flex-1">
                     <CardTitle className="text-2xl">#{tag}</CardTitle>
-                    <p className="text-muted-foreground">
-                      {posts?.length || 0} {(posts?.length || 0) === 1 ? "post" : "posts"} com esta hashtag
-                    </p>
+                    <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                      <span>{posts?.length || 0} {(posts?.length || 0) === 1 ? "post" : "posts"}</span>
+                      {followersCount !== undefined && (
+                        <span className="flex items-center gap-1">
+                          <Users className="w-4 h-4" />
+                          {followersCount} {followersCount === 1 ? "seguidor" : "seguidores"}
+                        </span>
+                      )}
+                    </div>
                   </div>
+                  {isAuthenticated && hashtagInfo?.id && (
+                    <Button
+                      variant={isFollowing ? "outline" : "default"}
+                      size="sm"
+                      onClick={handleFollowToggle}
+                      disabled={isToggling}
+                      className="gap-2"
+                    >
+                      {isToggling ? (
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                      ) : isFollowing ? (
+                        <>
+                          <UserMinus className="w-4 h-4" />
+                          Seguindo
+                        </>
+                      ) : (
+                        <>
+                          <UserPlus className="w-4 h-4" />
+                          Seguir
+                        </>
+                      )}
+                    </Button>
+                  )}
                 </div>
               </CardHeader>
             </Card>

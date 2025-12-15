@@ -802,3 +802,17 @@
 - [x] Criar hashtags novas automaticamente se não existirem
 - [x] Associar hashtags ao post na tabela post_hashtags
 - [x] Incrementar contador de uso das hashtags
+
+## 90. Seguir Hashtags [CONCLUÍDO]
+- [x] Criar tabela user_hashtag_follows no schema
+- [x] Criar helpers para seguir/deixar de seguir hashtag
+- [x] Criar helper para listar hashtags seguidas
+- [x] Criar procedures tRPC para seguir hashtags
+- [x] Adicionar botão de seguir na página de hashtag
+- [x] Mostrar hashtags seguidas no perfil do usuário
+- [x] Incluir posts de hashtags seguidas no feed
+
+## 91. Sugestões de Hashtags ao Digitar [CONCLUÍDO]
+- [x] Já implementado no MentionInput com autocomplete de #
+- [x] Melhorar ordenação por popularidade
+- [x] Adicionar indicador visual de hashtags populares

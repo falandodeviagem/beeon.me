@@ -247,8 +247,10 @@ export function MentionInput({
                       {hashtag.useCount} {hashtag.useCount === 1 ? 'uso' : 'usos'}
                     </div>
                   </div>
-                  {hashtag.useCount > 100 && (
-                    <Badge variant="secondary" className="text-xs">Popular</Badge>
+                  {hashtag.useCount >= 50 && (
+                    <Badge variant="secondary" className="text-xs gap-1">
+                      🔥 {hashtag.useCount >= 100 ? 'Popular' : 'Em alta'}
+                    </Badge>
                   )}
                 </button>
               ))}

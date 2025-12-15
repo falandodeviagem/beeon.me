@@ -20,7 +20,8 @@ import {
   hashtags, InsertHashtag,
   postHashtags, InsertPostHashtag,
   communityPromotions, InsertCommunityPromotion,
-  mentions, InsertMention
+  mentions, InsertMention,
+  userHashtagFollows, InsertUserHashtagFollow
 } from "../drizzle/schema";
 import { ENV } from './_core/env';
 
@@ -1891,6 +1892,110 @@ export async function searchHashtags(query: string, limit: number = 10) {
     .limit(limit);
 
   return result;
+}
+
+/**
+ * Follow a hashtag
+ */
+export async function followHashtag(userId: number, hashtagId: number) {
+  const db = await getDb();
+  if (!db) return false;
+
+  try {
+    await db.insert(userHashtagFollows).values({ userId, hashtagId });
+    return true;
+  } catch (error) {
+    // Already following
+    return false;
+  }
+}
+
+/**
+ * Unfollow a hashtag
+ */
+export async function unfollowHashtag(userId: number, hashtagId: number) {
+  const db = await getDb();
+  if (!db) return false;
+
+  await db.delete(userHashtagFollows)
+    .where(and(
+      eq(userHashtagFollows.userId, userId),
+      eq(userHashtagFollows.hashtagId, hashtagId)
+    ));
+  return true;
+}
+
+/**
+ * Check if user follows a hashtag
+ */
+export async function isFollowingHashtag(userId: number, hashtagId: number) {
+  const db = await getDb();
+  if (!db) return false;
+
+  const result = await db
+    .select({ id: userHashtagFollows.id })
+    .from(userHashtagFollows)
+    .where(and(
+      eq(userHashtagFollows.userId, userId),
+      eq(userHashtagFollows.hashtagId, hashtagId)
+    ))
+    .limit(1);
+
+  return result.length > 0;
+}
+
+/**
+ * Get hashtags followed by user
+ */
+export async function getUserFollowedHashtags(userId: number) {
+  const db = await getDb();
+  if (!db) return [];
+
+  const result = await db
+    .select({
+      id: hashtags.id,
+      tag: hashtags.tag,
+      useCount: hashtags.useCount,
+      followedAt: userHashtagFollows.createdAt,
+    })
+    .from(userHashtagFollows)
+    .innerJoin(hashtags, eq(userHashtagFollows.hashtagId, hashtags.id))
+    .where(eq(userHashtagFollows.userId, userId))
+    .orderBy(desc(userHashtagFollows.createdAt));
+
+  return result;
+}
+
+/**
+ * Get hashtag by tag name
+ */
+export async function getHashtagByTag(tag: string) {
+  const db = await getDb();
+  if (!db) return null;
+
+  const normalizedTag = tag.toLowerCase().replace(/^#/, '');
+  const result = await db
+    .select()
+    .from(hashtags)
+    .where(eq(hashtags.tag, normalizedTag))
+    .limit(1);
+
+  return result[0] || null;
+}
+
+/**
+ * Get hashtag followers count
+ */
+export async function getHashtagFollowersCount(hashtagId: number) {
+  const db = await getDb();
+  if (!db) return 0;
+
+  const result = await db
+    .select({ count: sql<number>`COUNT(*)` })
+    .from(userHashtagFollows)
+    .where(eq(userHashtagFollows.hashtagId, hashtagId));
+
+  return result[0]?.count || 0;
 }
 
 // MODERATION OPERATIONS

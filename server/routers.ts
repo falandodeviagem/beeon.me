@@ -1015,6 +1015,43 @@ export const appRouter = router({
       .query(async ({ input }) => {
         return await db.getTrendingHashtags(input.limit);
       }),
+
+    getByTag: publicProcedure
+      .input(z.object({ tag: z.string() }))
+      .query(async ({ input }) => {
+        return await db.getHashtagByTag(input.tag);
+      }),
+
+    follow: protectedProcedure
+      .input(z.object({ hashtagId: z.number() }))
+      .mutation(async ({ ctx, input }) => {
+        const success = await db.followHashtag(ctx.user.id, input.hashtagId);
+        return { success };
+      }),
+
+    unfollow: protectedProcedure
+      .input(z.object({ hashtagId: z.number() }))
+      .mutation(async ({ ctx, input }) => {
+        const success = await db.unfollowHashtag(ctx.user.id, input.hashtagId);
+        return { success };
+      }),
+
+    isFollowing: protectedProcedure
+      .input(z.object({ hashtagId: z.number() }))
+      .query(async ({ ctx, input }) => {
+        return await db.isFollowingHashtag(ctx.user.id, input.hashtagId);
+      }),
+
+    myFollowed: protectedProcedure
+      .query(async ({ ctx }) => {
+        return await db.getUserFollowedHashtags(ctx.user.id);
+      }),
+
+    followersCount: publicProcedure
+      .input(z.object({ hashtagId: z.number() }))
+      .query(async ({ input }) => {
+        return await db.getHashtagFollowersCount(input.hashtagId);
+      }),
   }),
 
   reactions: router({

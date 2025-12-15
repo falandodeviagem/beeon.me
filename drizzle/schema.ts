@@ -589,3 +589,23 @@ export const responseTemplates = mysqlTable("response_templates", {
 
 export type ResponseTemplate = typeof responseTemplates.$inferSelect;
 export type InsertResponseTemplate = typeof responseTemplates.$inferInsert;
+
+
+/**
+ * User Hashtag Follows - users following hashtags
+ */
+export const userHashtagFollows = mysqlTable("user_hashtag_follows", {
+  id: int("id").autoincrement().primaryKey(),
+  
+  userId: int("userId").notNull(),
+  hashtagId: int("hashtagId").notNull(),
+  
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+}, (table) => ({
+  userIdx: index("hashtag_follow_user_idx").on(table.userId),
+  hashtagIdx: index("hashtag_follow_hashtag_idx").on(table.hashtagId),
+  uniqueFollow: unique("unique_hashtag_follow").on(table.userId, table.hashtagId),
+}));
+
+export type UserHashtagFollow = typeof userHashtagFollows.$inferSelect;
+export type InsertUserHashtagFollow = typeof userHashtagFollows.$inferInsert;

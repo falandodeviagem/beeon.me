@@ -84,7 +84,13 @@ export default function ImageUpload({ onImagesChange, maxImages = 5 }: ImageUplo
           });
 
           uploadedUrls.push(result.url);
-          setUploadProgress(((i + 1) / validFiles.length) * 100);
+          const progressValue = Math.round(((i + 1) / validFiles.length) * 100);
+          setUploadProgress(progressValue);
+          
+          // Update toast progress
+          update(toastId.id, {
+            progress: progressValue,
+          });
         } catch (error) {
           console.error('Upload error:', error);
           toast({

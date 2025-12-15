@@ -8,7 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Separator } from "@/components/ui/separator";
 import { trpc } from "@/lib/trpc";
 import { useState } from "react";
-import { toast } from "sonner";
+import { useToast } from "@/hooks/use-toast";
 import { Users, Lock, Heart, MessageCircle, Send, MoreVertical, Flag, Image as ImageIcon } from "lucide-react";
 import ImageUpload from "@/components/ImageUpload";
 import { useRoute } from "wouter";
@@ -35,6 +35,7 @@ export default function CommunityDetail() {
   const { user, isAuthenticated } = useAuth();
   const [, params] = useRoute("/community/:id");
   const communityId = params?.id ? parseInt(params.id) : 0;
+  const { loading, update, toast } = useToast();
 
   const [postContent, setPostContent] = useState("");
   const [postImages, setPostImages] = useState<string[]>([]);
@@ -59,34 +60,66 @@ export default function CommunityDetail() {
 
   const joinMutation = trpc.community.join.useMutation({
     onSuccess: () => {
-      toast.success("Você entrou na comunidade!");
+      toast({
+        title: "Sucesso!",
+        description: "Você entrou na comunidade",
+        variant: "success",
+      });
       utils.community.isMember.invalidate();
       utils.community.getById.invalidate();
     },
     onError: (error) => {
-      toast.error(error.message || "Erro ao entrar na comunidade");
+      toast({
+        title: "Erro",
+        description: error.message || "Erro ao entrar na comunidade",
+        variant: "destructive",
+      });
     },
   });
 
   const leaveMutation = trpc.community.leave.useMutation({
     onSuccess: () => {
-      toast.success("Você saiu da comunidade");
+      toast({
+        title: "Sucesso!",
+        description: "Você saiu da comunidade",
+        variant: "success",
+      });
       utils.community.isMember.invalidate();
       utils.community.getById.invalidate();
     },
   });
 
-  const createPostMutation = trpc.post.create.useMutation({
-    onSuccess: () => {
-      toast.success("Post criado!");
+  const createPostMutation = trpc.post.create.useMutation();
+  
+  const handleCreatePost = async () => {
+    if (!postContent.trim() && postImages.length === 0) return;
+    
+    const toastId = loading("Criando post...");
+    
+    try {
+      await createPostMutation.mutateAsync({
+        communityId,
+        content: postContent,
+        imageUrls: postImages,
+      });
+      
+      update(toastId.id, {
+        title: "Sucesso!",
+        description: "Post criado",
+        variant: "success",
+      });
+      
       setPostContent("");
       setPostImages([]);
       utils.post.list.invalidate();
-    },
-    onError: (error) => {
-      toast.error(error.message || "Erro ao criar post");
-    },
-  });
+    } catch (error: any) {
+      update(toastId.id, {
+        title: "Erro",
+        description: error.message || "Erro ao criar post",
+        variant: "destructive",
+      });
+    }
+  };
 
   const likeMutation = trpc.post.like.useMutation({
     onSuccess: () => {
@@ -96,7 +129,11 @@ export default function CommunityDetail() {
 
   const createCommentMutation = trpc.comment.create.useMutation({
     onSuccess: (_, variables) => {
-      toast.success("Comentário adicionado!");
+      toast({
+        title: "Sucesso!",
+        description: "Comentário adicionado",
+        variant: "success",
+      });
       setCommentContent((prev) => ({ ...prev, [variables.postId]: "" }));
       utils.comment.list.invalidate();
     },
@@ -104,7 +141,11 @@ export default function CommunityDetail() {
 
   const reportMutation = trpc.moderation.report.useMutation({
     onSuccess: () => {
-      toast.success("Denúncia enviada para análise");
+      toast({
+        title: "Sucesso!",
+        description: "Denúncia enviada para análise",
+        variant: "success",
+      });
     },
   });
 
@@ -140,7 +181,11 @@ export default function CommunityDetail() {
       window.location.href = data.checkoutUrl;
     },
     onError: (error) => {
-      toast.error(error.message || "Erro ao criar checkout");
+      toast({
+        title: "Erro",
+        description: error.message || "Erro ao criar checkout",
+        variant: "destructive",
+      });
     },
   });
 
@@ -156,17 +201,7 @@ export default function CommunityDetail() {
     }
   };
 
-  const handleCreatePost = () => {
-    if (!postContent.trim()) {
-      toast.error("Escreva algo antes de postar");
-      return;
-    }
-    createPostMutation.mutate({
-      communityId,
-      content: postContent,
-      imageUrls: postImages.length > 0 ? postImages : undefined,
-    });
-  };
+
 
   const handleLike = (postId: number) => {
     likeMutation.mutate({ postId });
@@ -175,7 +210,11 @@ export default function CommunityDetail() {
   const handleComment = (postId: number) => {
     const content = commentContent[postId];
     if (!content?.trim()) {
-      toast.error("Escreva um comentário");
+      toast({
+        title: "Erro",
+        description: "Escreva um comentário",
+        variant: "destructive",
+      });
       return;
     }
     createCommentMutation.mutate({

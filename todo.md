@@ -359,3 +359,18 @@
 - [x] Configurar duração infinita para loading toasts
 - [x] Integrar no ImageUpload para feedback de upload
 - [x] Testar fluxo completo: loading → success/error
+
+## 43. Ícones Contextuais e Progress em Toasts
+- [x] Adicionar CheckCircle para variant success
+- [x] Adicionar XCircle para variant destructive  
+- [x] Adicionar AlertTriangle para variant warning
+- [x] Implementar suporte a progress (0-100%) no toast
+- [x] Adicionar componente Progress bar no Toaster
+- [x] Permitir atualizar progress via update()
+
+## 44. Integrar Loading Toast em Operações
+- [x] Criar post com loading toast
+- [x] Criar comunidade com loading toast
+- [x] Deletar post/comentário com loading toast
+- [x] Seguir usuário com loading toast
+- [x] Enviar mensagem DM com loading toast (se existir)

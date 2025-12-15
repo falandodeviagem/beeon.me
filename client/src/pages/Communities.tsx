@@ -10,7 +10,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { trpc } from "@/lib/trpc";
 import { useState } from "react";
-import { toast } from "sonner";
+import { useToast } from "@/hooks/use-toast";
 import { Plus, Users, Lock, DollarSign, ArrowRight, Search, Filter, SlidersHorizontal } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Link } from "wouter";
@@ -18,6 +18,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 
 export default function Communities() {
   const { user, isAuthenticated } = useAuth();
+  const { loading, update, toast } = useToast();
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
@@ -66,20 +67,7 @@ export default function Communities() {
     : [];
   const utils = trpc.useUtils();
 
-  const createMutation = trpc.community.create.useMutation({
-    onSuccess: () => {
-      toast.success("Comunidade criada com sucesso!");
-      setIsCreateOpen(false);
-      setName("");
-      setDescription("");
-      setIsPaid(false);
-      setPrice("");
-      utils.community.list.invalidate();
-    },
-    onError: (error) => {
-      toast.error(error.message || "Erro ao criar comunidade");
-    },
-  });
+  const createMutation = trpc.community.create.useMutation();
 
   if (!isAuthenticated) {
     window.location.href = "/login";
@@ -88,17 +76,44 @@ export default function Communities() {
 
   const handleCreate = async () => {
     if (!name.trim()) {
-      toast.error("Nome da comunidade é obrigatório");
+      toast({
+        title: "Erro",
+        description: "Nome da comunidade é obrigatório",
+        variant: "destructive",
+      });
       return;
     }
-
-    await createMutation.mutateAsync({
-      name,
-      description: description || undefined,
-      isPaid,
-      price: isPaid ? Math.round(parseFloat(price || "0") * 100) : 0,
-      category,
-    });
+    
+    const toastId = loading("Criando comunidade...");
+    
+    try {
+      await createMutation.mutateAsync({
+        name,
+        description: description || undefined,
+        isPaid,
+        price: isPaid ? Math.round(parseFloat(price || "0") * 100) : 0,
+        category,
+      });
+      
+      update(toastId.id, {
+        title: "Sucesso!",
+        description: "Comunidade criada com sucesso",
+        variant: "success",
+      });
+      
+      setIsCreateOpen(false);
+      setName("");
+      setDescription("");
+      setIsPaid(false);
+      setPrice("");
+      utils.community.list.invalidate();
+    } catch (error: any) {
+      update(toastId.id, {
+        title: "Erro",
+        description: error.message || "Erro ao criar comunidade",
+        variant: "destructive",
+      });
+    }
   };
 
   return (

@@ -374,3 +374,24 @@
 - [x] Deletar post/comentário com loading toast
 - [x] Seguir usuário com loading toast
 - [x] Enviar mensagem DM com loading toast (se existir)
+
+## 45. Sons de Feedback em Toasts
+- [x] Criar arquivos de áudio (success.mp3, error.mp3)
+- [x] Implementar playSound() com Web Audio API
+- [x] Detectar se tab está ativa (document.visibilityState)
+- [x] Adicionar toggle de preferência em localStorage
+- [x] Integrar sons em toast success/error
+
+## 46. Helper toast.promise()
+- [x] Criar função toast.promise(promise, messages)
+- [x] Gerenciar loading → success/error automaticamente
+- [x] Suportar mensagens customizadas por estado
+- [x] Retornar Promise original para chaining
+- [x] Documentar uso e exemplos
+
+## 47. Ações Customizadas em Toasts
+- [x] Adicionar botão "Desfazer" em toast de deleção
+- [x] Implementar lógica de desfazer (cancelar deleção)
+- [x] Usar campo action do toast para botão customizado
+- [x] Timer de 5s antes de confirmar deleção no backend
+- [x] Feedback visual ao desfazer

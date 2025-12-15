@@ -1,6 +1,6 @@
 import * as React from "react";
-
 import type { ToastActionElement, ToastProps } from "@/components/ui/toast";
+import { playSuccessSound, playErrorSound, playWarningSound } from "@/lib/sounds";;
 
 const TOAST_LIMIT = 5;
 const TOAST_REMOVE_DELAY = 5000;
@@ -138,7 +138,7 @@ type Toast = Omit<ToasterToast, "id">;
 function toast({ ...props }: Toast) {
   const id = genId();
 
-  const update = (props: Partial<ToasterToast>) =>
+  const update = (props: ToasterToast) =>
     dispatch({
       type: "UPDATE_TOAST",
       toast: { ...props, id },
@@ -156,6 +156,15 @@ function toast({ ...props }: Toast) {
       },
     },
   });
+  
+  // Play sound based on variant
+  if (props.variant === "success") {
+    playSuccessSound();
+  } else if (props.variant === "destructive") {
+    playErrorSound();
+  } else if (props.variant === "warning") {
+    playWarningSound();
+  }
 
   return {
     id: id,
@@ -174,12 +183,52 @@ function loading(description: string) {
   });
 }
 
-// Helper to update existing toast
-function update(toastId: string, props: Partial<Toast>) {
+// Helper to// Helper for global update
+function update(toastId: string, props: Partial<ToasterToast>) {
   dispatch({
     type: "UPDATE_TOAST",
-    toast: { ...props, id: toastId, open: true },
+    toast: { ...props, id: toastId },
   });
+}
+
+// Helper for promise-based operations
+function promise<T>(
+  promiseFn: Promise<T>,
+  messages: {
+    loading: string;
+    success: string | ((data: T) => string);
+    error: string | ((error: any) => string);
+  }
+): Promise<T> {
+  const toastId = loading(messages.loading);
+  
+  return promiseFn
+    .then((data) => {
+      const successMessage = typeof messages.success === "function" 
+        ? messages.success(data) 
+        : messages.success;
+      
+      update(toastId.id, {
+        title: "Sucesso!",
+        description: successMessage,
+        variant: "success",
+      });
+      
+      return data;
+    })
+    .catch((error) => {
+      const errorMessage = typeof messages.error === "function" 
+        ? messages.error(error) 
+        : messages.error;
+      
+      update(toastId.id, {
+        title: "Erro",
+        description: errorMessage,
+        variant: "destructive",
+      });
+      
+      throw error;
+    });
 }
 
 function useToast() {
@@ -198,10 +247,11 @@ function useToast() {
   return {
     ...state,
     toast,
+    dismiss: (toastId?: string) => dispatch({ type: "DISMISS_TOAST", toastId }),
     loading,
     update,
-    dismiss: (toastId?: string) => dispatch({ type: "DISMISS_TOAST", toastId }),
+    promise,
   };
 }
 
-export { useToast, toast };
+export { useToast, toast, loading, update, promise };

@@ -128,16 +128,17 @@ export default function CommunityDetail() {
   });
 
   const createCommentMutation = trpc.comment.create.useMutation({
-    onSuccess: (_, variables) => {
+    onSuccess: () => {
       toast({
         title: "Sucesso!",
-        description: "Comentário adicionado",
+        description: "Comentário criado",
         variant: "success",
       });
-      setCommentContent((prev) => ({ ...prev, [variables.postId]: "" }));
-      utils.comment.list.invalidate();
+      utils.post.list.invalidate();
     },
   });
+  
+  const deletePostMutation = trpc.post.delete.useMutation();
 
   const reportMutation = trpc.moderation.report.useMutation({
     onSuccess: () => {
@@ -223,12 +224,56 @@ export default function CommunityDetail() {
     });
   };
 
-  const handleReport = (type: "post" | "comment", targetId: number) => {
-    reportMutation.mutate({
-      reportType: type,
-      targetId,
-      reason: "Conteúdo inapropriado",
+  const handleReport = (type: "post" | "comment", id: number) => {
+    reportMutation.mutate({ reportType: type, targetId: id, reason: "Conteúdo inapropriado" });
+  };
+  
+  const handleDeletePost = (postId: number) => {
+    let timeoutId: NodeJS.Timeout;
+    let cancelled = false;
+    
+    const toastId = toast({
+      title: "Post deletado",
+      description: "O post será removido em 5 segundos",
+      variant: "warning",
+      action: (
+        <Button
+          size="sm"
+          variant="outline"
+          onClick={() => {
+            cancelled = true;
+            clearTimeout(timeoutId);
+            toast({
+              title: "Cancelado",
+              description: "A deleção foi cancelada",
+              variant: "success",
+            });
+          }}
+        >
+          Desfazer
+        </Button>
+      ),
     });
+    
+    timeoutId = setTimeout(async () => {
+      if (!cancelled) {
+        try {
+          await deletePostMutation.mutateAsync({ id: postId });
+          update(toastId.id, {
+            title: "Sucesso!",
+            description: "Post deletado permanentemente",
+            variant: "success",
+          });
+          utils.post.list.invalidate();
+        } catch (error: any) {
+          update(toastId.id, {
+            title: "Erro",
+            description: error.message || "Erro ao deletar post",
+            variant: "destructive",
+          });
+        }
+      }
+    }, 5000);
   };
 
   const isOwner = user?.id === community.ownerId;
@@ -359,6 +404,15 @@ export default function CommunityDetail() {
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
+                        {(user?.id === post.authorId || user?.role === "admin") && (
+                          <DropdownMenuItem 
+                            onClick={() => handleDeletePost(post.id)}
+                            className="text-destructive"
+                          >
+                            <Flag className="w-4 h-4 mr-2" />
+                            Deletar
+                          </DropdownMenuItem>
+                        )}
                         <DropdownMenuItem onClick={() => handleReport("post", post.id)}>
                           <Flag className="w-4 h-4 mr-2" />
                           Denunciar

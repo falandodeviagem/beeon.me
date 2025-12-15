@@ -816,3 +816,27 @@
 - [x] Já implementado no MentionInput com autocomplete de #
 - [x] Melhorar ordenação por popularidade
 - [x] Adicionar indicador visual de hashtags populares
+
+## 92. Endpoint de Webhook Stripe ✅
+- [x] Criar rota /api/stripe/webhook no Express
+- [x] Validar assinatura do webhook com STRIPE_WEBHOOK_SECRET
+- [x] Processar eventos checkout.session.completed
+- [x] Processar eventos customer.subscription.deleted
+- [x] Adicionar usuário como membro da comunidade após pagamento
+- [x] Remover acesso após cancelamento
+
+## 93. Dashboard de Receitas ✅
+- [x] Criar tabela payments no schema (communityId, userId, amount, status, stripeSessionId, createdAt)
+- [x] Salvar pagamentos no banco ao processar webhook
+- [x] Criar helper para obter receitas por comunidade
+- [x] Criar procedure para dashboard de receitas
+- [x] Frontend: Página de receitas para donos de comunidade
+- [x] Frontend: Cards com métricas (total, mensal, assinantes ativos)
+- [x] Frontend: Gráfico de receita ao longo do tempo
+
+## 94. Histórico de Pagamentos ✅
+- [x] Criar helper para listar pagamentos do usuário
+- [x] Criar procedure para histórico de pagamentos
+- [x] Frontend: Página de histórico de pagamentos
+- [x] Frontend: Tabela com data, comunidade, valor, status
+- [x] Frontend: Link para fatura do Stripe

@@ -21,7 +21,8 @@ import {
   postHashtags, InsertPostHashtag,
   communityPromotions, InsertCommunityPromotion,
   mentions, InsertMention,
-  userHashtagFollows, InsertUserHashtagFollow
+  userHashtagFollows, InsertUserHashtagFollow,
+  payments, InsertPayment
 } from "../drizzle/schema";
 import { ENV } from './_core/env';
 
@@ -1996,6 +1997,195 @@ export async function getHashtagFollowersCount(hashtagId: number) {
     .where(eq(userHashtagFollows.hashtagId, hashtagId));
 
   return result[0]?.count || 0;
+}
+
+// PAYMENT OPERATIONS
+
+/**
+ * Create a payment record
+ */
+export async function createPayment(payment: {
+  userId: number;
+  communityId: number;
+  amount: number;
+  currency?: string;
+  status: 'pending' | 'completed' | 'failed' | 'refunded';
+  stripeSessionId?: string | null;
+  stripeSubscriptionId?: string | null;
+  stripeInvoiceId?: string | null;
+  stripeInvoiceUrl?: string | null;
+  periodStart?: Date | null;
+  periodEnd?: Date | null;
+}) {
+  const db = await getDb();
+  if (!db) return null;
+
+  const result = await db.insert(payments).values({
+    userId: payment.userId,
+    communityId: payment.communityId,
+    amount: payment.amount,
+    currency: payment.currency || 'BRL',
+    status: payment.status,
+    stripeSessionId: payment.stripeSessionId,
+    stripeSubscriptionId: payment.stripeSubscriptionId,
+    stripeInvoiceId: payment.stripeInvoiceId,
+    stripeInvoiceUrl: payment.stripeInvoiceUrl,
+    periodStart: payment.periodStart,
+    periodEnd: payment.periodEnd,
+  });
+
+  return result[0].insertId;
+}
+
+/**
+ * Get payments for a user
+ */
+export async function getUserPayments(userId: number, limit: number = 50) {
+  const db = await getDb();
+  if (!db) return [];
+
+  const result = await db
+    .select({
+      id: payments.id,
+      amount: payments.amount,
+      currency: payments.currency,
+      status: payments.status,
+      stripeInvoiceUrl: payments.stripeInvoiceUrl,
+      periodStart: payments.periodStart,
+      periodEnd: payments.periodEnd,
+      createdAt: payments.createdAt,
+      communityId: payments.communityId,
+      communityName: communities.name,
+      communityImage: communities.imageUrl,
+    })
+    .from(payments)
+    .leftJoin(communities, eq(payments.communityId, communities.id))
+    .where(eq(payments.userId, userId))
+    .orderBy(desc(payments.createdAt))
+    .limit(limit);
+
+  return result;
+}
+
+/**
+ * Get revenue stats for a community
+ */
+export async function getCommunityRevenueStats(communityId: number) {
+  const db = await getDb();
+  if (!db) return null;
+
+  const now = new Date();
+  const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+  const startOfLastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+
+  // Total revenue
+  const totalResult = await db
+    .select({ total: sql<number>`COALESCE(SUM(amount), 0)` })
+    .from(payments)
+    .where(and(
+      eq(payments.communityId, communityId),
+      eq(payments.status, 'completed')
+    ));
+
+  // This month revenue
+  const monthResult = await db
+    .select({ total: sql<number>`COALESCE(SUM(amount), 0)` })
+    .from(payments)
+    .where(and(
+      eq(payments.communityId, communityId),
+      eq(payments.status, 'completed'),
+      sql`${payments.createdAt} >= ${startOfMonth}`
+    ));
+
+  // Last month revenue
+  const lastMonthResult = await db
+    .select({ total: sql<number>`COALESCE(SUM(amount), 0)` })
+    .from(payments)
+    .where(and(
+      eq(payments.communityId, communityId),
+      eq(payments.status, 'completed'),
+      sql`${payments.createdAt} >= ${startOfLastMonth}`,
+      sql`${payments.createdAt} < ${startOfMonth}`
+    ));
+
+  // Active subscribers count
+  const subscribersResult = await db
+    .select({ count: sql<number>`COUNT(DISTINCT userId)` })
+    .from(payments)
+    .where(and(
+      eq(payments.communityId, communityId),
+      eq(payments.status, 'completed'),
+      sql`${payments.createdAt} >= ${startOfMonth}`
+    ));
+
+  // Payment count
+  const paymentCountResult = await db
+    .select({ count: sql<number>`COUNT(*)` })
+    .from(payments)
+    .where(and(
+      eq(payments.communityId, communityId),
+      eq(payments.status, 'completed')
+    ));
+
+  return {
+    totalRevenue: totalResult[0]?.total || 0,
+    monthlyRevenue: monthResult[0]?.total || 0,
+    lastMonthRevenue: lastMonthResult[0]?.total || 0,
+    activeSubscribers: subscribersResult[0]?.count || 0,
+    totalPayments: paymentCountResult[0]?.count || 0,
+  };
+}
+
+/**
+ * Get revenue by month for a community (last 12 months)
+ */
+export async function getCommunityRevenueByMonth(communityId: number) {
+  const db = await getDb();
+  if (!db) return [];
+
+  const result = await db
+    .select({
+      month: sql<string>`DATE_FORMAT(${payments.createdAt}, '%Y-%m')`,
+      revenue: sql<number>`COALESCE(SUM(amount), 0)`,
+      count: sql<number>`COUNT(*)`,
+    })
+    .from(payments)
+    .where(and(
+      eq(payments.communityId, communityId),
+      eq(payments.status, 'completed'),
+      sql`${payments.createdAt} >= DATE_SUB(NOW(), INTERVAL 12 MONTH)`
+    ))
+    .groupBy(sql`DATE_FORMAT(${payments.createdAt}, '%Y-%m')`)
+    .orderBy(sql`DATE_FORMAT(${payments.createdAt}, '%Y-%m')`);
+
+  return result;
+}
+
+/**
+ * Get recent payments for a community
+ */
+export async function getCommunityPayments(communityId: number, limit: number = 50) {
+  const db = await getDb();
+  if (!db) return [];
+
+  const result = await db
+    .select({
+      id: payments.id,
+      amount: payments.amount,
+      currency: payments.currency,
+      status: payments.status,
+      createdAt: payments.createdAt,
+      userId: payments.userId,
+      userName: users.name,
+      userAvatar: users.avatarUrl,
+    })
+    .from(payments)
+    .leftJoin(users, eq(payments.userId, users.id))
+    .where(eq(payments.communityId, communityId))
+    .orderBy(desc(payments.createdAt))
+    .limit(limit);
+
+  return result;
 }
 
 // MODERATION OPERATIONS

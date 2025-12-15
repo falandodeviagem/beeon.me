@@ -30,6 +30,8 @@ import AuditLogs from "./pages/AuditLogs";
 import ModerationAnalytics from "./pages/ModerationAnalytics";
 import ResponseTemplates from "./pages/ResponseTemplates";
 import UserInsights from "./pages/UserInsights";
+import CommunityRevenue from "./pages/CommunityRevenue";
+import PaymentHistory from "./pages/PaymentHistory";
 
 function Router() {
   return (
@@ -38,9 +40,11 @@ function Router() {
       <Route path="/onboarding" component={Onboarding} />
       <Route path="/login" component={Login} />
       <Route path="/profile" component={Profile} />
+      <Route path="/profile/payments" component={PaymentHistory} />
       <Route path="/communities" component={Communities} />
       <Route path="/community/:id" component={CommunityDetail} />
       <Route path="/community/:id/stats" component={CommunityStats} />
+      <Route path="/community/:id/revenue" component={CommunityRevenue} />
       <Route path="/notifications" component={Notifications} />
       <Route path="/leaderboard" component={Leaderboard} />
       <Route path="/invites" component={Invites} />

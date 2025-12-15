@@ -117,6 +117,12 @@ export const appRouter = router({
         }
         return result;
       }),
+
+    getPaymentHistory: protectedProcedure
+      .input(z.object({ limit: z.number().default(50) }))
+      .query(async ({ ctx, input }) => {
+        return await db.getUserPayments(ctx.user.id, input.limit);
+      }),
   }),
 
   community: router({
@@ -351,6 +357,46 @@ export const appRouter = router({
 
         await db.removeCommunityPromotion(input.communityId, input.promotedCommunityId);
         return { success: true };
+      }),
+
+    // Revenue Dashboard
+    getRevenueStats: protectedProcedure
+      .input(z.object({ communityId: z.number() }))
+      .query(async ({ ctx, input }) => {
+        // Check if user is community owner
+        const community = await db.getCommunityById(input.communityId);
+        if (!community) throw new TRPCError({ code: 'NOT_FOUND' });
+        if (community.ownerId !== ctx.user.id && ctx.user.role !== 'admin') {
+          throw new TRPCError({ code: 'FORBIDDEN', message: 'Only community owner can view revenue' });
+        }
+
+        return await db.getCommunityRevenueStats(input.communityId);
+      }),
+
+    getRevenueByMonth: protectedProcedure
+      .input(z.object({ communityId: z.number() }))
+      .query(async ({ ctx, input }) => {
+        // Check if user is community owner
+        const community = await db.getCommunityById(input.communityId);
+        if (!community) throw new TRPCError({ code: 'NOT_FOUND' });
+        if (community.ownerId !== ctx.user.id && ctx.user.role !== 'admin') {
+          throw new TRPCError({ code: 'FORBIDDEN', message: 'Only community owner can view revenue' });
+        }
+
+        return await db.getCommunityRevenueByMonth(input.communityId);
+      }),
+
+    getPayments: protectedProcedure
+      .input(z.object({ communityId: z.number(), limit: z.number().default(50) }))
+      .query(async ({ ctx, input }) => {
+        // Check if user is community owner
+        const community = await db.getCommunityById(input.communityId);
+        if (!community) throw new TRPCError({ code: 'NOT_FOUND' });
+        if (community.ownerId !== ctx.user.id && ctx.user.role !== 'admin') {
+          throw new TRPCError({ code: 'FORBIDDEN', message: 'Only community owner can view payments' });
+        }
+
+        return await db.getCommunityPayments(input.communityId, input.limit);
       }),
   }),
 

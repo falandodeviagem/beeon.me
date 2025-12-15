@@ -20,7 +20,7 @@ import { useRoute, Link } from "wouter";
 import { Skeleton } from "@/components/ui/skeleton";
 import { PromotedCommunitiesWidget } from "@/components/PromotedCommunitiesWidget";
 import { ManagePromotions } from "@/components/ManagePromotions";
-import { Settings, BarChart3 } from "lucide-react";
+import { Settings, BarChart3, DollarSign } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -341,6 +341,16 @@ export default function CommunityDetail() {
                         </Button>
                       </a>
                     </Link>
+                    {community.isPaid && (
+                      <Link href={`/community/${communityId}/revenue`}>
+                        <a>
+                          <Button variant="outline" size="sm">
+                            <DollarSign className="w-4 h-4 mr-2" />
+                            Receitas
+                          </Button>
+                        </a>
+                      </Link>
+                    )}
                     <Dialog>
                     <DialogTrigger asChild>
                       <Button variant="outline" size="sm">

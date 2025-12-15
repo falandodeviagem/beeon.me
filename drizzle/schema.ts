@@ -609,3 +609,42 @@ export const userHashtagFollows = mysqlTable("user_hashtag_follows", {
 
 export type UserHashtagFollow = typeof userHashtagFollows.$inferSelect;
 export type InsertUserHashtagFollow = typeof userHashtagFollows.$inferInsert;
+
+
+/**
+ * Payments - subscription payments for paid communities
+ */
+export const payments = mysqlTable("payments", {
+  id: int("id").autoincrement().primaryKey(),
+  
+  // Who paid
+  userId: int("userId").notNull(),
+  
+  // Which community
+  communityId: int("communityId").notNull(),
+  
+  // Payment details
+  amount: int("amount").notNull(), // in cents
+  currency: varchar("currency", { length: 3 }).default("BRL").notNull(),
+  status: mysqlEnum("status", ["pending", "completed", "failed", "refunded"]).default("pending").notNull(),
+  
+  // Stripe references
+  stripeSessionId: varchar("stripeSessionId", { length: 255 }),
+  stripeSubscriptionId: varchar("stripeSubscriptionId", { length: 255 }),
+  stripeInvoiceId: varchar("stripeInvoiceId", { length: 255 }),
+  stripeInvoiceUrl: text("stripeInvoiceUrl"),
+  
+  // Subscription period
+  periodStart: timestamp("periodStart"),
+  periodEnd: timestamp("periodEnd"),
+  
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+}, (table) => ({
+  userIdx: index("payment_user_idx").on(table.userId),
+  communityIdx: index("payment_community_idx").on(table.communityId),
+  statusIdx: index("payment_status_idx").on(table.status),
+  createdAtIdx: index("payment_created_at_idx").on(table.createdAt),
+}));
+
+export type Payment = typeof payments.$inferSelect;
+export type InsertPayment = typeof payments.$inferInsert;

@@ -11,7 +11,8 @@ import { Separator } from "@/components/ui/separator";
 import { trpc } from "@/lib/trpc";
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
-import { Trophy, Award, Calendar, Edit2, Save, X } from "lucide-react";
+import { Trophy, Award, Calendar, Edit2, Save, X, CreditCard } from "lucide-react";
+import { Link } from "wouter";
 import { Skeleton } from "@/components/ui/skeleton";
 
 export default function Profile() {
@@ -166,6 +167,16 @@ export default function Profile() {
                           <p className="text-xs text-muted-foreground">Membro desde</p>
                         </div>
                       </div>
+
+                      <Link href="/profile/payments">
+                        <a className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-green-500/10 hover:bg-green-500/20 transition-colors cursor-pointer">
+                          <CreditCard className="w-5 h-5 text-green-600" />
+                          <div>
+                            <p className="text-sm font-medium">Pagamentos</p>
+                            <p className="text-xs text-muted-foreground">Ver histórico</p>
+                          </div>
+                        </a>
+                      </Link>
                     </div>
                   </>
                 )}

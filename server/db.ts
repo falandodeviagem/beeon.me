@@ -347,7 +347,39 @@ export async function createPost(data: InsertPost) {
   if (!db) throw new Error("Database not available");
 
   const result = await db.insert(posts).values(data);
-  return result[0].insertId;
+  const postId = result[0].insertId;
+  
+  // Process mentions in post content
+  if (data.content) {
+    const mentionRegex = /@(\w+)/g;
+    const matches = Array.from(data.content.matchAll(mentionRegex));
+    
+    for (const match of matches) {
+      const username = match[1];
+      const mentionedUser = await getUserByName(username);
+      
+      if (mentionedUser && mentionedUser.id !== data.authorId) {
+        // Save mention
+        await db.insert(mentions).values({
+          postId,
+          mentionedUserId: mentionedUser.id,
+          mentionedBy: data.authorId,
+        });
+        
+        // Create notification
+        await createNotification({
+          userId: mentionedUser.id,
+          type: "mention",
+          title: "Você foi mencionado em um post",
+          message: `Você foi mencionado em um post`,
+          relatedId: postId,
+          relatedType: "post",
+        });
+      }
+    }
+  }
+  
+  return postId;
 }
 
 export async function getPostById(id: number) {
@@ -588,7 +620,8 @@ export async function createComment(data: InsertComment, authorId: number) {
           type: "mention",
           title: "Você foi mencionado em um comentário",
           message: `@${username} mencionou você em um comentário`,
-          relatedId: data.postId,
+          relatedId: commentId,
+          relatedType: "comment",
         });
       }
     }

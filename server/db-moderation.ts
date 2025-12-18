@@ -98,7 +98,8 @@ export async function createModerationLog(data: InsertModerationLog) {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
 
-  await db.insert(moderationLogs).values(data);
+  const [result] = await db.insert(moderationLogs).values(data);
+  return result.insertId;
 }
 
 export async function getModerationLogs(limit: number = 50) {

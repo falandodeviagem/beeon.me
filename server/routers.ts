@@ -635,7 +635,7 @@ export const appRouter = router({
           relatedId: postId,
         });
 
-        return { id: postId };
+        return { id: postId, content: input.content };
       }),
 
     update: protectedProcedure
@@ -686,6 +686,16 @@ export const appRouter = router({
               actionType: 'receive_like',
               points: 2,
               relatedId: input.postId,
+            });
+            
+            // Create notification for post author
+            await db.createNotification({
+              userId: post.authorId,
+              type: 'like',
+              title: 'Novo like no seu post',
+              message: `${ctx.user.name} curtiu seu post`,
+              relatedId: input.postId,
+              relatedType: 'post',
             });
           }
 

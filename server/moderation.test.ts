@@ -75,12 +75,12 @@ describe('Moderation System', () => {
   });
 
   it('should resolve a report', async () => {
-    await resolveReport({
+    await resolveReport(
       reportId,
-      status: 'resolved',
-      reviewedById: authorId,
-      reviewNotes: 'Content removed',
-    });
+      authorId,
+      'resolved',
+      'Content removed'
+    );
 
     const pendingReports = await getPendingReports();
     const ourReport = pendingReports.find(r => r.id === reportId);
@@ -91,8 +91,8 @@ describe('Moderation System', () => {
     const logId = await createModerationLog({
       moderatorId: authorId,
       action: 'remove_post',
-      targetType: 'post',
-      targetId: postId,
+      targetUserId: authorId,
+      postId: postId,
       reason: 'Violated community guidelines',
     });
 
@@ -105,7 +105,7 @@ describe('Moderation System', () => {
     expect(Array.isArray(logs)).toBe(true);
     expect(logs.length).toBeGreaterThan(0);
     
-    const ourLog = logs.find(l => l.targetId === postId);
+    const ourLog = logs.find(l => l.postId === postId);
     expect(ourLog).toBeDefined();
     expect(ourLog?.action).toBe('remove_post');
   });

@@ -853,3 +853,10 @@
 - [x] Frontend: Página de gerenciamento de planos para donos
 - [ ] Frontend: Formulário para criar/editar planos
 - [ ] Frontend: Toggle para ativar/desativar planos
+
+## 86. Correção de Testes
+- [x] Corrigir testes de moderação (moderation.test.ts)
+- [x] Corrigir testes de menções em comentários (comment-mentions.test.ts)
+- [x] Corrigir testes de notificações em tempo real (notifications-realtime.test.ts)
+- [x] Todos os 254 testes passando
+

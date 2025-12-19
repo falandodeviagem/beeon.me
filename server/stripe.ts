@@ -22,6 +22,7 @@ export async function createCommunityCheckoutSession(params: {
   planId?: number;
   interval?: 'monthly' | 'yearly' | 'lifetime';
   planName?: string;
+  trialDays?: number;
 }): Promise<{ sessionId: string; url: string }> {
   const interval = params.interval || 'monthly';
   const planName = params.planName || 'Assinatura Mensal';
@@ -40,6 +41,11 @@ export async function createCommunityCheckoutSession(params: {
   const sessionConfig: Stripe.Checkout.SessionCreateParams = {
     mode: isLifetime ? 'payment' : 'subscription',
     payment_method_types: ['card'],
+    ...(params.trialDays && !isLifetime ? {
+      subscription_data: {
+        trial_period_days: params.trialDays,
+      },
+    } : {}),
     line_items: [
       {
         price_data: {

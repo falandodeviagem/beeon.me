@@ -2238,6 +2238,7 @@ export async function createSubscriptionPlan(plan: {
   stripePriceId?: string;
   isDefault?: boolean;
   sortOrder?: number;
+  trialDays?: number;
 }) {
   const db = await getDb();
   if (!db) return null;
@@ -2253,6 +2254,7 @@ export async function createSubscriptionPlan(plan: {
     stripePriceId: plan.stripePriceId,
     isDefault: plan.isDefault || false,
     sortOrder: plan.sortOrder || 0,
+    trialDays: plan.trialDays || 0,
   });
 
   return result[0].insertId;
@@ -2316,6 +2318,7 @@ export async function updateSubscriptionPlan(planId: number, data: {
   isActive?: boolean;
   isDefault?: boolean;
   sortOrder?: number;
+  trialDays?: number;
 }) {
   const db = await getDb();
   if (!db) return false;
@@ -2354,7 +2357,7 @@ export async function createDefaultPlans(communityId: number, basePrice: number)
   const db = await getDb();
   if (!db) return false;
 
-  // Monthly plan
+  // Monthly plan (with 7-day trial)
   await createSubscriptionPlan({
     communityId,
     name: 'Mensal',
@@ -2364,6 +2367,7 @@ export async function createDefaultPlans(communityId: number, basePrice: number)
     features: ['Acesso completo ao conteúdo', 'Participação em discussões', 'Suporte da comunidade'],
     isDefault: true,
     sortOrder: 1,
+    trialDays: 7,
   });
 
   // Yearly plan (2 months free)

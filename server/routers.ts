@@ -280,6 +280,7 @@ export const appRouter = router({
         let price = community.price;
         let interval: 'monthly' | 'yearly' | 'lifetime' = 'monthly';
         let planName = 'Assinatura Mensal';
+        let trialDays = 0;
 
         if (input.planId) {
           const plan = await db.getSubscriptionPlanById(input.planId);
@@ -287,6 +288,7 @@ export const appRouter = router({
             price = plan.price;
             interval = plan.interval;
             planName = plan.name;
+            trialDays = plan.trialDays || 0;
           }
         }
 
@@ -300,6 +302,7 @@ export const appRouter = router({
           planId: input.planId,
           interval,
           planName,
+          trialDays: trialDays > 0 ? trialDays : undefined,
         });
 
         return { checkoutUrl: session.url };
@@ -446,6 +449,7 @@ export const appRouter = router({
         features: z.array(z.string()).optional(),
         isDefault: z.boolean().optional(),
         sortOrder: z.number().optional(),
+        trialDays: z.number().min(0).max(90).optional(),
       }))
       .mutation(async ({ ctx, input }) => {
         const community = await db.getCommunityById(input.communityId);
@@ -469,6 +473,7 @@ export const appRouter = router({
         isActive: z.boolean().optional(),
         isDefault: z.boolean().optional(),
         sortOrder: z.number().optional(),
+        trialDays: z.number().min(0).max(90).optional(),
       }))
       .mutation(async ({ ctx, input }) => {
         const plan = await db.getSubscriptionPlanById(input.planId);

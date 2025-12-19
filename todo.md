@@ -843,7 +843,7 @@
 
 ## 95. Planos de Assinatura
 - [x] Backend: Criar tabela subscription_plans (communityId, name, interval, price, features, isActive)
-- [ ] Backend: Atualizar tabela payments para incluir planId
+- [x] Backend: Atualizar tabela payments para incluir planId
 - [ ] Backend: Helper para criar/listar/atualizar planos
 - [x] Backend: Atualizar checkout para aceitar planId
 - [ ] Backend: Procedures tRPC para gerenciar planos
@@ -860,3 +860,13 @@
 - [x] Corrigir testes de notificações em tempo real (notifications-realtime.test.ts)
 - [x] Todos os 254 testes passando
 
+
+## 87. Período de Teste Grátis (Trial) [x]
+- [x] Backend: Adicionar campo trialDays à tabela subscription_plans
+- [x] Backend: Atualizar helper createSubscriptionPlan para aceitar trialDays
+- [x] Backend: Atualizar Stripe checkout para incluir trial_period_days
+- [x] Backend: Atualizar webhook para processar trial_start e trial_end
+- [x] Frontend: Adicionar campo de trial days no formulário de criar plano
+- [x] Frontend: Exibir badge "X dias grátis" nos cards de planos com trial
+- [ ] Frontend: Atualizar PlanSelector para destacar trial period
+- [ ] Testes: Criar testes para trial period

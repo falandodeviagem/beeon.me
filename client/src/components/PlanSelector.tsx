@@ -14,6 +14,7 @@ interface Plan {
   originalPrice: number | null;
   features: string[];
   isDefault: boolean;
+  trialDays: number;
 }
 
 interface PlanSelectorProps {
@@ -129,8 +130,13 @@ export function PlanSelector({ plans, selectedPlanId, onSelect, onConfirm, isLoa
                   {getIntervalIcon(plan.interval)}
                 </div>
                 <CardTitle className="text-lg">{plan.name}</CardTitle>
+                {plan.trialDays > 0 && (
+                  <Badge variant="secondary" className="mt-2">
+                    {plan.trialDays} dias grátis
+                  </Badge>
+                )}
                 {plan.description && (
-                  <CardDescription className="text-xs">
+                  <CardDescription className="text-xs mt-2">
                     {plan.description}
                   </CardDescription>
                 )}

@@ -55,6 +55,7 @@ export default function ManagePlans() {
     originalPrice: "",
     features: "",
     isDefault: false,
+    trialDays: "",
   });
 
   const { data: community, isLoading: communityLoading } = trpc.community.getById.useQuery(
@@ -122,6 +123,7 @@ export default function ManagePlans() {
       originalPrice: "",
       features: "",
       isDefault: false,
+      trialDays: "",
     });
   };
 
@@ -135,6 +137,7 @@ export default function ManagePlans() {
       originalPrice: plan.originalPrice ? (plan.originalPrice / 100).toFixed(2) : "",
       features: plan.features?.join("\n") || "",
       isDefault: plan.isDefault,
+      trialDays: plan.trialDays?.toString() || "",
     });
   };
 
@@ -148,6 +151,8 @@ export default function ManagePlans() {
       .map((f) => f.trim())
       .filter((f) => f.length > 0);
 
+    const trialDaysNum = formData.trialDays ? parseInt(formData.trialDays) : 0;
+
     if (editingPlan) {
       updatePlanMutation.mutate({
         planId: editingPlan.id,
@@ -157,6 +162,7 @@ export default function ManagePlans() {
         originalPrice: originalPriceInCents,
         features: featuresArray,
         isDefault: formData.isDefault,
+        trialDays: trialDaysNum,
       });
     } else {
       createPlanMutation.mutate({
@@ -168,6 +174,7 @@ export default function ManagePlans() {
         originalPrice: originalPriceInCents,
         features: featuresArray,
         isDefault: formData.isDefault,
+        trialDays: trialDaysNum,
       });
     }
   };
@@ -336,9 +343,10 @@ export default function ManagePlans() {
                         {getIntervalIcon(plan.interval)}
                       </div>
                       <div>
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-2 flex-wrap">
                           <h3 className="font-semibold text-lg">{plan.name}</h3>
                           <Badge variant="secondary">{getIntervalLabel(plan.interval)}</Badge>
+                          {plan.trialDays > 0 && <Badge className="bg-green-500">{plan.trialDays} dias grátis</Badge>}
                           {plan.isDefault && <Badge>Padrão</Badge>}
                           {!plan.isActive && <Badge variant="destructive">Inativo</Badge>}
                         </div>
@@ -536,6 +544,22 @@ function PlanForm({
             placeholder="Para mostrar desconto"
           />
         </div>
+      </div>
+
+      <div className="space-y-2">
+        <Label htmlFor="trialDays">Período de Teste Grátis (dias)</Label>
+        <Input
+          id="trialDays"
+          type="number"
+          min="0"
+          max="90"
+          value={formData.trialDays}
+          onChange={(e) => setFormData({ ...formData, trialDays: e.target.value })}
+          placeholder="0 (sem trial)"
+        />
+        <p className="text-xs text-muted-foreground">
+          Clientes terão acesso gratuito por este período antes de serem cobrados
+        </p>
       </div>
 
       <div className="space-y-2">

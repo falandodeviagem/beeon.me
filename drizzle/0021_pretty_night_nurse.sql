@@ -1,0 +1,1 @@
+ALTER TABLE `subscription_plans` ADD `trialDays` int DEFAULT 0 NOT NULL;

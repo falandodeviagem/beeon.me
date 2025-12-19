@@ -678,6 +678,9 @@ export const subscriptionPlans = mysqlTable("subscription_plans", {
   // Stripe
   stripePriceId: varchar("stripePriceId", { length: 255 }),
   
+  // Trial period (in days)
+  trialDays: int("trialDays").default(0).notNull(),
+  
   // Status
   isActive: boolean("isActive").default(true).notNull(),
   isDefault: boolean("isDefault").default(false).notNull(),

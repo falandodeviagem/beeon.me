@@ -296,6 +296,9 @@
 - [x] Identificar links aninhados na página Onboarding
 - [x] Remover aninhamento de elementos <a>
 - [x] Testar página sem erros de console
+- [x] Corrigir links aninhados em Home.tsx
+- [x] Corrigir links aninhados em MainLayout.tsx
+- [x] Verificar todos os componentes para garantir que não há mais links aninhados
 
 ## 36. Melhorias no Upload de Imagens
 - [x] Adicionar preview de imagens antes do upload

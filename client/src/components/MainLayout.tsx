@@ -58,15 +58,13 @@ export default function MainLayout({ children }: MainLayoutProps) {
       <header className="sticky top-0 z-50 w-full border-b bg-card/95 backdrop-blur supports-[backdrop-filter]:bg-card/60">
         <div className="container flex h-16 items-center justify-between">
           {/* Logo */}
-          <Link href="/">
-            <a className="flex items-center space-x-2 hover:opacity-80 transition-opacity">
-              <div className="w-8 h-8 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center">
-                <span className="text-xl">🐝</span>
-              </div>
-              <span className="font-bold text-xl bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
-                BeeOn.me
-              </span>
-            </a>
+          <Link href="/" className="flex items-center space-x-2 hover:opacity-80 transition-opacity">
+            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center">
+              <span className="text-xl">🐝</span>
+            </div>
+            <span className="font-bold text-xl bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
+              BeeOn.me
+            </span>
           </Link>
 
           {/* Global Search */}
@@ -84,16 +82,14 @@ export default function MainLayout({ children }: MainLayoutProps) {
                 const isActive = location === item.href;
                 return (
                   <Link key={item.href} href={item.href}>
-                    <a>
-                      <Button
-                        variant={isActive ? "secondary" : "ghost"}
-                        size="sm"
-                        className="gap-2"
-                      >
-                        <Icon className="w-4 h-4" />
-                        {item.label}
-                      </Button>
-                    </a>
+                    <Button
+                      variant={isActive ? "secondary" : "ghost"}
+                      size="sm"
+                      className="gap-2"
+                    >
+                      <Icon className="w-4 h-4" />
+                      {item.label}
+                    </Button>
                   </Link>
                 );
               })}

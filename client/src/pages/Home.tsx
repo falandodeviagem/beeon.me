@@ -143,20 +143,16 @@ export default function Home() {
 
             <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
               <Link href="/login">
-                <a>
-                  <Button size="lg" className="gap-2 text-lg h-14 px-8">
-                    <Sparkles className="w-5 h-5" />
-                    Começar Agora
-                  </Button>
-                </a>
+                <Button size="lg" className="gap-2 text-lg h-14 px-8">
+                  <Sparkles className="w-5 h-5" />
+                  Começar Agora
+                </Button>
               </Link>
               <Link href="/communities">
-                <a>
-                  <Button size="lg" variant="outline" className="gap-2 text-lg h-14 px-8">
-                    <Users className="w-5 h-5" />
-                    Explorar Comunidades
-                  </Button>
-                </a>
+                <Button size="lg" variant="outline" className="gap-2 text-lg h-14 px-8">
+                  <Users className="w-5 h-5" />
+                  Explorar Comunidades
+                </Button>
               </Link>
             </div>
           </div>
@@ -212,12 +208,10 @@ export default function Home() {
                 Junte-se a milhares de usuários que já estão construindo comunidades incríveis e ganhando recompensas
               </p>
               <Link href="/login">
-                <a>
-                  <Button size="lg" className="gap-2">
-                    Criar Conta Grátis
-                    <ArrowRight className="w-5 h-5" />
-                  </Button>
-                </a>
+                <Button size="lg" className="gap-2">
+                  Criar Conta Grátis
+                  <ArrowRight className="w-5 h-5" />
+                </Button>
               </Link>
             </CardContent>
           </Card>

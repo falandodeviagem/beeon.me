@@ -58,7 +58,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
       <header className="sticky top-0 z-50 w-full border-b bg-card/95 backdrop-blur supports-[backdrop-filter]:bg-card/60">
         <div className="container flex h-16 items-center justify-between">
           {/* Logo */}
-          <Link href="/" className="flex items-center space-x-2 hover:opacity-80 transition-opacity">
+          <Link href="/" className="flex items-center space-x-2 hover:opacity-80 transition-opacity" aria-label="Página inicial do BeeOn.me">
             <div className="w-8 h-8 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center">
               <span className="text-xl">🐝</span>
             </div>
@@ -76,7 +76,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
 
           {/* Navigation */}
           {isAuthenticated && (
-            <nav className="hidden md:flex items-center space-x-1">
+            <nav className="hidden md:flex items-center space-x-1" aria-label="Navegação principal">
               {navItems.map((item) => {
                 const Icon = item.icon;
                 const isActive = location === item.href;
@@ -86,8 +86,10 @@ export default function MainLayout({ children }: MainLayoutProps) {
                       variant={isActive ? "secondary" : "ghost"}
                       size="sm"
                       className="gap-2"
+                      aria-label={item.label}
+                      aria-current={isActive ? "page" : undefined}
                     >
-                      <Icon className="w-4 h-4" />
+                      <Icon className="w-4 h-4" aria-hidden="true" />
                       {item.label}
                     </Button>
                   </Link>
@@ -145,12 +147,10 @@ export default function MainLayout({ children }: MainLayoutProps) {
                     </DropdownMenuLabel>
                     <DropdownMenuSeparator />
                     <Link href="/profile">
-                      <a>
-                        <DropdownMenuItem>
-                          <User className="mr-2 h-4 w-4" />
-                          Meu Perfil
-                        </DropdownMenuItem>
-                      </a>
+                      <DropdownMenuItem>
+                        <User className="mr-2 h-4 w-4" aria-hidden="true" />
+                        Meu Perfil
+                      </DropdownMenuItem>
                     </Link>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem onClick={handleLogout}>
@@ -162,9 +162,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
               </>
             ) : (
               <Link href="/login">
-                <a>
-                  <Button>Entrar</Button>
-                </a>
+                <Button aria-label="Fazer login">Entrar</Button>
               </Link>
             )}
           </div>
@@ -172,7 +170,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
       </header>
 
       {/* Main content */}
-      <main id="main-content" className="flex-1">
+      <main id="main-content" className="flex-1" role="main">
         {children}
       </main>
 

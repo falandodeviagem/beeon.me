@@ -873,3 +873,45 @@
 - [x] Frontend: Exibir badge "X dias grátis" nos cards de planos com trial
 - [ ] Frontend: Atualizar PlanSelector para destacar trial period
 - [ ] Testes: Criar testes para trial period
+
+## 71. Auditoria Completa de Acessibilidade
+- [x] Verificar contraste de cores em todos os componentes
+- [x] Testar navegação por teclado em todas as páginas
+- [x] Adicionar labels ARIA apropriados
+- [x] Verificar suporte a leitores de tela
+- [x] Garantir que todos os botões e links sejam focáveis
+- [x] Adicionar skip links onde necessário
+- [x] Verificar ordem de foco lógica
+- [x] Testar com ferramentas de auditoria (Lighthouse, axe)
+- [x] Corrigir links aninhados adicionais no MainLayout
+- [x] Adicionar aria-label em navegação principal
+- [x] Adicionar aria-current em links ativos
+- [x] Adicionar aria-hidden em ícones decorativos
+- [x] Adicionar role="main" no conteúdo principal
+- [x] Atualizar lang para pt-BR no HTML
+
+## 72. Otimização de Performance
+- [x] Implementar lazy loading de imagens
+- [x] Adicionar code splitting para rotas
+- [x] Implementar React.lazy() para componentes pesados
+- [x] Otimizar bundle size
+- [x] Adicionar loading skeletons
+- [x] Criar componente OptimizedImage com lazy loading nativo
+- [x] Implementar Suspense com fallback de loading
+- [x] Separar rotas críticas (eager) de não-críticas (lazy)
+- [ ] Implementar cache de queries do tRPC
+- [ ] Otimizar re-renders desnecessários
+
+## 73. Testes E2E com Playwright
+- [x] Instalar e configurar Playwright
+- [x] Criar teste E2E: Fluxo de login
+- [x] Criar teste E2E: Criar post
+- [x] Criar teste E2E: Entrar em comunidade
+- [x] Criar teste E2E: Auditoria de acessibilidade
+- [x] Adicionar scripts npm para testes
+- [x] Documentar como executar testes
+- [x] Criar README com instruções detalhadas
+- [ ] Criar teste E2E: Comentar em post
+- [ ] Criar teste E2E: Seguir usuário
+- [ ] Configurar CI para rodar testes
+- [ ] Adicionar setup de autenticação para testes

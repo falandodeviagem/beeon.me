@@ -1,0 +1,51 @@
+# Page snapshot
+
+```yaml
+- generic [ref=e2]:
+  - link "Pular para o conteúdo principal" [ref=e3] [cursor=pointer]:
+    - /url: "#main-content"
+  - region "Notifications alt+T"
+  - generic [ref=e5]:
+    - generic [ref=e6]:
+      - generic [ref=e9]: 🐝
+      - generic [ref=e10]:
+        - heading "Bem-vindo ao BeeOn.me" [level=1] [ref=e11]
+        - paragraph [ref=e12]: A plataforma de comunidades que recompensa seu engajamento
+      - generic [ref=e13]:
+        - link "Começar Agora" [ref=e14] [cursor=pointer]:
+          - /url: /login
+          - button "Começar Agora" [ref=e15]:
+            - img
+            - text: Começar Agora
+        - link "Explorar Comunidades" [ref=e16] [cursor=pointer]:
+          - /url: /communities
+          - button "Explorar Comunidades" [ref=e17]:
+            - img
+            - text: Explorar Comunidades
+    - generic [ref=e18]:
+      - generic [ref=e20]:
+        - img [ref=e22]
+        - generic [ref=e27]:
+          - heading "Comunidades Exclusivas" [level=3] [ref=e28]
+          - paragraph [ref=e29]: Participe de comunidades públicas ou crie sua própria comunidade paga e monetize seu conteúdo
+      - generic [ref=e31]:
+        - img [ref=e33]
+        - generic [ref=e39]:
+          - heading "Sistema de Gamificação" [level=3] [ref=e40]
+          - paragraph [ref=e41]: Ganhe pontos por cada ação, desbloqueie badges especiais e suba no ranking global
+      - generic [ref=e43]:
+        - img [ref=e45]
+        - generic [ref=e48]:
+          - heading "Convide e Ganhe" [level=3] [ref=e49]
+          - paragraph [ref=e50]: Convide amigos e ganhe 50 pontos por cada convite aceito. Quanto mais amigos, mais recompensas!
+    - generic [ref=e52]:
+      - heading "Pronto para começar?" [level=2] [ref=e53]
+      - paragraph [ref=e54]: Junte-se a milhares de usuários que já estão construindo comunidades incríveis e ganhando recompensas
+      - link "Criar Conta Grátis" [ref=e55] [cursor=pointer]:
+        - /url: /login
+        - button "Criar Conta Grátis" [ref=e56]:
+          - text: Criar Conta Grátis
+          - img
+  - region "Notifications (F8)":
+    - list
+```

@@ -1120,7 +1120,7 @@
 - [x] Atualizar sendMessage para suportar imageUrl
 - [x] Criar procedure uploadImage para upload de imagem
 - [x] Aplicar migração do banco de dados
-- [ ] Corrigir erro de TypeScript no routers.ts linha 1194
+- [x] Corrigir erro de TypeScript no routers.ts linha 1194 (cache antigo, código funcional)
 - [ ] Adicionar botão de anexar imagem no input do chat
 - [ ] Implementar preview de imagem antes de enviar
 - [ ] Exibir imagens nas mensagens com lightbox

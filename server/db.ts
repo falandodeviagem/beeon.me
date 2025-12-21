@@ -1366,6 +1366,7 @@ export async function getConversationMessages(conversationId: number, limit: num
     conversationId: messages.conversationId,
     senderId: messages.senderId,
     content: messages.content,
+    imageUrl: messages.imageUrl,
     isRead: messages.isRead,
     createdAt: messages.createdAt,
     senderName: users.name,

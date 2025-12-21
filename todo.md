@@ -1158,3 +1158,37 @@
 - [ ] Criar página de perfil mostrando badges
 - [ ] Adicionar animação de conquista desbloqueada
 - [ ] Criar sistema de progressão de badges
+
+
+## 🚧 NOVAS IMPLEMENTAÇÕES (Em Andamento)
+
+### UI de Anexos de Imagens no Chat
+- [x] Adicionar input file e botão de anexar imagem
+- [x] Implementar preview de imagem antes de enviar
+- [x] Criar handler de upload com compressão
+- [x] Renderizar imagens nas mensagens do chat
+- [x] Criar componente Lightbox para visualização fullscreen
+- [x] Adicionar loading states durante upload
+- [x] Testar upload e visualização de imagens
+
+### Sistema de Badges Automáticos
+- [ ] Criar arquivo de definições de badges (badges/definitions.ts)
+- [ ] Implementar sistema de verificação (badges/checker.ts)
+- [ ] Integrar verificação em eventos (post, like, comment)
+- [ ] Criar procedure checkAndAwardBadges
+- [ ] Adicionar notificações push quando badge é desbloqueado
+- [ ] Criar componente BadgeGrid para exibir no perfil
+- [ ] Adicionar animação de conquista de badge
+- [ ] Testar verificação automática de badges
+
+### Dashboard de Moderação Completo
+- [ ] Criar schema de banned_words e moderation_logs
+- [ ] Criar página /moderation com tabs
+- [ ] Implementar botão "Denunciar" em posts e comentários
+- [ ] Criar modal de denúncia com seleção de motivos
+- [ ] Implementar procedures tRPC de moderação
+- [ ] Criar ações de moderação (remover, avisar, banir)
+- [ ] Implementar filtro de palavras proibidas
+- [ ] Adicionar sistema de logs de ações
+- [ ] Criar testes unitários para moderação
+- [ ] Testar fluxo completo de moderação

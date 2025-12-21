@@ -9,11 +9,14 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { trpc } from "@/lib/trpc";
 import { formatDistanceToNow } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import { MessageCircle, Send, Wifi, WifiOff } from "lucide-react";
+import { MessageCircle, Send, Wifi, WifiOff, ImageIcon, X, Loader2 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { useWebSocket } from "@/hooks/useWebSocket";
 import { Badge } from "@/components/ui/badge";
 import { OnlineIndicator } from "@/components/OnlineIndicator";
+import { useToast } from "@/hooks/use-toast";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { OptimizedImage } from "@/components/OptimizedImage";
 
 export default function Messages() {
   const { user } = useAuth();
@@ -21,8 +24,13 @@ export default function Messages() {
   const [messageContent, setMessageContent] = useState("");
   const [isTyping, setIsTyping] = useState(false);
   const [otherUserTyping, setOtherUserTyping] = useState(false);
+  const [selectedImage, setSelectedImage] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [lightboxImage, setLightboxImage] = useState<string | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const typingTimeoutRef = useRef<NodeJS.Timeout | undefined>(undefined);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const { toast, loading, update } = useToast();
 
   const { data: conversations = [], isLoading: loadingConversations, refetch: refetchConversations } = 
     trpc.messages.conversations.useQuery();
@@ -51,9 +59,13 @@ export default function Messages() {
     },
   });
 
+  const uploadImageMutation = trpc.messages.uploadImage.useMutation();
+
   const sendMutation = trpc.messages.send.useMutation({
     onSuccess: () => {
       setMessageContent("");
+      setSelectedImage(null);
+      setImagePreview(null);
       refetchMessages();
       refetchConversations();
     },
@@ -77,11 +89,72 @@ export default function Messages() {
     }
   }, [messages]);
 
-  const handleSend = () => {
-    if (!messageContent.trim() || !selectedConversationId) return;
+  const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    
+    if (file.size > 5 * 1024 * 1024) {
+      toast({
+        title: "Erro",
+        description: "Imagem muito grande (máx 5MB)",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    setSelectedImage(file);
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setImagePreview(reader.result as string);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleSend = async () => {
+    if ((!messageContent.trim() && !selectedImage) || !selectedConversationId) return;
+    
+    let imageUrl: string | undefined;
+    
+    if (selectedImage) {
+      const toastId = loading("Enviando imagem...");
+      
+      try {
+        const reader = new FileReader();
+        const base64Promise = new Promise<string>((resolve) => {
+          reader.onloadend = () => {
+            const base64 = (reader.result as string).split(',')[1];
+            resolve(base64);
+          };
+          reader.readAsDataURL(selectedImage);
+        });
+        
+        const base64 = await base64Promise;
+        const result = await uploadImageMutation.mutateAsync({
+          base64Image: base64,
+          mimeType: selectedImage.type,
+        });
+        
+        imageUrl = result.url;
+        
+        update(toastId.id, {
+          title: "Sucesso!",
+          description: "Imagem enviada",
+          variant: "success",
+        });
+      } catch (error: any) {
+        update(toastId.id, {
+          title: "Erro",
+          description: error.message || "Erro ao enviar imagem",
+          variant: "destructive",
+        });
+        return;
+      }
+    }
+    
     sendMutation.mutate({
       conversationId: selectedConversationId,
-      content: messageContent.trim(),
+      content: messageContent.trim() || "📷 Imagem",
+      imageUrl,
     });
     setIsTyping(false);
   };
@@ -257,6 +330,16 @@ export default function Messages() {
                                 }`}
                               >
                                 <p className="text-sm">{message.content}</p>
+                                {(message as any).imageUrl && (
+                                  <div className="mt-2">
+                                    <OptimizedImage
+                                      src={(message as any).imageUrl}
+                                      alt="Imagem anexada"
+                                      className="rounded-lg max-w-[300px] cursor-pointer hover:opacity-90 transition-opacity"
+                                      onClick={() => setLightboxImage((message as any).imageUrl)}
+                                    />
+                                  </div>
+                                )}
                               </div>
                               <span className="text-xs text-muted-foreground mt-1">
                                 {formatDistanceToNow(new Date(message.createdAt), {
@@ -274,7 +357,44 @@ export default function Messages() {
 
                 {/* Input */}
                 <div className="p-4 border-t">
+                  {imagePreview && (
+                    <div className="mb-3 relative inline-block">
+                      <img
+                        src={imagePreview}
+                        alt="Preview"
+                        className="rounded-lg max-h-32 border-2 border-border"
+                      />
+                      <button
+                        onClick={() => {
+                          setSelectedImage(null);
+                          setImagePreview(null);
+                        }}
+                        className="absolute -top-2 -right-2 bg-destructive text-destructive-foreground rounded-full p-1 hover:bg-destructive/90"
+                      >
+                        <X className="w-4 h-4" />
+                      </button>
+                    </div>
+                  )}
                   <div className="flex gap-2">
+                    <input
+                      ref={fileInputRef}
+                      type="file"
+                      accept="image/*"
+                      onChange={handleImageSelect}
+                      className="hidden"
+                    />
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      onClick={() => fileInputRef.current?.click()}
+                      disabled={sendMutation.isPending || uploadImageMutation.isPending}
+                    >
+                      {uploadImageMutation.isPending ? (
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                      ) : (
+                        <ImageIcon className="w-4 h-4" />
+                      )}
+                    </Button>
                     <Input
                       placeholder="Digite sua mensagem..."
                       value={messageContent}
@@ -288,7 +408,7 @@ export default function Messages() {
                     />
                     <Button
                       onClick={handleSend}
-                      disabled={!messageContent.trim() || sendMutation.isPending}
+                      disabled={(!messageContent.trim() && !selectedImage) || sendMutation.isPending}
                       className="gap-2"
                     >
                       <Send className="w-4 h-4" />
@@ -311,6 +431,19 @@ export default function Messages() {
           </Card>
         </div>
       </div>
+      
+      {/* Lightbox */}
+      <Dialog open={!!lightboxImage} onOpenChange={() => setLightboxImage(null)}>
+        <DialogContent className="max-w-4xl">
+          {lightboxImage && (
+            <img
+              src={lightboxImage}
+              alt="Visualização"
+              className="w-full h-auto rounded-lg"
+            />
+          )}
+        </DialogContent>
+      </Dialog>
     </MainLayout>
   );
 }

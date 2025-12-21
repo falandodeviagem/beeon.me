@@ -734,6 +734,15 @@ export const appRouter = router({
           // Award points to post author
           const post = await db.getPostById(input.postId);
           if (post && post.authorId !== ctx.user.id) {
+            // Send push notification
+            const { notifyPostLike } = await import('./_core/pushNotificationHelper');
+            notifyPostLike(
+              post.authorId,
+              ctx.user.name || 'Usuário',
+              post.content,
+              input.postId
+            ).catch(err => console.error('[Push] Failed to send like notification:', err));
+            
             await db.recordGamificationAction({
               userId: post.authorId,
               actionType: 'receive_reaction',
@@ -810,6 +819,18 @@ export const appRouter = router({
           ...input,
           authorId: ctx.user.id,
         }, ctx.user.id);
+
+        // Send push notification to post author
+        const post = await db.getPostById(input.postId);
+        if (post && post.authorId !== ctx.user.id) {
+          const { notifyPostComment } = await import('./_core/pushNotificationHelper');
+          notifyPostComment(
+            post.authorId,
+            ctx.user.name || 'Usuário',
+            input.content,
+            input.postId
+          ).catch(err => console.error('[Push] Failed to send comment notification:', err));
+        }
 
         // Extract and save mentions from comment
         const mentionRegex = /@(\w+)/g;
@@ -1049,6 +1070,14 @@ export const appRouter = router({
           relatedId: ctx.user.id,
           relatedType: 'user',
         });
+        
+        // Send push notification
+        const { notifyNewFollower } = await import('./_core/pushNotificationHelper');
+        notifyNewFollower(
+          input.userId,
+          ctx.user.name || 'Usuário',
+          ctx.user.id
+        ).catch(err => console.error('[Push] Failed to send follow notification:', err));
         
         return { success: true };
       }),

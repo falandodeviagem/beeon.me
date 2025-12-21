@@ -959,3 +959,33 @@
 - [ ] Análise de comportamento dos membros
 - [ ] Exportar relatórios em CSV
 - [ ] Gráficos de posts mais populares
+
+## 77. Integração de Push Notifications em Eventos
+- [x] Enviar push quando alguém comentar em um post
+- [x] Enviar push quando alguém curtir um post/comentário
+- [x] Enviar push quando alguém seguir o usuário
+- [x] Respeitar preferências de notificação do usuário
+- [x] Criar helper para envio de push notifications
+- [x] Integrar push em procedures de comentários
+- [x] Integrar push em procedures de reações
+- [x] Integrar push em procedures de follow
+- [ ] Enviar push quando usuário conquistar um badge
+- [ ] Enviar push para atualizações importantes de comunidades
+- [ ] Adicionar debounce para evitar spam de notificações
+
+## 78. Botão de Analytics nas Comunidades
+- [x] Adicionar botão "Analytics" no header da página CommunityDetail
+- [x] Mostrar botão apenas para criadores da comunidade
+- [x] Adicionar ícone de gráfico ao botão
+- [x] Testar navegação para /community/:id/analytics
+
+## 79. Testes PWA Mobile
+- [x] Criar guia de testes para dispositivos móveis
+- [x] Documentar como instalar PWA no Chrome/Edge mobile
+- [x] Documentar como testar funcionamento offline
+- [x] Documentar como testar notificações push no mobile
+- [x] Criar checklist de validação PWA
+- [x] Adicionar instruções para ajustar splash screen
+- [x] Criar guia completo com 6 testes principais
+- [x] Incluir seção de problemas comuns e soluções
+- [x] Adicionar template de relatório de testes

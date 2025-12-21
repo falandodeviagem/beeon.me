@@ -361,12 +361,16 @@ export default function CommunityDetail() {
                 {isOwner && (
                   <>
                     <Link href={`/community/${communityId}/stats`}>
-                      <a>
-                        <Button variant="outline" size="sm">
-                          <BarChart3 className="w-4 h-4 mr-2" />
-                          Ver Estatísticas
-                        </Button>
-                      </a>
+                      <Button variant="outline" size="sm">
+                        <BarChart3 className="w-4 h-4 mr-2" />
+                        Ver Estatísticas
+                      </Button>
+                    </Link>
+                    <Link href={`/community/${communityId}/analytics`}>
+                      <Button variant="outline" size="sm">
+                        <BarChart3 className="w-4 h-4 mr-2" />
+                        Analytics
+                      </Button>
                     </Link>
                     {community.isPaid && (
                       <>

@@ -1241,3 +1241,20 @@
 - [x] Query getUserBadges já existente no perfil
 - [x] Renderizar BadgeGrid com badges do usuário
 - [x] BadgeGrid integrado com sucesso
+
+
+### Loading Skeleton nos Filtros
+- [x] Criar componente FeedFiltersSkeleton
+- [x] Adicionar skeleton durante carregamento inicial
+- [x] Integrar no Home.tsx
+
+
+### Testes E2E para Badges
+- [x] Criar arquivo server/badges.test.ts
+- [x] Testar badge "Primeira Postagem"
+- [x] Testar badge "Popular" (10 likes)
+- [x] Testar badge "Comentarista" (5 comentários)
+- [x] Testar badge "Social" (5 seguidores)
+- [x] Testar badge "Criador de Comunidade"
+- [x] Testar prevenção de duplicatas
+- [x] Executar todos os testes - 10 testes passaram!

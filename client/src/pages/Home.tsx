@@ -14,6 +14,7 @@ import { Link } from "wouter";
 import { Skeleton } from "@/components/ui/skeleton";
 import { PostSkeletonList } from "@/components/PostSkeleton";
 import { FeedFilters, FeedFilterOptions } from "@/components/FeedFilters";
+import { FeedFiltersSkeleton } from "@/components/FeedFiltersSkeleton";
 import { useState, useRef, useEffect } from "react";
 import { useLocation } from "wouter";
 
@@ -233,7 +234,11 @@ export default function Home() {
               </Badge>
             </div>
 
-            <FeedFilters filters={filters} onChange={setFilters} />
+            {feedLoading ? (
+              <FeedFiltersSkeleton />
+            ) : (
+              <FeedFilters filters={filters} onChange={setFilters} />
+            )}
 
             {feedLoading ? (
               <PostSkeletonList count={3} />

@@ -1188,9 +1188,27 @@ export const appRouter = router({
       .input(z.object({
         conversationId: z.number(),
         content: z.string().min(1),
+        imageUrl: z.string().optional(),
       }))
       .mutation(async ({ ctx, input }) => {
-        return await db.sendMessage(input.conversationId, ctx.user.id, input.content);
+        return await db.sendMessage(input.conversationId, ctx.user.id, input.content, input.imageUrl);
+      }),
+
+    uploadImage: protectedProcedure
+      .input(z.object({
+        base64Image: z.string(),
+        mimeType: z.string(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        // Convert base64 to buffer
+        const base64Data = input.base64Image.replace(/^data:image\/\w+;base64,/, "");
+        const buffer = Buffer.from(base64Data, "base64");
+        
+        // Upload to S3
+        const fileKey = `chat-images/${ctx.user.id}/${nanoid()}.${input.mimeType.split("/")[1]}`;
+        const { url } = await storagePut(fileKey, buffer, input.mimeType);
+        
+        return { url };
       }),
 
     markAsRead: protectedProcedure

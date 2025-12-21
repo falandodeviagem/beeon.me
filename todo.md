@@ -1114,3 +1114,29 @@
 - [x] Adicionar debounce de 2s para evitar spam de eventos
 - [x] Adicionar animação de 3 bolinhas pulsando
 - [x] Auto-esconder indicador após 3 segundos
+
+## 92. Suporte a Anexos de Imagens no Chat
+- [x] Adicionar campo imageUrl no schema de messages
+- [x] Atualizar sendMessage para suportar imageUrl
+- [x] Criar procedure uploadImage para upload de imagem
+- [x] Aplicar migração do banco de dados
+- [ ] Adicionar botão de anexar imagem no input do chat
+- [ ] Implementar preview de imagem antes de enviar
+- [ ] Exibir imagens nas mensagens com lightbox
+- [ ] Adicionar suporte a múltiplas imagens por mensagem
+
+## 93. Reações Rápidas em Mensagens
+- [ ] Criar tabela message_reactions no schema
+- [ ] Criar procedures para adicionar/remover reações
+- [ ] Adicionar botão de reações em cada mensagem
+- [ ] Implementar picker de emojis (👍❤️😂😮😢🙏)
+- [ ] Mostrar contagem de reações agrupadas
+- [ ] Atualizar reações em tempo real via WebSocket
+
+## 94. Notificações de Menção com @
+- [ ] Detectar @username no conteúdo da mensagem
+- [ ] Criar procedure para buscar usuários por username
+- [ ] Adicionar autocomplete de @ no input
+- [ ] Enviar notificação push para usuários mencionados
+- [ ] Destacar mensagens com menções
+- [ ] Adicionar badge de menções não lidas

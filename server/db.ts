@@ -1378,7 +1378,7 @@ export async function getConversationMessages(conversationId: number, limit: num
     .limit(limit);
 }
 
-export async function sendMessage(conversationId: number, senderId: number, content: string) {
+export async function sendMessage(conversationId: number, senderId: number, content: string, imageUrl?: string) {
   const db = await getDb();
   if (!db) return null;
 
@@ -1386,6 +1386,7 @@ export async function sendMessage(conversationId: number, senderId: number, cont
     conversationId,
     senderId,
     content,
+    imageUrl,
   });
 
   // Update conversation lastMessageAt

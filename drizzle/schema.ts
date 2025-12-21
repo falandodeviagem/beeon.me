@@ -376,6 +376,7 @@ export const messages = mysqlTable("messages", {
   conversationId: int("conversationId").notNull(),
   senderId: int("senderId").notNull(),
   content: text("content").notNull(),
+  imageUrl: text("imageUrl"),
   isRead: boolean("isRead").default(false).notNull(),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
 }, (table) => ({

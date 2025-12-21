@@ -19,10 +19,11 @@ const NotFound = lazy(() => import("./pages/NotFound"));
 const UserProfile = lazy(() => import("./pages/UserProfile"));
 const Followers = lazy(() => import("./pages/Followers"));
 const Following = lazy(() => import("./pages/Following"));
-const Messages = lazy(() => import("./pages/Messages"));
+const NotificationSettings = lazy(() => import("./pages/NotificationSettings"));
 const Profile = lazy(() => import("./pages/Profile"));
 const Communities = lazy(() => import("./pages/Communities"));
 const CommunityDetail = lazy(() => import("./pages/CommunityDetail"));
+const CommunityAnalytics = lazy(() => import("./pages/CommunityAnalytics"));
 const Leaderboard = lazy(() => import("./pages/Leaderboard"));
 const Invites = lazy(() => import("./pages/Invites"));
 const Moderation = lazy(() => import("./pages/Moderation"));
@@ -67,7 +68,8 @@ function Router() {
         <Route path="/profile" component={Profile} />
         <Route path="/profile/payments" component={PaymentHistory} />
         <Route path="/communities" component={Communities} />
-        <Route path="/community/:id" component={CommunityDetail} />
+        <Route path="/community/:communityId" component={CommunityDetail} />
+        <Route path="/community/:communityId/analytics" component={CommunityAnalytics} />
         <Route path="/community/:id/stats" component={CommunityStats} />
         <Route path="/community/:id/revenue" component={CommunityRevenue} />
         <Route path="/community/:id/plans" component={ManagePlans} />
@@ -81,7 +83,7 @@ function Router() {
         <Route path="/user/:userId" component={UserProfile} />
         <Route path="/user/:userId/followers" component={Followers} />
         <Route path="/user/:userId/following" component={Following} />
-        <Route path="/messages" component={Messages} />
+        <Route path="/settings/notifications" component={NotificationSettings} />
         <Route path="/moderation" component={Moderation} />
         <Route path="/moderation/appeals" component={BanAppeal} />
         <Route path="/moderation/audit-logs" component={AuditLogs} />

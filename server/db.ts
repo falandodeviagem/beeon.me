@@ -1,4 +1,4 @@
-import { eq, and, desc, sql, inArray, notInArray, isNull, isNotNull, like, or, lt, gte } from "drizzle-orm";
+import { eq, and, desc, sql, inArray, notInArray, isNull, isNotNull, like, or, lt, gte, lte, gt } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
 import { 
   InsertUser, users, 
@@ -23,7 +23,11 @@ import {
   mentions, InsertMention,
   userHashtagFollows, InsertUserHashtagFollow,
   payments, InsertPayment,
-  subscriptionPlans, InsertSubscriptionPlan
+  subscriptionPlans, InsertSubscriptionPlan,
+  pushSubscriptions, InsertPushSubscription,
+  notificationPreferences, InsertNotificationPreference,
+  communityAnalytics, InsertCommunityAnalytic,
+  postAnalytics, InsertPostAnalytic
 } from "../drizzle/schema";
 import { ENV } from './_core/env';
 
@@ -2400,3 +2404,177 @@ export async function createDefaultPlans(communityId: number, basePrice: number)
 }
 
 // MODERATION OPERATIONS
+
+
+// PUSH NOTIFICATION OPERATIONS
+
+export async function createPushSubscription(data: InsertPushSubscription) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  const [result] = await db.insert(pushSubscriptions).values(data);
+  return result.insertId;
+}
+
+export async function getUserPushSubscriptions(userId: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  return await db
+    .select()
+    .from(pushSubscriptions)
+    .where(eq(pushSubscriptions.userId, userId));
+}
+
+export async function deletePushSubscription(endpoint: string) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  await db
+    .delete(pushSubscriptions)
+    .where(eq(pushSubscriptions.endpoint, endpoint));
+}
+
+export async function updatePushSubscriptionLastUsed(endpoint: string) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  await db
+    .update(pushSubscriptions)
+    .set({ lastUsed: new Date() })
+    .where(eq(pushSubscriptions.endpoint, endpoint));
+}
+
+export async function getNotificationPreferences(userId: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  const [prefs] = await db
+    .select()
+    .from(notificationPreferences)
+    .where(eq(notificationPreferences.userId, userId));
+
+  // Return default preferences if none exist
+  if (!prefs) {
+    return {
+      pushEnabled: true,
+      pushComments: true,
+      pushLikes: true,
+      pushFollows: true,
+      pushMessages: true,
+      pushBadges: true,
+      pushCommunity: true,
+      inAppEnabled: true,
+    };
+  }
+
+  return prefs;
+}
+
+export async function upsertNotificationPreferences(userId: number, preferences: Partial<InsertNotificationPreference>) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  const existing = await db
+    .select()
+    .from(notificationPreferences)
+    .where(eq(notificationPreferences.userId, userId));
+
+  if (existing.length > 0) {
+    await db
+      .update(notificationPreferences)
+      .set(preferences)
+      .where(eq(notificationPreferences.userId, userId));
+  } else {
+    await db.insert(notificationPreferences).values({
+      userId,
+      ...preferences,
+    });
+  }
+}
+
+// ANALYTICS OPERATIONS
+
+export async function recordCommunityAnalytics(data: InsertCommunityAnalytic) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  const [result] = await db.insert(communityAnalytics).values(data);
+  return result.insertId;
+}
+
+export async function getCommunityAnalytics(communityId: number, startDate: Date, endDate: Date) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  return await db
+    .select()
+    .from(communityAnalytics)
+    .where(
+      and(
+        eq(communityAnalytics.communityId, communityId),
+        gte(communityAnalytics.date, startDate),
+        lte(communityAnalytics.date, endDate)
+      )
+    )
+    .orderBy(communityAnalytics.date);
+}
+
+export async function upsertPostAnalytics(postId: number, data: Partial<InsertPostAnalytic>) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  const existing = await db
+    .select()
+    .from(postAnalytics)
+    .where(eq(postAnalytics.postId, postId));
+
+  if (existing.length > 0) {
+    await db
+      .update(postAnalytics)
+      .set(data)
+      .where(eq(postAnalytics.postId, postId));
+  } else {
+    await db.insert(postAnalytics).values({
+      postId,
+      ...data,
+    });
+  }
+}
+
+export async function getPostAnalytics(postId: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  const [analytics] = await db
+    .select()
+    .from(postAnalytics)
+    .where(eq(postAnalytics.postId, postId));
+
+  return analytics || null;
+}
+
+export async function incrementPostViews(postId: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  const existing = await db
+    .select()
+    .from(postAnalytics)
+    .where(eq(postAnalytics.postId, postId));
+
+  if (existing.length > 0) {
+    await db
+      .update(postAnalytics)
+      .set({
+        views: sql`${postAnalytics.views} + 1`,
+      })
+      .where(eq(postAnalytics.postId, postId));
+  } else {
+    await db.insert(postAnalytics).values({
+      postId,
+      views: 1,
+      uniqueViews: 1,
+    });
+  }
+}

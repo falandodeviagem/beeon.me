@@ -1714,6 +1714,143 @@ export const appRouter = router({
         return await searchUsersForInsights(input.query, input.limit);
       }),
   }),
+
+  // Push Notifications
+  push: router({
+    // Get VAPID public key
+    getPublicKey: publicProcedure
+      .query(async () => {
+        const { getVapidPublicKey } = await import('./_core/push');
+        return { publicKey: getVapidPublicKey() };
+      }),
+
+    // Subscribe to push notifications
+    subscribe: protectedProcedure
+      .input(z.object({
+        endpoint: z.string(),
+        p256dh: z.string(),
+        auth: z.string(),
+        userAgent: z.string().optional(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        await db.createPushSubscription({
+          userId: ctx.user.id,
+          endpoint: input.endpoint,
+          p256dh: input.p256dh,
+          auth: input.auth,
+          userAgent: input.userAgent,
+        });
+        return { success: true };
+      }),
+
+    // Unsubscribe from push notifications
+    unsubscribe: protectedProcedure
+      .input(z.object({
+        endpoint: z.string(),
+      }))
+      .mutation(async ({ input }) => {
+        await db.deletePushSubscription(input.endpoint);
+        return { success: true };
+      }),
+
+    // Get user's push subscriptions
+    getSubscriptions: protectedProcedure
+      .query(async ({ ctx }) => {
+        return await db.getUserPushSubscriptions(ctx.user.id);
+      }),
+
+    // Get notification preferences
+    getPreferences: protectedProcedure
+      .query(async ({ ctx }) => {
+        return await db.getNotificationPreferences(ctx.user.id);
+      }),
+
+    // Update notification preferences
+    updatePreferences: protectedProcedure
+      .input(z.object({
+        pushEnabled: z.boolean().optional(),
+        pushComments: z.boolean().optional(),
+        pushLikes: z.boolean().optional(),
+        pushFollows: z.boolean().optional(),
+        pushMessages: z.boolean().optional(),
+        pushBadges: z.boolean().optional(),
+        pushCommunity: z.boolean().optional(),
+        inAppEnabled: z.boolean().optional(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        await db.upsertNotificationPreferences(ctx.user.id, input);
+        return { success: true };
+      }),
+
+    // Send test notification (for testing)
+    sendTest: protectedProcedure
+      .mutation(async ({ ctx }) => {
+        const { sendPushNotification } = await import('./_core/push');
+        const subscriptions = await db.getUserPushSubscriptions(ctx.user.id);
+        
+        if (subscriptions.length === 0) {
+          throw new TRPCError({ code: 'BAD_REQUEST', message: 'No push subscriptions found' });
+        }
+
+        const results = await Promise.all(
+          subscriptions.map(sub =>
+            sendPushNotification(
+              {
+                endpoint: sub.endpoint,
+                keys: {
+                  p256dh: sub.p256dh,
+                  auth: sub.auth,
+                },
+              },
+              {
+                title: 'Notificação de Teste',
+                body: 'Esta é uma notificação de teste do BeeOn.me!',
+                url: '/notifications',
+              }
+            )
+          )
+        );
+
+        return { success: true, sent: results.filter(Boolean).length };
+      }),
+  }),
+
+  // Analytics
+  analytics: router({
+    // Get community analytics
+    getCommunityAnalytics: protectedProcedure
+      .input(z.object({
+        communityId: z.number(),
+        startDate: z.date(),
+        endDate: z.date(),
+      }))
+      .query(async ({ input }) => {
+        return await db.getCommunityAnalytics(
+          input.communityId,
+          input.startDate,
+          input.endDate
+        );
+      }),
+
+    // Get post analytics
+    getPostAnalytics: protectedProcedure
+      .input(z.object({
+        postId: z.number(),
+      }))
+      .query(async ({ input }) => {
+        return await db.getPostAnalytics(input.postId);
+      }),
+
+    // Record post view
+    recordPostView: protectedProcedure
+      .input(z.object({
+        postId: z.number(),
+      }))
+      .mutation(async ({ input }) => {
+        await db.incrementPostViews(input.postId);
+        return { success: true };
+      }),
+  }),
 });
 
 export type AppRouter = typeof appRouter;

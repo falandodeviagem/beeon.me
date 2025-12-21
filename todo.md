@@ -935,21 +935,27 @@
 - [x] Criar tabela de push subscriptions no schema
 - [x] Criar tabela de notification preferences no schema
 - [x] Instalar biblioteca web-push
-- [ ] Implementar Web Push API no backend
-- [ ] Implementar solicitação de permissão no frontend
-- [ ] Criar procedure para enviar push notifications
+- [x] Implementar Web Push API no backend
+- [x] Criar procedures tRPC para push notifications
+- [x] Criar hook usePushNotifications
+- [x] Criar página de configurações de notificações
+- [x] Implementar solicitação de permissão no frontend
+- [x] Adicionar preferências de notificação no frontend
+- [x] Criar testes unitários para push notifications
 - [ ] Integrar push em eventos (comentários, badges, mensagens)
-- [ ] Adicionar preferências de notificação no frontend
 - [ ] Testar notificações em diferentes navegadores
 - [ ] Implementar notificações silenciosas
 
 ## 76. Analytics e Métricas de Engajamento
 - [x] Criar tabela de community analytics no schema
 - [x] Criar tabela de post analytics no schema
-- [ ] Implementar rastreamento de eventos no backend
-- [ ] Criar dashboard de analytics para criadores
-- [ ] Métricas: visualizações, engajamento, crescimento
-- [ ] Gráficos de posts mais populares
+- [x] Implementar rastreamento de eventos no backend
+- [x] Criar procedures tRPC para analytics
+- [x] Criar dashboard de analytics para criadores
+- [x] Métricas: visualizações, engajamento, crescimento
+- [x] Gráficos com Recharts (linha e barra)
+- [x] Comparação de períodos (semana, mês, ano)
+- [x] Criar testes unitários para analytics
 - [ ] Análise de comportamento dos membros
 - [ ] Exportar relatórios em CSV
-- [ ] Comparação de períodos (semana, mês, ano)
+- [ ] Gráficos de posts mais populares

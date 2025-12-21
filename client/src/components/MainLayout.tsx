@@ -10,6 +10,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Home, Users, Trophy, UserPlus, Shield, LogOut, User, Search, Mail, Sun, Moon } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 import { SoundToggle } from "@/components/SoundToggle";
 import { GlobalSearch } from "@/components/GlobalSearch";
 import NotificationPanel from "@/components/NotificationPanel";
@@ -28,6 +29,12 @@ export default function MainLayout({ children }: MainLayoutProps) {
   const [location] = useLocation();
   const logoutMutation = trpc.auth.logout.useMutation();
   const { theme, toggleTheme } = useTheme();
+
+  // Get unread message count
+  const { data: unreadCount } = trpc.messages.unreadCount.useQuery(
+    undefined,
+    { enabled: isAuthenticated, refetchInterval: 10000 } // Refetch every 10s
+  );
 
   const handleLogout = async () => {
     try {
@@ -85,12 +92,20 @@ export default function MainLayout({ children }: MainLayoutProps) {
                     <Button
                       variant={isActive ? "secondary" : "ghost"}
                       size="sm"
-                      className="gap-2"
+                      className="gap-2 relative"
                       aria-label={item.label}
                       aria-current={isActive ? "page" : undefined}
                     >
                       <Icon className="w-4 h-4" aria-hidden="true" />
                       {item.label}
+                      {item.href === "/messages" && unreadCount && unreadCount > 0 && (
+                        <Badge 
+                          variant="destructive" 
+                          className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center p-0 text-xs"
+                        >
+                          {unreadCount > 99 ? "99+" : unreadCount}
+                        </Badge>
+                      )}
                     </Button>
                   </Link>
                 );

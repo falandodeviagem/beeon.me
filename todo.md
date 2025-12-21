@@ -1062,3 +1062,32 @@
 - [x] Implementar ordenação de resultados
 - [ ] Adicionar sugestões de busca (autocomplete)
 - [ ] Melhorar relevância de resultados com scoring
+
+## 86. Contador de Mensagens Não Lidas no Header
+- [x] Adicionar badge de mensagens não lidas no MainLayout
+- [x] Integrar com trpc.messages.unreadCount
+- [x] Adicionar atualização automática (refetch a cada 10s)
+- [x] Estilizar badge para destaque visual
+- [x] Mostrar "99+" quando mais de 99 mensagens não lidas
+
+## 87. WebSocket para Mensagens em Tempo Real
+- [x] Instalar biblioteca ws (WebSocket)
+- [x] Criar servidor WebSocket no backend
+- [x] Implementar autenticação WebSocket com JWT
+- [x] Criar hook useWebSocket no frontend
+- [x] Implementar reconexão automática
+- [x] Adicionar heartbeat para detectar conexões quebradas
+- [x] Integrar WebSocket no servidor Express
+- [ ] Migrar Messages.tsx de polling para WebSocket
+- [ ] Adicionar indicador de status de conexão na UI
+- [ ] Enviar notificações via WebSocket quando nova mensagem chega
+
+## 88. Autocomplete na Busca Global
+- [x] Procedure tRPC já existe (search.global)
+- [x] Implementar debounce de 300ms
+- [x] GlobalSearch já tem autocomplete completo
+- [x] Adicionar navegação por teclado (arrow keys, enter, escape)
+- [x] Estilizar dropdown de sugestões
+- [x] Implementar scroll automático para item selecionado
+- [x] Adicionar categorias (comunidades, usuários, posts, hashtags)
+- [x] Fechar dropdown ao clicar fora

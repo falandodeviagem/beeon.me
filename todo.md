@@ -1120,6 +1120,7 @@
 - [x] Atualizar sendMessage para suportar imageUrl
 - [x] Criar procedure uploadImage para upload de imagem
 - [x] Aplicar migração do banco de dados
+- [ ] Corrigir erro de TypeScript no routers.ts linha 1194
 - [ ] Adicionar botão de anexar imagem no input do chat
 - [ ] Implementar preview de imagem antes de enviar
 - [ ] Exibir imagens nas mensagens com lightbox
@@ -1140,3 +1141,20 @@
 - [ ] Enviar notificação push para usuários mencionados
 - [ ] Destacar mensagens com menções
 - [ ] Adicionar badge de menções não lidas
+
+## 95. Sistema de Moderação de Conteúdo
+- [ ] Criar página de moderação para admins/moderadores
+- [ ] Adicionar botão "Remover" em posts e comentários
+- [ ] Criar procedure para remover conteúdo
+- [ ] Implementar sistema de banimento temporário
+- [ ] Criar filtro de palavras proibidas
+- [ ] Adicionar logs de ações de moderação
+- [ ] Criar sistema de denúncias de usuários
+
+## 96. Sistema de Badges e Conquistas Automáticas
+- [ ] Criar lógica de badges automáticos (Primeira Postagem, 100 Curtidas, etc)
+- [ ] Implementar verificação de conquistas após ações
+- [ ] Enviar notificação push quando conquistar badge
+- [ ] Criar página de perfil mostrando badges
+- [ ] Adicionar animação de conquista desbloqueada
+- [ ] Criar sistema de progressão de badges

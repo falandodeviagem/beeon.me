@@ -915,3 +915,41 @@
 - [ ] Criar teste E2E: Seguir usuário
 - [ ] Configurar CI para rodar testes
 - [ ] Adicionar setup de autenticação para testes
+
+## 74. PWA (Progressive Web App)
+- [x] Criar manifest.json com ícones e configurações
+- [x] Implementar service worker para cache
+- [x] Adicionar estratégia de cache (Network First, Cache First)
+- [x] Implementar suporte offline
+- [x] Adicionar prompt de instalação
+- [x] Configurar tema e cores do PWA
+- [x] Criar hook usePWA para gerenciar PWA
+- [x] Criar componente PWAInstallBanner
+- [x] Gerar ícones PWA (8 tamanhos)
+- [x] Adicionar meta tags PWA no HTML
+- [x] Implementar detecção de online/offline
+- [ ] Testar instalação em dispositivos móveis
+- [ ] Adicionar splash screen personalizado
+
+## 75. Sistema de Notificações Push
+- [x] Criar tabela de push subscriptions no schema
+- [x] Criar tabela de notification preferences no schema
+- [x] Instalar biblioteca web-push
+- [ ] Implementar Web Push API no backend
+- [ ] Implementar solicitação de permissão no frontend
+- [ ] Criar procedure para enviar push notifications
+- [ ] Integrar push em eventos (comentários, badges, mensagens)
+- [ ] Adicionar preferências de notificação no frontend
+- [ ] Testar notificações em diferentes navegadores
+- [ ] Implementar notificações silenciosas
+
+## 76. Analytics e Métricas de Engajamento
+- [x] Criar tabela de community analytics no schema
+- [x] Criar tabela de post analytics no schema
+- [ ] Implementar rastreamento de eventos no backend
+- [ ] Criar dashboard de analytics para criadores
+- [ ] Métricas: visualizações, engajamento, crescimento
+- [ ] Gráficos de posts mais populares
+- [ ] Análise de comportamento dos membros
+- [ ] Exportar relatórios em CSV
+- [ ] Comparação de períodos (semana, mês, ano)

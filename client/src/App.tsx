@@ -5,6 +5,7 @@ import ErrorBoundary from "./components/ErrorBoundary";
 import { ThemeProvider } from "./contexts/ThemeContext";
 import { SkipToContent } from "./components/SkipToContent";
 import { OfflineIndicator } from "./components/OfflineIndicator";
+import { PWAInstallBanner } from "./components/PWAInstallBanner";
 import { lazy, Suspense } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
 
@@ -104,6 +105,7 @@ function App() {
     <ErrorBoundary>
       <SkipToContent />
       <OfflineIndicator />
+      <PWAInstallBanner />
       <ThemeProvider defaultTheme="light" switchable>
         <TooltipProvider>
           <Toaster />

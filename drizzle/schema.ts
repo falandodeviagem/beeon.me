@@ -1,4 +1,4 @@
-import { int, mysqlEnum, mysqlTable, text, timestamp, varchar, boolean, index, unique } from "drizzle-orm/mysql-core";
+import { int, mysqlEnum, mysqlTable, text, timestamp, varchar, boolean, index, unique, date } from "drizzle-orm/mysql-core";
 
 /**
  * Core user table backing auth flow.
@@ -695,3 +695,113 @@ export const subscriptionPlans = mysqlTable("subscription_plans", {
 
 export type SubscriptionPlan = typeof subscriptionPlans.$inferSelect;
 export type InsertSubscriptionPlan = typeof subscriptionPlans.$inferInsert;
+
+
+/**
+ * Push Subscriptions - Web Push notification subscriptions
+ */
+export const pushSubscriptions = mysqlTable("push_subscriptions", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull(),
+  endpoint: text("endpoint").notNull(),
+  p256dh: text("p256dh").notNull(),
+  auth: text("auth").notNull(),
+  userAgent: text("userAgent"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  lastUsed: timestamp("lastUsed").defaultNow().notNull(),
+}, (table) => ({
+  userIdx: index("push_user_idx").on(table.userId),
+}));
+
+export type PushSubscription = typeof pushSubscriptions.$inferSelect;
+export type InsertPushSubscription = typeof pushSubscriptions.$inferInsert;
+
+
+/**
+ * Notification Preferences - user preferences for notifications
+ */
+export const notificationPreferences = mysqlTable("notification_preferences", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull().unique(),
+  
+  // Push notification preferences
+  pushEnabled: boolean("pushEnabled").default(true).notNull(),
+  pushComments: boolean("pushComments").default(true).notNull(),
+  pushLikes: boolean("pushLikes").default(true).notNull(),
+  pushFollows: boolean("pushFollows").default(true).notNull(),
+  pushMessages: boolean("pushMessages").default(true).notNull(),
+  pushBadges: boolean("pushBadges").default(true).notNull(),
+  pushCommunity: boolean("pushCommunity").default(true).notNull(),
+  
+  // In-app notification preferences
+  inAppEnabled: boolean("inAppEnabled").default(true).notNull(),
+  
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+}, (table) => ({
+  userIdx: index("notif_pref_user_idx").on(table.userId),
+}));
+
+export type NotificationPreference = typeof notificationPreferences.$inferSelect;
+export type InsertNotificationPreference = typeof notificationPreferences.$inferInsert;
+
+
+/**
+ * Community Analytics - tracks engagement metrics for communities
+ */
+export const communityAnalytics = mysqlTable("community_analytics", {
+  id: int("id").autoincrement().primaryKey(),
+  communityId: int("communityId").notNull(),
+  date: date("date").notNull(),
+  
+  // View metrics
+  views: int("views").default(0).notNull(),
+  uniqueVisitors: int("uniqueVisitors").default(0).notNull(),
+  
+  // Engagement metrics
+  newPosts: int("newPosts").default(0).notNull(),
+  newComments: int("newComments").default(0).notNull(),
+  totalLikes: int("totalLikes").default(0).notNull(),
+  totalShares: int("totalShares").default(0).notNull(),
+  
+  // Member metrics
+  newMembers: int("newMembers").default(0).notNull(),
+  activeMembers: int("activeMembers").default(0).notNull(),
+  
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+}, (table) => ({
+  communityDateIdx: index("analytics_community_date_idx").on(table.communityId, table.date),
+}));
+
+export type CommunityAnalytic = typeof communityAnalytics.$inferSelect;
+export type InsertCommunityAnalytic = typeof communityAnalytics.$inferInsert;
+
+
+/**
+ * Post Analytics - detailed metrics for individual posts
+ */
+export const postAnalytics = mysqlTable("post_analytics", {
+  id: int("id").autoincrement().primaryKey(),
+  postId: int("postId").notNull().unique(),
+  
+  // View metrics
+  views: int("views").default(0).notNull(),
+  uniqueViews: int("uniqueViews").default(0).notNull(),
+  
+  // Engagement metrics
+  clicks: int("clicks").default(0).notNull(),
+  shares: int("shares").default(0).notNull(),
+  
+  // Time metrics
+  avgTimeSpent: int("avgTimeSpent").default(0).notNull(), // in seconds
+  
+  // Reach metrics
+  reach: int("reach").default(0).notNull(),
+  impressions: int("impressions").default(0).notNull(),
+  
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+}, (table) => ({
+  postIdx: index("post_analytics_post_idx").on(table.postId),
+}));
+
+export type PostAnalytic = typeof postAnalytics.$inferSelect;
+export type InsertPostAnalytic = typeof postAnalytics.$inferInsert;

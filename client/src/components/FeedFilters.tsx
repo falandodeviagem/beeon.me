@@ -8,7 +8,6 @@ import {
 } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Filter, X } from "lucide-react";
-import { useState, useEffect } from "react";
 
 export interface FeedFilterOptions {
   contentType: 'all' | 'text' | 'image' | 'link';
@@ -42,15 +41,8 @@ const PERIOD_LABELS = {
 };
 
 export function FeedFilters({ filters, onChange }: FeedFiltersProps) {
-  const [localFilters, setLocalFilters] = useState(filters);
-
-  useEffect(() => {
-    setLocalFilters(filters);
-  }, [filters]);
-
   const handleFilterChange = (key: keyof FeedFilterOptions, value: string) => {
-    const newFilters = { ...localFilters, [key]: value };
-    setLocalFilters(newFilters);
+    const newFilters = { ...filters, [key]: value };
     onChange(newFilters);
     
     // Save to localStorage
@@ -63,15 +55,14 @@ export function FeedFilters({ filters, onChange }: FeedFiltersProps) {
       sortBy: 'recent',
       period: 'all',
     };
-    setLocalFilters(defaultFilters);
     onChange(defaultFilters);
     localStorage.removeItem('feedFilters');
   };
 
   const hasActiveFilters =
-    localFilters.contentType !== 'all' ||
-    localFilters.sortBy !== 'recent' ||
-    localFilters.period !== 'all';
+    filters.contentType !== 'all' ||
+    filters.sortBy !== 'recent' ||
+    filters.period !== 'all';
 
   return (
     <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center">
@@ -82,7 +73,7 @@ export function FeedFilters({ filters, onChange }: FeedFiltersProps) {
 
       <div className="flex flex-wrap gap-2 flex-1">
         <Select
-          value={localFilters.contentType}
+          value={filters.contentType}
           onValueChange={(value) => handleFilterChange('contentType', value)}
         >
           <SelectTrigger className="w-[160px]">
@@ -98,7 +89,7 @@ export function FeedFilters({ filters, onChange }: FeedFiltersProps) {
         </Select>
 
         <Select
-          value={localFilters.sortBy}
+          value={filters.sortBy}
           onValueChange={(value) => handleFilterChange('sortBy', value)}
         >
           <SelectTrigger className="w-[150px]">
@@ -114,7 +105,7 @@ export function FeedFilters({ filters, onChange }: FeedFiltersProps) {
         </Select>
 
         <Select
-          value={localFilters.period}
+          value={filters.period}
           onValueChange={(value) => handleFilterChange('period', value)}
         >
           <SelectTrigger className="w-[150px]">
@@ -134,16 +125,16 @@ export function FeedFilters({ filters, onChange }: FeedFiltersProps) {
         <div className="flex items-center gap-2">
           <Badge variant="secondary" className="gap-1">
             {[
-              localFilters.contentType !== 'all' && CONTENT_TYPE_LABELS[localFilters.contentType],
-              localFilters.sortBy !== 'recent' && SORT_BY_LABELS[localFilters.sortBy],
-              localFilters.period !== 'all' && PERIOD_LABELS[localFilters.period],
+              filters.contentType !== 'all' && CONTENT_TYPE_LABELS[filters.contentType],
+              filters.sortBy !== 'recent' && SORT_BY_LABELS[filters.sortBy],
+              filters.period !== 'all' && PERIOD_LABELS[filters.period],
             ]
               .filter(Boolean)
               .length}{' '}
             {[
-              localFilters.contentType !== 'all' && CONTENT_TYPE_LABELS[localFilters.contentType],
-              localFilters.sortBy !== 'recent' && SORT_BY_LABELS[localFilters.sortBy],
-              localFilters.period !== 'all' && PERIOD_LABELS[localFilters.period],
+              filters.contentType !== 'all' && CONTENT_TYPE_LABELS[filters.contentType],
+              filters.sortBy !== 'recent' && SORT_BY_LABELS[filters.sortBy],
+              filters.period !== 'all' && PERIOD_LABELS[filters.period],
             ]
               .filter(Boolean)
               .length === 1

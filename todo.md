@@ -1258,3 +1258,26 @@
 - [x] Testar badge "Criador de Comunidade"
 - [x] Testar prevenção de duplicatas
 - [x] Executar todos os testes - 10 testes passaram!
+
+
+## 🔧 CORREÇÕES E TESTES AVANÇADOS (Dezembro 2025)
+
+### Resolver Erro 429
+- [x] Investigar origem do erro 429 (Too Many Requests)
+- [x] Verificar configuração de rate limit no servidor
+- [x] Verificar loops de requisição no frontend
+- [x] Limpar cache e reiniciar servidor
+- [x] Corrigido: removido useEffect e estado local duplicado em FeedFilters
+- [ ] Testar acesso via browser após correção
+
+### Testes de Integração para Badges
+- [x] Criar arquivo server/badges.integration.test.ts
+- [x] Configurar banco de testes isolado (IDs fixos)
+- [x] Testar fluxo: criar post → verificar badge → validar notificação
+- [x] Testar fluxo: receber likes → verificar badge
+- [x] Testar fluxo: criar comentários → verificar badge
+- [x] Testar fluxo: seguir usuários → verificar badge
+- [x] Testar fluxo: criar comunidade → verificar badge
+- [x] Testar prevenção de duplicatas
+- [x] Testar múltiplos eventos em sequência
+- [x] Executar todos os testes de integração - 13 testes passaram!

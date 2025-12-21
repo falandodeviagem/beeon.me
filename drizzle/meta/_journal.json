@@ -162,6 +162,20 @@
       "when": 1766236706074,
       "tag": "0022_misty_namora",
       "breakpoints": true
+    },
+    {
+      "idx": 23,
+      "version": "5",
+      "when": 1766323692637,
+      "tag": "0023_sleepy_blockbuster",
+      "breakpoints": true
+    },
+    {
+      "idx": 24,
+      "version": "5",
+      "when": 1766324570559,
+      "tag": "0024_woozy_edwin_jarvis",
+      "breakpoints": true
     }
   ]
 }

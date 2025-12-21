@@ -41,6 +41,7 @@ const UserInsights = lazy(() => import("./pages/UserInsights"));
 const CommunityRevenue = lazy(() => import("./pages/CommunityRevenue"));
 const PaymentHistory = lazy(() => import("./pages/PaymentHistory"));
 const ManagePlans = lazy(() => import("./pages/ManagePlans"));
+const Messages = lazy(() => import("./pages/Messages"));
 
 // Loading fallback component
 function PageLoader() {
@@ -84,6 +85,7 @@ function Router() {
         <Route path="/user/:userId/followers" component={Followers} />
         <Route path="/user/:userId/following" component={Following} />
         <Route path="/settings/notifications" component={NotificationSettings} />
+        <Route path="/messages" component={Messages} />
         <Route path="/moderation" component={Moderation} />
         <Route path="/moderation/appeals" component={BanAppeal} />
         <Route path="/moderation/audit-logs" component={AuditLogs} />

@@ -989,3 +989,76 @@
 - [x] Criar guia completo com 6 testes principais
 - [x] Incluir seção de problemas comuns e soluções
 - [x] Adicionar template de relatório de testes
+
+## 80. Sistema de Mensagens Diretas em Tempo Real
+- [x] Schema de mensagens e conversas já existe no banco
+- [x] Helpers de mensagens já existem no db.ts
+- [ ] Implementar WebSocket server para chat em tempo real
+- [ ] Criar procedures tRPC para mensagens
+- [ ] Criar página de lista de conversas
+- [ ] Criar página de chat 1-on-1
+- [ ] Implementar envio e recebimento de mensagens em tempo real
+- [ ] Adicionar notificações push para novas mensagens
+- [ ] Implementar indicador de "digitando..."
+- [ ] Adicionar status de leitura (visto)
+- [ ] Implementar busca de conversas
+- [ ] Adicionar suporte a imagens em mensagens
+
+## 81. Feed Algorítmico Personalizado
+- [ ] Criar algoritmo de pontuação de posts
+- [ ] Implementar sistema de recomendação baseado em interesses
+- [ ] Considerar comunidades seguidas no algoritmo
+- [ ] Considerar histórico de engajamento (curtidas, comentários)
+- [ ] Implementar cache de feed personalizado
+- [ ] Adicionar opção de alternar entre feed algorítmico e cronológico
+- [ ] Criar procedure para gerar feed personalizado
+- [ ] Otimizar queries de feed para performance
+- [ ] Adicionar diversidade de conteúdo no feed
+
+## 82. Ferramentas de Moderação de Conteúdo
+- [ ] Criar schema de moderadores e ações de moderação
+- [ ] Implementar sistema de denúncias (posts, comentários, usuários)
+- [ ] Criar painel de moderação para moderadores
+- [ ] Adicionar ação: remover post
+- [ ] Adicionar ação: remover comentário
+- [ ] Adicionar ação: banir usuário temporariamente
+- [ ] Adicionar ação: banir usuário permanentemente
+- [ ] Implementar filtro de palavras proibidas
+- [ ] Criar log de ações de moderação
+- [ ] Adicionar notificações para usuários moderados
+- [ ] Implementar sistema de apelação de banimentos
+
+## 83. Completar Sistema de Mensagens Diretas
+- [x] Criar procedures tRPC para mensagens (list, send, markAsRead)
+- [x] Criar página Messages com lista de conversas
+- [x] Criar página Chat com interface de mensagens 1-on-1
+- [x] Implementar envio de mensagens (polling a cada 3s)
+- [x] Adicionar rota /messages no App.tsx
+- [x] Implementar contador de mensagens não lidas
+- [x] Implementar indicador de mensagens lidas
+- [ ] Adicionar contador de mensagens não lidas no header
+- [ ] Integrar notificações push para novas mensagens
+- [ ] Adicionar suporte a upload de imagens em mensagens
+- [ ] Migrar de polling para WebSocket para tempo real
+
+## 84. Otimizar Performance do Feed
+- [x] Implementar paginação infinita no feed (cursor-based)
+- [x] Adicionar índices de banco para queries de posts
+- [x] Implementar lazy loading de imagens (OptimizedImage)
+- [x] Implementar code splitting para rotas
+- [ ] Implementar cache de queries com React Query
+- [ ] Otimizar query de posts para reduzir joins
+- [ ] Implementar virtualização de lista longa
+- [ ] Adicionar prefetch de próxima página
+
+## 85. Busca Global
+- [x] Criar procedure tRPC para busca global
+- [x] Implementar busca de posts por conteúdo
+- [x] Implementar busca de comunidades por nome/descrição
+- [x] Implementar busca de usuários por nome
+- [x] Criar página de resultados de busca (Search.tsx)
+- [x] Criar página de busca avançada (AdvancedSearch.tsx)
+- [x] Adicionar filtros de busca (tipo, data, relevância)
+- [x] Implementar ordenação de resultados
+- [ ] Adicionar sugestões de busca (autocomplete)
+- [ ] Melhorar relevância de resultados com scoring

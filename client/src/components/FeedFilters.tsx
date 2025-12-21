@@ -8,7 +8,7 @@ import {
 } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Filter, X } from "lucide-react";
-import { useState, useEffect } from "react";
+
 
 export interface FeedFilterOptions {
   contentType: 'all' | 'text' | 'image' | 'link';
@@ -42,15 +42,11 @@ const PERIOD_LABELS = {
 };
 
 export function FeedFilters({ filters, onChange }: FeedFiltersProps) {
-  const [localFilters, setLocalFilters] = useState(filters);
-
-  useEffect(() => {
-    setLocalFilters(filters);
-  }, [filters]);
+  // Usar filters diretamente do prop, sem estado local duplicado
+  const localFilters = filters;
 
   const handleFilterChange = (key: keyof FeedFilterOptions, value: string) => {
     const newFilters = { ...localFilters, [key]: value };
-    setLocalFilters(newFilters);
     onChange(newFilters);
     
     // Save to localStorage
@@ -63,7 +59,6 @@ export function FeedFilters({ filters, onChange }: FeedFiltersProps) {
       sortBy: 'recent',
       period: 'all',
     };
-    setLocalFilters(defaultFilters);
     onChange(defaultFilters);
     localStorage.removeItem('feedFilters');
   };

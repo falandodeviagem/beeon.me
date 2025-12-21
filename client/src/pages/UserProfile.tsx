@@ -8,6 +8,7 @@ import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { trpc } from "@/lib/trpc";
 import { Award, Calendar, MessageCircle, ThumbsUp, Trophy, Users } from "lucide-react";
+import { BadgeGrid } from "@/components/BadgeGrid";
 import { useParams } from "wouter";
 import { formatDistanceToNow } from "date-fns";
 import { ptBR } from "date-fns/locale";
@@ -221,39 +222,8 @@ export default function UserProfile() {
               <div className="text-center py-8">
                 <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
               </div>
-            ) : badges.length === 0 ? (
-              <Card>
-                <CardContent className="text-center py-12">
-                  <Award className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
-                  <p className="text-muted-foreground">Nenhum badge conquistado ainda</p>
-                </CardContent>
-              </Card>
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {badges.map((badge) => (
-                  <Card key={badge.badge.id}>
-                    <CardHeader>
-                      <div className="flex items-center gap-3">
-                        {badge.badge.iconUrl && (
-                          <img src={badge.badge.iconUrl} alt={badge.badge.name} className="w-12 h-12" />
-                        )}
-                        <div>
-                          <CardTitle className="text-lg">{badge.badge.name}</CardTitle>
-                          <CardDescription className="flex items-center gap-1 text-xs">
-                            <Calendar className="w-3 h-3" />
-                            {formatDistanceToNow(new Date(badge.earnedAt), { addSuffix: true, locale: ptBR })}
-                          </CardDescription>
-                        </div>
-                      </div>
-                    </CardHeader>
-                    {badge.badge.description && (
-                      <CardContent>
-                        <p className="text-sm text-muted-foreground">{badge.badge.description}</p>
-                      </CardContent>
-                    )}
-                  </Card>
-                ))}
-              </div>
+              <BadgeGrid badges={badges} />
             )}
           </TabsContent>
 

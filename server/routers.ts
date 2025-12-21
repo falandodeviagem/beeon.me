@@ -205,6 +205,10 @@ export const appRouter = router({
           relatedId: communityId,
         });
 
+        // Verificar badges
+        const { checkAndAwardBadges } = await import('./badges/checker');
+        await checkAndAwardBadges(ctx.user.id, 'community_created');
+
         return { id: communityId };
       }),
 
@@ -257,6 +261,10 @@ export const appRouter = router({
           communityId: input.communityId,
           userId: ctx.user.id,
         });
+
+        // Verificar badges para o dono da comunidade
+        const { checkAndAwardBadges } = await import('./badges/checker');
+        await checkAndAwardBadges(community.ownerId, 'community_member_joined');
 
         return { success: true };
       }),
@@ -763,6 +771,10 @@ export const appRouter = router({
               relatedId: input.postId,
               relatedType: 'post',
             });
+            
+            // Verificar badges para o autor do post
+            const { checkAndAwardBadges } = await import('./badges/checker');
+            await checkAndAwardBadges(post.authorId, 'like_received');
           }
           
           return { added: true, reactionType: input.reactionType };
@@ -870,6 +882,10 @@ export const appRouter = router({
           points: 5,
           relatedId: commentId,
         });
+
+        // Verificar badges
+        const { checkAndAwardBadges } = await import('./badges/checker');
+        await checkAndAwardBadges(ctx.user.id, 'comment_created');
 
         return { id: commentId };
       }),
@@ -1082,6 +1098,10 @@ export const appRouter = router({
           ctx.user.name || 'Usuário',
           ctx.user.id
         ).catch(err => console.error('[Push] Failed to send follow notification:', err));
+        
+        // Verificar badges para quem seguiu
+        const { checkAndAwardBadges } = await import('./badges/checker');
+        await checkAndAwardBadges(ctx.user.id, 'user_followed');
         
         return { success: true };
       }),

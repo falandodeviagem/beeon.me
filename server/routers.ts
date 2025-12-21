@@ -1204,6 +1204,14 @@ export const appRouter = router({
       .query(async ({ ctx }) => {
         return await db.getUnreadMessageCount(ctx.user.id);
       }),
+
+    onlineUsers: protectedProcedure
+      .input(z.object({ userIds: z.array(z.number()) }))
+      .query(async ({ input }) => {
+        const { getOnlineUserIds } = await import("./_core/websocket");
+        const onlineIds = getOnlineUserIds();
+        return input.userIds.filter(id => onlineIds.includes(id));
+      }),
   }),
 
   hashtags: router({

@@ -1,6 +1,6 @@
 import { WebSocketServer, WebSocket } from "ws";
 import type { Server } from "http";
-import { verify } from "jsonwebtoken";
+import jwt from "jsonwebtoken";
 import { ENV } from "./env";
 
 interface AuthenticatedWebSocket extends WebSocket {
@@ -52,7 +52,7 @@ export function setupWebSocket(server: Server) {
           }
 
           try {
-            const decoded = verify(token, ENV.cookieSecret) as { userId: number };
+            const decoded = jwt.verify(token, ENV.cookieSecret) as { userId: number };
             ws.userId = decoded.userId;
 
             // Add to clients map
@@ -133,4 +133,9 @@ export function getConnectedUsers(): number {
 // Check if user is online
 export function isUserOnline(userId: number): boolean {
   return clients.has(userId);
+}
+
+// Get all online user IDs
+export function getOnlineUserIds(): number[] {
+  return Array.from(clients.keys());
 }

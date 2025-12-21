@@ -1091,3 +1091,26 @@
 - [x] Implementar scroll automático para item selecionado
 - [x] Adicionar categorias (comunidades, usuários, posts, hashtags)
 - [x] Fechar dropdown ao clicar fora
+
+## 89. Migrar Messages para WebSocket
+- [x] Atualizar Messages.tsx para usar useWebSocket
+- [x] Remover polling (setInterval) de Messages
+- [x] Escutar eventos WebSocket de novas mensagens
+- [x] Atualizar UI em tempo real quando mensagem chega
+- [x] Adicionar indicador de status de conexão (badge Online/Offline)
+
+## 90. Indicador de Usuários Online
+- [x] Adicionar endpoint para verificar status online (messages.onlineUsers)
+- [x] Criar componente OnlineIndicator
+- [x] Mostrar badge verde em avatares de usuários online
+- [x] Atualizar status em tempo real (refetch a cada 10s)
+- [x] Adicionar funções getOnlineUserIds no WebSocket server
+
+## 91. Notificações de Digitação
+- [x] Criar evento WebSocket "typing"
+- [x] Enviar evento quando usuário digita
+- [x] Escutar eventos de digitação de outros usuários
+- [x] Mostrar "Fulano está digitando..." no chat
+- [x] Adicionar debounce de 2s para evitar spam de eventos
+- [x] Adicionar animação de 3 bolinhas pulsando
+- [x] Auto-esconder indicador após 3 segundos

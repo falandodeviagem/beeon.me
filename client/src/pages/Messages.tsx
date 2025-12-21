@@ -9,28 +9,47 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { trpc } from "@/lib/trpc";
 import { formatDistanceToNow } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import { MessageCircle, Send } from "lucide-react";
+import { MessageCircle, Send, Wifi, WifiOff } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
+import { useWebSocket } from "@/hooks/useWebSocket";
+import { Badge } from "@/components/ui/badge";
+import { OnlineIndicator } from "@/components/OnlineIndicator";
 
 export default function Messages() {
   const { user } = useAuth();
   const [selectedConversationId, setSelectedConversationId] = useState<number | null>(null);
   const [messageContent, setMessageContent] = useState("");
+  const [isTyping, setIsTyping] = useState(false);
+  const [otherUserTyping, setOtherUserTyping] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
+  const typingTimeoutRef = useRef<NodeJS.Timeout | undefined>(undefined);
 
   const { data: conversations = [], isLoading: loadingConversations, refetch: refetchConversations } = 
-    trpc.messages.conversations.useQuery(undefined, {
-      refetchInterval: 5000, // Poll every 5 seconds
-    });
+    trpc.messages.conversations.useQuery();
 
   const { data: messages = [], isLoading: loadingMessages, refetch: refetchMessages } = 
     trpc.messages.list.useQuery(
       { conversationId: selectedConversationId! },
-      { 
-        enabled: selectedConversationId !== null,
-        refetchInterval: 3000, // Poll every 3 seconds
-      }
+      { enabled: selectedConversationId !== null }
     );
+
+  // WebSocket connection
+  const { isConnected, isConnecting, send } = useWebSocket({
+    onMessage: (message) => {
+      if (message.type === "new_message") {
+        // Refetch messages and conversations when new message arrives
+        refetchMessages();
+        refetchConversations();
+      } else if (message.type === "typing") {
+        // Show typing indicator
+        if (message.conversationId === selectedConversationId && message.userId !== user?.id) {
+          setOtherUserTyping(true);
+          // Hide after 3 seconds
+          setTimeout(() => setOtherUserTyping(false), 3000);
+        }
+      }
+    },
+  });
 
   const sendMutation = trpc.messages.send.useMutation({
     onSuccess: () => {
@@ -64,6 +83,27 @@ export default function Messages() {
       conversationId: selectedConversationId,
       content: messageContent.trim(),
     });
+    setIsTyping(false);
+  };
+
+  const handleTyping = (value: string) => {
+    setMessageContent(value);
+    
+    if (!selectedConversationId || !isConnected) return;
+    
+    // Send typing event
+    if (!isTyping && value.length > 0) {
+      setIsTyping(true);
+      send({ type: "typing", conversationId: selectedConversationId });
+    }
+    
+    // Reset typing after 2 seconds of inactivity
+    if (typingTimeoutRef.current) {
+      clearTimeout(typingTimeoutRef.current);
+    }
+    typingTimeoutRef.current = setTimeout(() => {
+      setIsTyping(false);
+    }, 2000);
   };
 
   const selectedConversation = conversations.find(c => c.id === selectedConversationId);
@@ -75,10 +115,21 @@ export default function Messages() {
           {/* Conversations List */}
           <Card className="md:col-span-1">
             <CardContent className="p-4">
-              <h2 className="text-xl font-bold mb-4 flex items-center gap-2">
-                <MessageCircle className="w-5 h-5" />
-                Conversas
-              </h2>
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-xl font-bold flex items-center gap-2">
+                  <MessageCircle className="w-5 h-5" />
+                  Conversas
+                </h2>
+                <Badge variant={isConnected ? "default" : "secondary"} className="gap-1">
+                  {isConnecting ? (
+                    <><WifiOff className="w-3 h-3" /> Conectando...</>
+                  ) : isConnected ? (
+                    <><Wifi className="w-3 h-3" /> Online</>
+                  ) : (
+                    <><WifiOff className="w-3 h-3" /> Offline</>
+                  )}
+                </Badge>
+              </div>
               
               {loadingConversations ? (
                 <div className="space-y-3">
@@ -105,12 +156,15 @@ export default function Messages() {
                         }`}
                       >
                         <div className="flex items-center gap-3">
-                          <Avatar>
-                            <AvatarImage src={conversation.otherUserAvatar || undefined} />
-                            <AvatarFallback className="bg-gradient-to-br from-amber-400 to-orange-500 text-white">
-                              {conversation.otherUserName?.[0]?.toUpperCase() || "?"}
-                            </AvatarFallback>
-                          </Avatar>
+                          <div className="relative">
+                            <Avatar>
+                              <AvatarImage src={conversation.otherUserAvatar || undefined} />
+                              <AvatarFallback className="bg-gradient-to-br from-amber-400 to-orange-500 text-white">
+                                {conversation.otherUserName?.[0]?.toUpperCase() || "?"}
+                              </AvatarFallback>
+                            </Avatar>
+                            <OnlineIndicator userId={conversation.otherUserId} />
+                          </div>
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center justify-between">
                               <p className="font-semibold truncate">
@@ -157,6 +211,16 @@ export default function Messages() {
 
                 {/* Messages */}
                 <ScrollArea className="flex-1 p-4" ref={scrollRef}>
+                  {otherUserTyping && (
+                    <div className="mb-4 flex items-center gap-2 text-sm text-muted-foreground">
+                      <div className="flex gap-1">
+                        <span className="w-2 h-2 bg-muted-foreground rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
+                        <span className="w-2 h-2 bg-muted-foreground rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
+                        <span className="w-2 h-2 bg-muted-foreground rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+                      </div>
+                      <span>{selectedConversation?.otherUserName} está digitando...</span>
+                    </div>
+                  )}
                   {loadingMessages ? (
                     <div className="space-y-3">
                       {[1, 2, 3].map((i) => (
@@ -214,7 +278,7 @@ export default function Messages() {
                     <Input
                       placeholder="Digite sua mensagem..."
                       value={messageContent}
-                      onChange={(e) => setMessageContent(e.target.value)}
+                      onChange={(e) => handleTyping(e.target.value)}
                       onKeyDown={(e) => {
                         if (e.key === "Enter" && !e.shiftKey) {
                           e.preventDefault();

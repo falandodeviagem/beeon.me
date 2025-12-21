@@ -1192,3 +1192,35 @@
 - [ ] Adicionar sistema de logs de ações
 - [ ] Criar testes unitários para moderação
 - [ ] Testar fluxo completo de moderação
+
+
+## 🎯 IMPLEMENTAÇÃO ATUAL (Dezembro 2025)
+
+### Completar Sistema de Badges Automáticos
+- [x] Corrigir erros TypeScript em definitions.ts
+- [x] Criar arquivo badges/checker.ts com verificação
+- [x] Integrar verificação em eventos (createPost iniciado)
+- [x] Adicionar notificações push para badges desbloqueados
+- [x] Criar componente BadgeGrid.tsx para perfil
+- [ ] Adicionar animação de conquista (opcional)
+- [ ] Integrar em mais eventos (like, comment, follow)
+
+### Implementar Dashboard de Moderação Completo
+- [x] Criar schema de moderation_logs e banned_words
+- [x] Aplicar migração ao banco
+- [x] Criar página /moderation com tabs
+- [x] Implementar botão "Denunciar" em posts e comentários
+- [x] Criar modal de denúncia com motivos
+- [x] Implementar procedures tRPC de moderação
+- [x] Criar componentes de UI (ReportsTable, BannedUsersTable, etc)
+- [x] Implementar filtro de palavras proibidas
+- [x] Adicionar sistema de logs
+- [x] Dashboard completo já existente
+
+### Adicionar Modo Escuro Completo
+- [x] Revisar variáveis CSS para tema escuro
+- [x] Garantir contraste adequado em todos os componentes
+- [x] Testar toggle de tema em todas as páginas
+- [x] Adicionar transições suaves
+- [x] Persistir preferência em localStorage
+- [x] Sistema de tema já implementado e funcional

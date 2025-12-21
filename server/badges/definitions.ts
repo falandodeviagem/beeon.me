@@ -29,7 +29,8 @@ export const BADGE_DEFINITIONS: Record<string, BadgeDefinition> = {
     icon: "❤️",
     event: "like_received",
     checkCondition: async (userId: number) => {
-      const totalLikes = await db.getUserTotalLikes(userId);
+      const posts = await db.getUserPosts(userId);
+      const totalLikes = posts.reduce((sum, post) => sum + post.likeCount, 0);
       return totalLikes >= 1;
     },
   },
@@ -41,7 +42,8 @@ export const BADGE_DEFINITIONS: Record<string, BadgeDefinition> = {
     icon: "💯",
     event: "like_received",
     checkCondition: async (userId: number) => {
-      const totalLikes = await db.getUserTotalLikes(userId);
+      const posts = await db.getUserPosts(userId);
+      const totalLikes = posts.reduce((sum, post) => sum + post.likeCount, 0);
       return totalLikes >= 100;
     },
   },
@@ -53,7 +55,8 @@ export const BADGE_DEFINITIONS: Record<string, BadgeDefinition> = {
     icon: "⭐",
     event: "like_received",
     checkCondition: async (userId: number) => {
-      const totalLikes = await db.getUserTotalLikes(userId);
+      const posts = await db.getUserPosts(userId);
+      const totalLikes = posts.reduce((sum, post) => sum + post.likeCount, 0);
       return totalLikes >= 1000;
     },
   },
@@ -65,8 +68,8 @@ export const BADGE_DEFINITIONS: Record<string, BadgeDefinition> = {
     icon: "💬",
     event: "comment_created",
     checkCondition: async (userId: number) => {
-      const comments = await db.getUserComments(userId);
-      return comments.length >= 50;
+      const stats = await db.getUserStats(userId);
+      return stats.commentCount >= 50;
     },
   },
   
@@ -77,9 +80,9 @@ export const BADGE_DEFINITIONS: Record<string, BadgeDefinition> = {
     icon: "🏘️",
     event: "community_created",
     checkCondition: async (userId: number) => {
-      const communities = await db.getUserCommunities(userId);
-      // Verificar se é criador de alguma comunidade
-      return communities.some(c => c.creatorId === userId);
+      const allCommunities = await db.getAllCommunities();
+      // Verificar se criou alguma comunidade
+      return allCommunities.some(c => c.ownerId === userId);
     },
   },
   
@@ -90,9 +93,9 @@ export const BADGE_DEFINITIONS: Record<string, BadgeDefinition> = {
     icon: "👑",
     event: "community_member_joined",
     checkCondition: async (userId: number) => {
-      const communities = await db.getUserCommunities(userId);
+      const allCommunities = await db.getAllCommunities();
       // Verificar comunidades criadas pelo usuário
-      const ownedCommunities = communities.filter(c => c.creatorId === userId);
+      const ownedCommunities = allCommunities.filter(c => c.ownerId === userId);
       for (const community of ownedCommunities) {
         if (community.memberCount >= 100) {
           return true;

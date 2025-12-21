@@ -640,6 +640,10 @@ export const appRouter = router({
           relatedId: postId,
         });
 
+        // Verificar badges
+        const { checkAndAwardBadges } = await import('./badges/checker');
+        await checkAndAwardBadges(ctx.user.id, 'post_created');
+
         return { id: postId, content: input.content };
       }),
 

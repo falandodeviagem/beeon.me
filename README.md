@@ -33,6 +33,34 @@
 - 🌓 **Modo Escuro** - Tema escuro/claro com persistência
 - 🧪 **30 Testes** - Cobertura completa com testes unitários e de integração
 
+### 📸 Screenshots
+
+> **Nota**: Screenshots serão adicionados em breve. Veja [.github/SCREENSHOTS.md](.github/SCREENSHOTS.md) para instruções de como capturar e adicionar.
+
+<div align="center">
+
+#### Feed Principal
+<!-- ![Feed](.github/screenshots/feed-home.png) -->
+*Screenshot do feed principal com posts, filtros e sidebar*
+
+#### Perfil com Sistema de Badges
+<!-- ![Perfil](.github/screenshots/profile-badges.png) -->
+*Screenshot do perfil mostrando BadgeProgress e BadgeGrid*
+
+#### Chat em Tempo Real
+<!-- ![Chat](.github/screenshots/chat-messages.png) -->
+*Screenshot do chat com mensagens instantâneas*
+
+#### Dashboard de Moderação
+<!-- ![Moderação](.github/screenshots/moderation-dashboard.png) -->
+*Screenshot do painel de moderação*
+
+#### Página de Comunidade
+<!-- ![Comunidade](.github/screenshots/community-page.png) -->
+*Screenshot de uma comunidade com posts*
+
+</div>
+
 ## 🚀 Funcionalidades
 
 ### Sistema de Usuários

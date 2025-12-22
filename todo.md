@@ -1281,3 +1281,16 @@
 - [x] Testar prevenção de duplicatas
 - [x] Testar múltiplos eventos em sequência
 - [x] Executar todos os testes de integração - 13 testes passaram!
+
+
+## 📊 BADGE PROGRESS TRACKING (Dezembro 2025)
+
+### Implementar Badge Progress Tracking
+- [x] Criar componente BadgeProgress.tsx
+- [x] Adicionar função calculateBadgeProgress no server/badges/
+- [x] Criar procedure tRPC user.getBadgeProgress
+- [x] Integrar BadgeProgress no UserProfile.tsx
+- [x] Adicionar progress bars com porcentagem
+- [x] Mostrar próximos badges desbloqueáveis
+- [x] Testar cálculo de progresso
+- [x] Criar testes unitários para calculateBadgeProgress - 7 testes passaram!

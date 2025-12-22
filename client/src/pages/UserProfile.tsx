@@ -9,6 +9,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { trpc } from "@/lib/trpc";
 import { Award, Calendar, MessageCircle, ThumbsUp, Trophy, Users } from "lucide-react";
 import { BadgeGrid } from "@/components/BadgeGrid";
+import { BadgeProgress } from "@/components/BadgeProgress";
 import { useParams } from "wouter";
 import { formatDistanceToNow } from "date-fns";
 import { ptBR } from "date-fns/locale";
@@ -223,7 +224,10 @@ export default function UserProfile() {
                 <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
               </div>
             ) : (
-              <BadgeGrid badges={badges} />
+              <div className="space-y-6">
+                <BadgeProgressSection userId={parsedUserId} />
+                <BadgeGrid badges={badges} />
+              </div>
             )}
           </TabsContent>
 
@@ -288,4 +292,20 @@ export default function UserProfile() {
       </div>
     </MainLayout>
   );
+}
+
+function BadgeProgressSection({ userId }: { userId: number }) {
+  const { data: progress, isLoading } = trpc.user.getBadgeProgress.useQuery({ userId });
+
+  if (isLoading) {
+    return (
+      <div className="text-center py-4">
+        <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary mx-auto"></div>
+      </div>
+    );
+  }
+
+  if (!progress) return null;
+
+  return <BadgeProgress progress={progress} />;
 }

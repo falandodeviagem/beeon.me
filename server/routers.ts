@@ -100,6 +100,13 @@ export const appRouter = router({
         return await db.getUserBadges(userId);
       }),
 
+    getBadgeProgress: publicProcedure
+      .input(z.object({ userId: z.number() }))
+      .query(async ({ input }) => {
+        const { calculateBadgeProgress } = await import('./badges/progress');
+        return await calculateBadgeProgress(input.userId);
+      }),
+
     getActions: protectedProcedure
       .query(async ({ ctx }) => {
         return await db.getUserActions(ctx.user.id);

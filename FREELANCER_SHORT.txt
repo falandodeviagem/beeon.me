@@ -1,0 +1,36 @@
+🚀 Finalizar MVP de Rede Social (React + TypeScript + Node.js) - 90% Completo
+
+Preciso de desenvolvedor Full-Stack experiente para finalizar MVP de rede social. Projeto está 90% pronto, faltando apenas ajustes finais e deploy.
+
+TAREFAS PRINCIPAIS (18-26h):
+✅ Corrigir 1 warning TypeScript (30min)
+✅ Configurar CI/CD GitHub Actions (15min)
+✅ Capturar 5 screenshots (1h)
+✅ Deploy staging + produção (5-7h)
+✅ Otimizar performance e SEO (3-5h)
+✅ Configurar monitoramento (1-2h)
+
+STACK:
+- Frontend: React 19, TypeScript, Tailwind CSS, tRPC
+- Backend: Node.js, Express, MySQL, Drizzle ORM
+- Integrações: Stripe, S3, WebSocket, OAuth
+
+O QUE JÁ TEM:
+✅ 273 testes passando (99%)
+✅ Todas funcionalidades implementadas
+✅ Documentação completa
+✅ Código limpo e organizado
+
+REQUISITOS:
+- 3+ anos React + TypeScript
+- Experiência com Node.js e deploy
+- Conhecimento de Tailwind CSS
+- Git/GitHub
+
+ORÇAMENTO: $800-$1,500 USD
+PRAZO: 2-4 semanas
+
+GitHub: https://github.com/falandodeviagem/beeon.me
+Documentação completa disponível no repositório.
+
+⚠️ Leia o repositório antes de se candidatar. Propostas genéricas serão ignoradas.
